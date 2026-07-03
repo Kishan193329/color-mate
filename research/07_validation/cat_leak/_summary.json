@@ -1,0 +1,19 @@
+{
+  "region_count_before": 66,
+  "region_count_after": 66,
+  "leak_before": {
+    "region_leak_count": 0,
+    "background_leak_count": 0,
+    "leaking_region_ids": []
+  },
+  "leak_after": {
+    "region_leak_count": 0,
+    "background_leak_count": 0,
+    "leaking_region_ids": [],
+    "leak_pass": true,
+    "leak_pass_reason": "Flood-fill test passed on all 76 closed areas: every interior region's fill stays inside its borders (no escape into a neighbour or the background).",
+    "leaks_fixed_by_repair": 0
+  },
+  "closed_areas": 76,
+  "final_pass": true
+}

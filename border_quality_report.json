@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "fields": {
     "edge_confidence": 0.1762,
     "local_contrast": 0.0333,
@@ -15,6 +15,12 @@
   "suspected_leaks": 2,
   "jaggedness_score_before": 0.1135,
   "jaggedness_score_after": 0.1093,
+  "region_leak_count": 0,
+  "background_leak_count": 0,
+  "leaking_region_ids": [],
+  "leak_pass_reason": "Flood-fill test passed on all 76 closed areas: every interior region's fill stays inside its borders (no escape into a neighbour or the background).",
+  "leaks_fixed_by_repair": 0,
+  "closed_areas": 76,
   "closure_pass": true,
   "leak_pass": true,
   "shape_pass": true,

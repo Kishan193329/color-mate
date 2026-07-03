@@ -60,6 +60,8 @@ ARTIFACTS = {
     "lineart_preview": "lineart_preview.png",
     # Quality Fix 3 — Perfect Border & Shape Engine report.
     "border_quality_report": "border_quality_report.json",
+    # Quality Fix 4 — region-aware leak map.
+    "leak_map": "leak_map.png",
     "quality_report": "quality_report.json",
     "result_zip": "result.zip",
 }

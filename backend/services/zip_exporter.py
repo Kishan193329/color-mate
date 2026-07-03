@@ -25,6 +25,7 @@ DEFAULT_INCLUDE = [
     "game_preview.png",
     "quality_report.json",
     "border_quality_report.json",
+    "leak_map.png",
 ]
 
 

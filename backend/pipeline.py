@@ -136,7 +136,10 @@ def _process(
     # (PBSE v1: safe 1-2px gap repair + shape refinement + border validation).
     set_step(job_id, 2, 42)
     noise_metrics = timed(region_cleanup.remove_noise, lineart, lineart, profile)
-    border_report = timed(border_engine.run, lineart, lineart, preprocessed, profile)
+    border_report = timed(
+        border_engine.run, lineart, lineart, preprocessed, profile,
+        _p(folder, "leak_map"),
+    )
     (folder / ARTIFACTS["border_quality_report"]).write_text(
         json.dumps(border_report, indent=2), encoding="utf-8"
     )

@@ -20,6 +20,8 @@ from pathlib import Path
 import cv2
 import numpy as np
 
+from services import region_leak_validator
+
 # Bridge only genuinely small near-miss gaps. A 1-2px source gap shows up as a
 # slightly larger endpoint separation once strokes are thinned (thinning recedes
 # ragged stub ends), so the safe catch radius is a few px. Kept small so we never
@@ -188,10 +190,10 @@ def analyze(gray: np.ndarray) -> dict:
 
 
 def run(lineart_path: Path, out_path: Path, preprocessed_path: Path | None = None,
-        profile: dict | None = None) -> dict:
+        profile: dict | None = None, leak_map_path: Path | None = None) -> dict:
     """Full PBSE v1 pass. Reads the line art, validates, repairs 1-2px gaps,
     refines shape, writes the refined line art to `out_path`, and returns the
-    border quality report."""
+    border quality report (incl. Quality Fix 4 region-aware leak validation)."""
     gray = cv2.imread(str(lineart_path), cv2.IMREAD_GRAYSCALE)
 
     # --- S1 fields + BEFORE validation ---
@@ -217,20 +219,20 @@ def run(lineart_path: Path, out_path: Path, preprocessed_path: Path | None = Non
 
     # --- S8 AFTER validation ---
     after = analyze(refined)
-    suspected_leaks = after["suspected_gaps"]  # residual bridgeable gaps
+    suspected_leaks = after["suspected_gaps"]  # proximity signal (kept for context)
 
-    # Passes are defined as "improved and safe", not "zero open ends": real
-    # subjects (fur, hair) legitimately have open stroke terminals that are not
-    # region leaks, so demanding zero would never pass. We require that gap repair
-    # closed real gaps without adding open ends, leak risk did not increase, and
-    # structural jaggedness did not get worse.
+    # Quality Fix 4 — region-aware leak validation (flood-fill / neck test),
+    # comparing the line art before vs after border repair.
+    leak = region_leak_validator.validate(gray, refined, leak_map_path)
+
+    # Closure/shape are "improved and safe"; leak is now the region-aware verdict.
     closure_pass = bool(repaired > 0 and after["endpoints"] <= before["endpoints"])
-    leak_pass = bool(suspected_leaks <= before["suspected_gaps"])
+    leak_pass = bool(leak["leak_pass"])
     shape_pass = bool(after["jaggedness"] <= before["jaggedness"] + 1e-6)
     final_pass = bool(closure_pass and leak_pass and shape_pass)
 
     return {
-        "version": 1,
+        "version": 2,
         "fields": {
             "edge_confidence": edge_conf,
             "local_contrast": local_contrast,
@@ -246,6 +248,13 @@ def run(lineart_path: Path, out_path: Path, preprocessed_path: Path | None = Non
         "suspected_leaks": int(suspected_leaks),
         "jaggedness_score_before": before["jaggedness"],
         "jaggedness_score_after": after["jaggedness"],
+        # Quality Fix 4 — region-aware leak fields
+        "region_leak_count": leak["region_leak_count"],
+        "background_leak_count": leak["background_leak_count"],
+        "leaking_region_ids": leak["leaking_region_ids"],
+        "leak_pass_reason": leak["leak_pass_reason"],
+        "leaks_fixed_by_repair": leak["leaks_fixed_by_repair"],
+        "closed_areas": leak["closed_areas_after"],
         "closure_pass": bool(closure_pass),
         "leak_pass": bool(leak_pass),
         "shape_pass": bool(shape_pass),
