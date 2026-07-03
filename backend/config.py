@@ -58,6 +58,8 @@ ARTIFACTS = {
     # Phase 9 — advanced line art.
     "lineart_quality": "lineart_quality.json",
     "lineart_preview": "lineart_preview.png",
+    # Quality Fix 3 — Perfect Border & Shape Engine report.
+    "border_quality_report": "border_quality_report.json",
     "quality_report": "quality_report.json",
     "result_zip": "result.zip",
 }

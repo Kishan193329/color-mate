@@ -24,6 +24,7 @@ DEFAULT_INCLUDE = [
     "texture_fill_preview.png",
     "game_preview.png",
     "quality_report.json",
+    "border_quality_report.json",
 ]
 
 

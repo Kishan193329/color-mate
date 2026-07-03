@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "fields": {
+    "edge_confidence": 0.1762,
+    "local_contrast": 0.0333,
+    "edge_density": 0.09474,
+    "endpoints": 157
+  },
+  "endpoints_before": 157,
+  "endpoints_after": 141,
+  "fragments_before": 26,
+  "fragments_after": 18,
+  "suspected_gaps": 13,
+  "repaired_gaps": 7,
+  "suspected_leaks": 2,
+  "jaggedness_score_before": 0.1135,
+  "jaggedness_score_after": 0.1093,
+  "closure_pass": true,
+  "leak_pass": true,
+  "shape_pass": true,
+  "final_pass": true
+}

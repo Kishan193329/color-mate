@@ -42,6 +42,7 @@ from job_store import (
 from services import (
     advanced_lineart_generator,
     ai_mode_router,
+    border_engine,
     color_sampler,
     game_preview_renderer,
     gap_repair,
@@ -131,10 +132,18 @@ def _process(
         write_lineart_settings(job_id, {"mode": DEFAULT_LINEART_MODE})
     time.sleep(STEP_DELAY_SECONDS)
 
-    # Step 3 — Closing gaps (dust removal + gap repair, in place)
+    # Step 3 — Closing gaps: dust removal + Perfect Border & Shape Engine
+    # (PBSE v1: safe 1-2px gap repair + shape refinement + border validation).
     set_step(job_id, 2, 42)
     noise_metrics = timed(region_cleanup.remove_noise, lineart, lineart, profile)
-    repair_metrics = timed(gap_repair.repair, lineart, lineart, profile)
+    border_report = timed(border_engine.run, lineart, lineart, preprocessed, profile)
+    (folder / ARTIFACTS["border_quality_report"]).write_text(
+        json.dumps(border_report, indent=2), encoding="utf-8"
+    )
+    repair_metrics = {
+        "gaps_repaired": border_report.get("repaired_gaps", 0),
+        "line_fragments": border_report.get("fragments_after", 0),
+    }
     time.sleep(STEP_DELAY_SECONDS)
 
     # Step 4 — Detecting regions (+ tiny merge, mask, smoothed SVG,
