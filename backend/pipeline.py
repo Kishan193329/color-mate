@@ -138,7 +138,7 @@ def _process(
     noise_metrics = timed(region_cleanup.remove_noise, lineart, lineart, profile)
     border_report = timed(
         border_engine.run, lineart, lineart, preprocessed, profile,
-        _p(folder, "leak_map"),
+        _p(folder, "leak_map"), _p(folder, "merged_region_map"),
     )
     (folder / ARTIFACTS["border_quality_report"]).write_text(
         json.dumps(border_report, indent=2), encoding="utf-8"

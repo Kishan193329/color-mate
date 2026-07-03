@@ -26,6 +26,7 @@ DEFAULT_INCLUDE = [
     "quality_report.json",
     "border_quality_report.json",
     "leak_map.png",
+    "merged_region_map.png",
 ]
 
 

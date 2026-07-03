@@ -20,7 +20,7 @@ from pathlib import Path
 import cv2
 import numpy as np
 
-from services import region_leak_validator
+from services import region_leak_validator, region_split_detector
 
 # Bridge only genuinely small near-miss gaps. A 1-2px source gap shows up as a
 # slightly larger endpoint separation once strokes are thinned (thinning recedes
@@ -190,7 +190,8 @@ def analyze(gray: np.ndarray) -> dict:
 
 
 def run(lineart_path: Path, out_path: Path, preprocessed_path: Path | None = None,
-        profile: dict | None = None, leak_map_path: Path | None = None) -> dict:
+        profile: dict | None = None, leak_map_path: Path | None = None,
+        merged_map_path: Path | None = None) -> dict:
     """Full PBSE v1 pass. Reads the line art, validates, repairs 1-2px gaps,
     refines shape, writes the refined line art to `out_path`, and returns the
     border quality report (incl. Quality Fix 4 region-aware leak validation)."""
@@ -221,9 +222,17 @@ def run(lineart_path: Path, out_path: Path, preprocessed_path: Path | None = Non
     after = analyze(refined)
     suspected_leaks = after["suspected_gaps"]  # proximity signal (kept for context)
 
-    # Quality Fix 4 — region-aware leak validation (flood-fill / neck test),
+    # Quality Fix 4 — region-aware leak validation (flood-fill escape test),
     # comparing the line art before vs after border repair.
     leak = region_leak_validator.validate(gray, refined, leak_map_path)
+
+    # Quality Fix 5 — missing split detection (detection only; needs the colour
+    # working image). Finds fully-merged regions QF4's flood-fill cannot see.
+    if preprocessed_path is not None:
+        split = region_split_detector.detect(refined, preprocessed_path, merged_map_path)
+    else:
+        split = {"suspected_merged_region_count": 0,
+                 "suspected_merged_region_ids": [], "split_recommendations": []}
 
     # Closure/shape are "improved and safe"; leak is now the region-aware verdict.
     closure_pass = bool(repaired > 0 and after["endpoints"] <= before["endpoints"])
@@ -232,7 +241,7 @@ def run(lineart_path: Path, out_path: Path, preprocessed_path: Path | None = Non
     final_pass = bool(closure_pass and leak_pass and shape_pass)
 
     return {
-        "version": 2,
+        "version": 3,
         "fields": {
             "edge_confidence": edge_conf,
             "local_contrast": local_contrast,
@@ -255,6 +264,10 @@ def run(lineart_path: Path, out_path: Path, preprocessed_path: Path | None = Non
         "leak_pass_reason": leak["leak_pass_reason"],
         "leaks_fixed_by_repair": leak["leaks_fixed_by_repair"],
         "closed_areas": leak["closed_areas_after"],
+        # Quality Fix 5 — missing split detection (detection only, no auto-split)
+        "suspected_merged_region_count": split["suspected_merged_region_count"],
+        "suspected_merged_region_ids": split["suspected_merged_region_ids"],
+        "split_recommendations": split["split_recommendations"],
         "closure_pass": bool(closure_pass),
         "leak_pass": bool(leak_pass),
         "shape_pass": bool(shape_pass),

@@ -62,6 +62,8 @@ ARTIFACTS = {
     "border_quality_report": "border_quality_report.json",
     # Quality Fix 4 — region-aware leak map.
     "leak_map": "leak_map.png",
+    # Quality Fix 5 — suspected-merged-region map.
+    "merged_region_map": "merged_region_map.png",
     "quality_report": "quality_report.json",
     "result_zip": "result.zip",
 }

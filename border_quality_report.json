@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "fields": {
     "edge_confidence": 0.1762,
     "local_contrast": 0.0333,
@@ -21,6 +21,95 @@
   "leak_pass_reason": "Flood-fill test passed on all 76 closed areas: every interior region's fill stays inside its borders (no escape into a neighbour or the background).",
   "leaks_fixed_by_repair": 0,
   "closed_areas": 76,
+  "suspected_merged_region_count": 3,
+  "suspected_merged_region_ids": [
+    7,
+    68,
+    81
+  ],
+  "split_recommendations": [
+    {
+      "region_id": 7,
+      "area": 227562,
+      "bbox": [
+        308,
+        73,
+        659,
+        602
+      ],
+      "reasons": [
+        "over-large region with high internal colour variance"
+      ],
+      "evidence": {
+        "area_ratio": 77.4,
+        "color_std": 20.78,
+        "internal_edge_span": 0.168,
+        "internal_edge_density": 0.0202,
+        "compactness": 8.16,
+        "contrast": 0.121
+      },
+      "suggested_split_near_bbox": [
+        650,
+        504,
+        141,
+        50
+      ]
+    },
+    {
+      "region_id": 68,
+      "area": 101975,
+      "bbox": [
+        387,
+        624,
+        406,
+        519
+      ],
+      "reasons": [
+        "over-large region with high internal colour variance"
+      ],
+      "evidence": {
+        "area_ratio": 34.69,
+        "color_std": 20.31,
+        "internal_edge_span": 0.091,
+        "internal_edge_density": 0.013,
+        "compactness": 5.9,
+        "contrast": 0.124
+      },
+      "suggested_split_near_bbox": [
+        646,
+        967,
+        59,
+        12
+      ]
+    },
+    {
+      "region_id": 81,
+      "area": 38744,
+      "bbox": [
+        388,
+        747,
+        193,
+        395
+      ],
+      "reasons": [
+        "over-large region with high internal colour variance"
+      ],
+      "evidence": {
+        "area_ratio": 13.18,
+        "color_std": 23.49,
+        "internal_edge_span": 0.124,
+        "internal_edge_density": 0.0186,
+        "compactness": 2.91,
+        "contrast": 0.151
+      },
+      "suggested_split_near_bbox": [
+        449,
+        968,
+        52,
+        17
+      ]
+    }
+  ],
   "closure_pass": true,
   "leak_pass": true,
   "shape_pass": true,
