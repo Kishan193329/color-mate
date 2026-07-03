@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+
+# Node
+node_modules/
+dist/
+.vite/
+
+# Job artifacts (keep the folder, ignore contents)
+storage/jobs/*
+!storage/jobs/.gitkeep
+
+# Runtime AI-mode override (written by the AI settings panel)
+storage/ai_settings.json
+
+# Env / OS
+.env
+.DS_Store
+Thumbs.db
