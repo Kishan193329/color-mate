@@ -51,6 +51,7 @@ from services import (
     label_optimizer,
     lineart_quality_score,
     mask_generator,
+    material_behavior_engine,
     palette_grouper,
     preview_renderer,
     quality_analyzer,
@@ -219,6 +220,14 @@ def _process(
         )
     except Exception:  # noqa: BLE001 - analysis is best-effort, never blocks output
         pass
+    # Quality Fix 8 — material behavior layer (reuses the QF7 report + labels.npy).
+    try:
+        material_behavior_engine.analyze(
+            _p(folder, "semantic_region_report"), folder / "labels.npy",
+            _p(folder, "material_behavior_report"), _p(folder, "material_behavior_overlay"),
+        )
+    except Exception:  # noqa: BLE001
+        pass
     time.sleep(STEP_DELAY_SECONDS)
 
 
@@ -337,6 +346,10 @@ def _emit_from_region_data(job_id: str, folder: Path, region_data: dict, profile
         semantic_region_analyzer.analyze(
             region_data, _p(folder, "semantic_region_report"),
             _p(folder, "semantic_overlay"),
+        )
+        material_behavior_engine.analyze(  # QF8 reuses the QF7 report
+            _p(folder, "semantic_region_report"), folder / "labels.npy",
+            _p(folder, "material_behavior_report"), _p(folder, "material_behavior_overlay"),
         )
     except Exception:  # noqa: BLE001
         pass

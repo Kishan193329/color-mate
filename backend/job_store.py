@@ -142,7 +142,7 @@ BACKUP_FILES = [
     "quality_report.json", "lineart_quality.json", "lineart_settings.json",
     "border_quality_report.json", "leak_map.png", "merged_region_map.png",
     "split_preview_map.png", "semantic_region_report.json", "semantic_overlay.png",
-    "progress.json",
+    "material_behavior_report.json", "material_behavior_overlay.png", "progress.json",
 ]
 
 # ---------------------------------------------------------------------------

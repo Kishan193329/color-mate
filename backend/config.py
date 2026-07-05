@@ -69,6 +69,9 @@ ARTIFACTS = {
     # Quality Fix 7 — semantic region analysis (analysis only).
     "semantic_region_report": "semantic_region_report.json",
     "semantic_overlay": "semantic_overlay.png",
+    # Quality Fix 8 — material behavior layer (analysis only).
+    "material_behavior_report": "material_behavior_report.json",
+    "material_behavior_overlay": "material_behavior_overlay.png",
     "quality_report": "quality_report.json",
     "result_zip": "result.zip",
 }
