@@ -44,6 +44,7 @@ from services import (
     ai_mode_router,
     artistic_decision_engine,
     border_engine,
+    contour_character_engine,
     color_sampler,
     game_preview_renderer,
     gap_repair,
@@ -246,6 +247,29 @@ def _process(
     time.sleep(STEP_DELAY_SECONDS)
 
 
+def _apply_contour_character(job_id: str) -> None:
+    """Quality Fix 14 — give every contour its own artistic style and re-emit the
+    vector outline with adaptive Bézier/polyline geometry (smooth silhouette, organic
+    fur, crisp eyes, tapered leaf tips). Reads QF13 roles + labels; rewrites only the
+    contour geometry in outline.svg / regions.json / game_config.json. No labels,
+    palette, numbers, colours, line art, or export touched. Runs LAST so nothing
+    reverts it. Idempotent (regenerates from labels each time)."""
+    folder = job_dir(job_id)
+    art = _p(folder, "artistic_decision_report")
+    sem = _p(folder, "semantic_region_report")
+    if not (art.exists() and sem.exists() and (folder / "labels.npy").exists()
+            and _p(folder, "game_config").exists()):
+        return
+    try:
+        contour_character_engine.run(
+            folder / "labels.npy", art, sem, _p(folder, "regions"),
+            _p(folder, "game_config"), _p(folder, "outline"),
+            _p(folder, "contour_character_report"), _p(folder, "contour_character_overlay"),
+        )
+    except Exception:  # noqa: BLE001 - contour styling is best-effort, never blocks output
+        pass
+
+
 def _apply_artistic_decisions(folder: Path) -> None:
     """Quality Fix 13 — fuse the QF7/QF8/QF9 (+QF11/QF12/QF3 when present) reports
     into the per-region artistic decision record future engines obey. Reads reports
@@ -302,6 +326,7 @@ def run(job_id: str) -> None:
             "original", use_ai=True,
         )
         _apply_gradient_preservation(job_id)  # QF12 intelligent-split fidelity pass (policy-gated)
+        _apply_contour_character(job_id)      # QF14 adaptive contour styling (runs last)
         finish_job(job_id)
     except Exception as exc:  # noqa: BLE001
         fail_job(job_id, f"Processing failed: {exc}")
@@ -436,6 +461,7 @@ def rebuild_from_labels(job_id: str) -> None:
     region_data = region_detector.build_from_labels(labels, color, profile)
     _emit_from_region_data(job_id, folder, region_data, profile_name)
     np.save(folder / "labels.npy", region_data["_label_map"])
+    _apply_contour_character(job_id)  # QF14 re-styles contours after any region edit
     write_progress(job_id, [])
     finish_job(job_id)
 

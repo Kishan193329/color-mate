@@ -87,6 +87,9 @@ ARTIFACTS = {
     # Quality Fix 13 — artistic decision layer (decision only, no pixels).
     "artistic_decision_report": "artistic_decision_report.json",
     "artistic_decision_overlay": "artistic_decision_overlay.png",
+    # Quality Fix 14 — artistic contour character (adaptive vector contour geometry).
+    "contour_character_report": "contour_character_report.json",
+    "contour_character_overlay": "contour_character_overlay.png",
     "quality_report": "quality_report.json",
     "result_zip": "result.zip",
 }
