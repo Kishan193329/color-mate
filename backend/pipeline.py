@@ -47,6 +47,7 @@ from services import (
     game_preview_renderer,
     gap_repair,
     gradient_preservation_engine,
+    flow_gradient_engine,
     image_preprocess,
     json_generator,
     label_optimizer,
@@ -243,20 +244,22 @@ def _process(
 
 
 def _apply_gradient_preservation(job_id: str) -> None:
-    """Quality Fix 10 — split policy-selected high-gradient regions into stepped
-    tonal sub-regions, then rebuild everything consistently. Policy-gated: on flat
-    content nothing is selected and the output is unchanged (backward compatible)."""
+    """Quality Fix 11 — split policy-selected high-gradient regions into stepped
+    tonal sub-regions whose band boundaries FOLLOW MATERIAL FLOW (fur/vein/fold
+    direction), then rebuild everything consistently. Supersedes the QF10 luminance
+    engine while reusing its helpers. Policy-gated: on flat content nothing is
+    selected and the output is unchanged (backward compatible)."""
     folder = job_dir(job_id)
     sem = _p(folder, "semantic_region_report")
     pol = _p(folder, "processing_policy_report")
     if not (sem.exists() and pol.exists() and (folder / "labels.npy").exists()):
         return
     try:
-        new_labels, info = gradient_preservation_engine.run(
+        new_labels, info = flow_gradient_engine.run(
             sem, pol, folder / "labels.npy", _p(folder, "preprocessed"),
-            _p(folder, "gradient_preview_map"), _p(folder, "lineart"),
+            _p(folder, "flow_gradient_overlay"), _p(folder, "lineart"),
         )
-        (folder / ARTIFACTS["gradient_preservation_report"]).write_text(
+        (folder / ARTIFACTS["flow_gradient_report"]).write_text(
             json.dumps(info, indent=2), encoding="utf-8"
         )
         if info.get("changed"):
@@ -273,7 +276,7 @@ def run(job_id: str) -> None:
             job_id, DIFFICULTY_PROFILES[DEFAULT_DIFFICULTY], DEFAULT_DIFFICULTY,
             "original", use_ai=True,
         )
-        _apply_gradient_preservation(job_id)  # QF10 fidelity pass (policy-gated)
+        _apply_gradient_preservation(job_id)  # QF11 flow-aware fidelity pass (policy-gated)
         finish_job(job_id)
     except Exception as exc:  # noqa: BLE001
         fail_job(job_id, f"Processing failed: {exc}")

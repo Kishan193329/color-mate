@@ -78,6 +78,9 @@ ARTIFACTS = {
     # Quality Fix 10 — gradient preservation (pixel-changing).
     "gradient_preservation_report": "gradient_preservation_report.json",
     "gradient_preview_map": "gradient_preview_map.png",
+    # Quality Fix 11 — flow-aware gradient (pixel-changing, supersedes QF10 engine).
+    "flow_gradient_report": "flow_gradient_report.json",
+    "flow_gradient_overlay": "flow_gradient_overlay.png",
     "quality_report": "quality_report.json",
     "result_zip": "result.zip",
 }

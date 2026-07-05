@@ -1,0 +1,100 @@
+{
+  "version": 1,
+  "note": "Flow-aware gradient bands; reuses QF7 orientation + QF9 policy (no recompute).",
+  "sources": [
+    "semantic_region_report.json",
+    "material_behavior_report.json",
+    "processing_policy_report.json",
+    "gradient_preservation_report.json"
+  ],
+  "regions_selected": 9,
+  "regions_split": 9,
+  "flow_aligned_regions": 5,
+  "subregions_created": 26,
+  "flat_fill_deltaE_after": 12.37,
+  "flat_fill_ssim_after": 0.8454,
+  "split_details": [
+    {
+      "region_id": 7,
+      "label": 7,
+      "semantic_class": "FUR",
+      "bands": 4,
+      "flow_angle_deg": 158.1,
+      "coherence": 0.192,
+      "flow_aligned": false
+    },
+    {
+      "region_id": 22,
+      "label": 34,
+      "semantic_class": "WOOD",
+      "bands": 4,
+      "flow_angle_deg": 109.4,
+      "coherence": 0.533,
+      "flow_aligned": true
+    },
+    {
+      "region_id": 23,
+      "label": 35,
+      "semantic_class": "LEAF",
+      "bands": 4,
+      "flow_angle_deg": 108.7,
+      "coherence": 0.15,
+      "flow_aligned": false
+    },
+    {
+      "region_id": 27,
+      "label": 44,
+      "semantic_class": "LEAF",
+      "bands": 4,
+      "flow_angle_deg": 135.1,
+      "coherence": 0.104,
+      "flow_aligned": false
+    },
+    {
+      "region_id": 28,
+      "label": 45,
+      "semantic_class": "WOOD",
+      "bands": 4,
+      "flow_angle_deg": 108.1,
+      "coherence": 0.513,
+      "flow_aligned": true
+    },
+    {
+      "region_id": 41,
+      "label": 64,
+      "semantic_class": "CLOTH",
+      "bands": 3,
+      "flow_angle_deg": 151.0,
+      "coherence": 0.229,
+      "flow_aligned": false
+    },
+    {
+      "region_id": 44,
+      "label": 68,
+      "semantic_class": "FUR",
+      "bands": 4,
+      "flow_angle_deg": 172.1,
+      "coherence": 0.38,
+      "flow_aligned": true
+    },
+    {
+      "region_id": 45,
+      "label": 69,
+      "semantic_class": "FUR",
+      "bands": 4,
+      "flow_angle_deg": 102.7,
+      "coherence": 0.537,
+      "flow_aligned": true
+    },
+    {
+      "region_id": 50,
+      "label": 82,
+      "semantic_class": "FUR",
+      "bands": 4,
+      "flow_angle_deg": 89.3,
+      "coherence": 0.397,
+      "flow_aligned": true
+    }
+  ],
+  "changed": true
+}
