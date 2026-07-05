@@ -57,6 +57,7 @@ from services import (
     region_cleanup,
     region_detector,
     region_hierarchy,
+    semantic_region_analyzer,
     svg_generator,
     texture_preview_renderer,
     zip_exporter,
@@ -209,6 +210,15 @@ def _process(
                   "hierarchy": semantic_info.get("hierarchy")},
     )
     zip_exporter.run(folder, _p(folder, "result_zip"))
+    # Quality Fix 7 — semantic region analysis (additive; reads region_data only,
+    # never modifies regions/palette/numbers/SVG/export).
+    try:
+        semantic_region_analyzer.analyze(
+            region_data, _p(folder, "semantic_region_report"),
+            _p(folder, "semantic_overlay"),
+        )
+    except Exception:  # noqa: BLE001 - analysis is best-effort, never blocks output
+        pass
     time.sleep(STEP_DELAY_SECONDS)
 
 
@@ -323,6 +333,13 @@ def _emit_from_region_data(job_id: str, folder: Path, region_data: dict, profile
                   "hierarchy": semantic_info.get("hierarchy")},
     )
     zip_exporter.run(folder, _p(folder, "result_zip"))
+    try:  # QF7 semantic analysis (additive) — keep region-edit rebuilds in sync
+        semantic_region_analyzer.analyze(
+            region_data, _p(folder, "semantic_region_report"),
+            _p(folder, "semantic_overlay"),
+        )
+    except Exception:  # noqa: BLE001
+        pass
 
 
 def rebuild_from_labels(job_id: str) -> None:
