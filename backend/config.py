@@ -81,6 +81,9 @@ ARTIFACTS = {
     # Quality Fix 11 — flow-aware gradient (pixel-changing, supersedes QF10 engine).
     "flow_gradient_report": "flow_gradient_report.json",
     "flow_gradient_overlay": "flow_gradient_overlay.png",
+    # Quality Fix 12 — intelligent region split (pixel-changing, supersedes QF11 engine).
+    "intelligent_split_report": "intelligent_split_report.json",
+    "intelligent_split_overlay": "intelligent_split_overlay.png",
     "quality_report": "quality_report.json",
     "result_zip": "result.zip",
 }
