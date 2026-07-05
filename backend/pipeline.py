@@ -46,6 +46,7 @@ from services import (
     color_sampler,
     game_preview_renderer,
     gap_repair,
+    gradient_preservation_engine,
     image_preprocess,
     json_generator,
     label_optimizer,
@@ -241,6 +242,30 @@ def _process(
     time.sleep(STEP_DELAY_SECONDS)
 
 
+def _apply_gradient_preservation(job_id: str) -> None:
+    """Quality Fix 10 — split policy-selected high-gradient regions into stepped
+    tonal sub-regions, then rebuild everything consistently. Policy-gated: on flat
+    content nothing is selected and the output is unchanged (backward compatible)."""
+    folder = job_dir(job_id)
+    sem = _p(folder, "semantic_region_report")
+    pol = _p(folder, "processing_policy_report")
+    if not (sem.exists() and pol.exists() and (folder / "labels.npy").exists()):
+        return
+    try:
+        new_labels, info = gradient_preservation_engine.run(
+            sem, pol, folder / "labels.npy", _p(folder, "preprocessed"),
+            _p(folder, "gradient_preview_map"), _p(folder, "lineart"),
+        )
+        (folder / ARTIFACTS["gradient_preservation_report"]).write_text(
+            json.dumps(info, indent=2), encoding="utf-8"
+        )
+        if info.get("changed"):
+            np.save(folder / "labels.npy", new_labels)
+            rebuild_from_labels(job_id)  # regenerate regions/palette/numbers/SVG/previews
+    except Exception:  # noqa: BLE001 - fidelity pass is best-effort, never blocks output
+        pass
+
+
 def run(job_id: str) -> None:
     """Initial processing of an upload (medium profile, AI helper if enabled)."""
     try:
@@ -248,6 +273,7 @@ def run(job_id: str) -> None:
             job_id, DIFFICULTY_PROFILES[DEFAULT_DIFFICULTY], DEFAULT_DIFFICULTY,
             "original", use_ai=True,
         )
+        _apply_gradient_preservation(job_id)  # QF10 fidelity pass (policy-gated)
         finish_job(job_id)
     except Exception as exc:  # noqa: BLE001
         fail_job(job_id, f"Processing failed: {exc}")

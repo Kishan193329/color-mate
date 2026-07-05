@@ -1,0 +1,101 @@
+{
+  "version": 1,
+  "note": "Gradient preservation via stepped sub-regions on policy-selected regions only; reuses QF7 + QF9 (no recompute).",
+  "sources": [
+    "semantic_region_report.json",
+    "processing_policy_report.json"
+  ],
+  "regions_selected": 9,
+  "regions_split": 9,
+  "subregions_created": 18,
+  "region_labels_before": 66,
+  "region_labels_after": 84,
+  "flat_fill_deltaE_before": 18.271,
+  "flat_fill_deltaE_after": 13.222,
+  "deltaE_improvement_percent": 27.63,
+  "selected_region_deltaE_before": 32.99,
+  "selected_region_deltaE_after": 15.537,
+  "selected_region_improvement_percent": 52.9,
+  "gradient_fidelity_score": 27.63,
+  "split_details": [
+    {
+      "region_id": 7,
+      "label": 7,
+      "semantic_class": "FUR",
+      "bands": 3,
+      "future_split_strength": 0.608
+    },
+    {
+      "region_id": 22,
+      "label": 34,
+      "semantic_class": "WOOD",
+      "bands": 3,
+      "future_split_strength": 0.536
+    },
+    {
+      "region_id": 23,
+      "label": 35,
+      "semantic_class": "LEAF",
+      "bands": 3,
+      "future_split_strength": 0.732
+    },
+    {
+      "region_id": 27,
+      "label": 44,
+      "semantic_class": "LEAF",
+      "bands": 3,
+      "future_split_strength": 0.67
+    },
+    {
+      "region_id": 28,
+      "label": 45,
+      "semantic_class": "WOOD",
+      "bands": 3,
+      "future_split_strength": 0.506
+    },
+    {
+      "region_id": 41,
+      "label": 64,
+      "semantic_class": "CLOTH",
+      "bands": 3,
+      "future_split_strength": 0.523
+    },
+    {
+      "region_id": 44,
+      "label": 68,
+      "semantic_class": "FUR",
+      "bands": 3,
+      "future_split_strength": 0.672
+    },
+    {
+      "region_id": 45,
+      "label": 69,
+      "semantic_class": "FUR",
+      "bands": 3,
+      "future_split_strength": 0.67
+    },
+    {
+      "region_id": 50,
+      "label": 82,
+      "semantic_class": "FUR",
+      "bands": 3,
+      "future_split_strength": 0.739
+    }
+  ],
+  "changed": true,
+  "region_count_before": 66,
+  "region_count_after": 84,
+  "palette_before": 12,
+  "palette_after": 15,
+  "svg_before": 66,
+  "svg_after": 84,
+  "validation": {
+    "numbered": 84,
+    "total": 84,
+    "all_numbered": true,
+    "palette_valid": true,
+    "svg_all_paths_Z": true,
+    "leak_pass": true,
+    "region_leaks": 0
+  }
+}

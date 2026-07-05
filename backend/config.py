@@ -75,6 +75,9 @@ ARTIFACTS = {
     # Quality Fix 9 — processing policy layer (policy only).
     "processing_policy_report": "processing_policy_report.json",
     "processing_policy_overlay": "processing_policy_overlay.png",
+    # Quality Fix 10 — gradient preservation (pixel-changing).
+    "gradient_preservation_report": "gradient_preservation_report.json",
+    "gradient_preview_map": "gradient_preview_map.png",
     "quality_report": "quality_report.json",
     "result_zip": "result.zip",
 }
