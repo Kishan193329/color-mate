@@ -52,6 +52,7 @@ from services import (
     lineart_quality_score,
     mask_generator,
     material_behavior_engine,
+    processing_policy_engine,
     palette_grouper,
     preview_renderer,
     quality_analyzer,
@@ -228,6 +229,15 @@ def _process(
         )
     except Exception:  # noqa: BLE001
         pass
+    # Quality Fix 9 — processing policy layer (reuses the QF7 + QF8 reports).
+    try:
+        processing_policy_engine.analyze(
+            _p(folder, "semantic_region_report"), _p(folder, "material_behavior_report"),
+            folder / "labels.npy", _p(folder, "processing_policy_report"),
+            _p(folder, "processing_policy_overlay"),
+        )
+    except Exception:  # noqa: BLE001
+        pass
     time.sleep(STEP_DELAY_SECONDS)
 
 
@@ -350,6 +360,11 @@ def _emit_from_region_data(job_id: str, folder: Path, region_data: dict, profile
         material_behavior_engine.analyze(  # QF8 reuses the QF7 report
             _p(folder, "semantic_region_report"), folder / "labels.npy",
             _p(folder, "material_behavior_report"), _p(folder, "material_behavior_overlay"),
+        )
+        processing_policy_engine.analyze(  # QF9 reuses QF7 + QF8 reports
+            _p(folder, "semantic_region_report"), _p(folder, "material_behavior_report"),
+            folder / "labels.npy", _p(folder, "processing_policy_report"),
+            _p(folder, "processing_policy_overlay"),
         )
     except Exception:  # noqa: BLE001
         pass

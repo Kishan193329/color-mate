@@ -72,6 +72,9 @@ ARTIFACTS = {
     # Quality Fix 8 — material behavior layer (analysis only).
     "material_behavior_report": "material_behavior_report.json",
     "material_behavior_overlay": "material_behavior_overlay.png",
+    # Quality Fix 9 — processing policy layer (policy only).
+    "processing_policy_report": "processing_policy_report.json",
+    "processing_policy_overlay": "processing_policy_overlay.png",
     "quality_report": "quality_report.json",
     "result_zip": "result.zip",
 }
