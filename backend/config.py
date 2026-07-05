@@ -64,6 +64,8 @@ ARTIFACTS = {
     "leak_map": "leak_map.png",
     # Quality Fix 5 — suspected-merged-region map.
     "merged_region_map": "merged_region_map.png",
+    # Quality Fix 6 — advisory split preview.
+    "split_preview_map": "split_preview_map.png",
     "quality_report": "quality_report.json",
     "result_zip": "result.zip",
 }

@@ -141,7 +141,7 @@ BACKUP_FILES = [
     "preview.png", "texture_fill_preview.png", "game_preview.png",
     "quality_report.json", "lineart_quality.json", "lineart_settings.json",
     "border_quality_report.json", "leak_map.png", "merged_region_map.png",
-    "progress.json",
+    "split_preview_map.png", "progress.json",
 ]
 
 # ---------------------------------------------------------------------------

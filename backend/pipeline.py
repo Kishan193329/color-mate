@@ -139,6 +139,7 @@ def _process(
     border_report = timed(
         border_engine.run, lineart, lineart, preprocessed, profile,
         _p(folder, "leak_map"), _p(folder, "merged_region_map"),
+        _p(folder, "split_preview_map"),
     )
     (folder / ARTIFACTS["border_quality_report"]).write_text(
         json.dumps(border_report, indent=2), encoding="utf-8"

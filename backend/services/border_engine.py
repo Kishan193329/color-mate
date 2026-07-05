@@ -191,7 +191,7 @@ def analyze(gray: np.ndarray) -> dict:
 
 def run(lineart_path: Path, out_path: Path, preprocessed_path: Path | None = None,
         profile: dict | None = None, leak_map_path: Path | None = None,
-        merged_map_path: Path | None = None) -> dict:
+        merged_map_path: Path | None = None, split_preview_path: Path | None = None) -> dict:
     """Full PBSE v1 pass. Reads the line art, validates, repairs 1-2px gaps,
     refines shape, writes the refined line art to `out_path`, and returns the
     border quality report (incl. Quality Fix 4 region-aware leak validation)."""
@@ -229,10 +229,13 @@ def run(lineart_path: Path, out_path: Path, preprocessed_path: Path | None = Non
     # Quality Fix 5 — missing split detection (detection only; needs the colour
     # working image). Finds fully-merged regions QF4's flood-fill cannot see.
     if preprocessed_path is not None:
-        split = region_split_detector.detect(refined, preprocessed_path, merged_map_path)
+        split = region_split_detector.detect(
+            refined, preprocessed_path, merged_map_path, split_preview_path
+        )
     else:
-        split = {"suspected_merged_region_count": 0,
-                 "suspected_merged_region_ids": [], "split_recommendations": []}
+        split = {"suspected_merged_region_count": 0, "suspected_merged_region_ids": [],
+                 "split_recommendations": [], "split_preview_available": False,
+                 "split_preview_count": 0}
 
     # Closure/shape are "improved and safe"; leak is now the region-aware verdict.
     closure_pass = bool(repaired > 0 and after["endpoints"] <= before["endpoints"])
@@ -268,6 +271,9 @@ def run(lineart_path: Path, out_path: Path, preprocessed_path: Path | None = Non
         "suspected_merged_region_count": split["suspected_merged_region_count"],
         "suspected_merged_region_ids": split["suspected_merged_region_ids"],
         "split_recommendations": split["split_recommendations"],
+        # Quality Fix 6 — advisory split preview (no auto-split)
+        "split_preview_available": split["split_preview_available"],
+        "split_preview_count": split["split_preview_count"],
         "closure_pass": bool(closure_pass),
         "leak_pass": bool(leak_pass),
         "shape_pass": bool(shape_pass),

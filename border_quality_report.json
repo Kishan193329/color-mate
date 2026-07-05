@@ -53,7 +53,18 @@
         504,
         141,
         50
-      ]
+      ],
+      "split_line": [
+        [
+          486,
+          1277
+        ],
+        [
+          750,
+          -485
+        ]
+      ],
+      "split_line_source": "geometry-bisector"
     },
     {
       "region_id": 68,
@@ -80,7 +91,18 @@
         967,
         59,
         12
-      ]
+      ],
+      "split_line": [
+        [
+          1223,
+          590
+        ],
+        [
+          25,
+          1132
+        ]
+      ],
+      "split_line_source": "geometry-bisector"
     },
     {
       "region_id": 81,
@@ -107,9 +129,22 @@
         968,
         52,
         17
-      ]
+      ],
+      "split_line": [
+        [
+          902,
+          829
+        ],
+        [
+          73,
+          1114
+        ]
+      ],
+      "split_line_source": "geometry-bisector"
     }
   ],
+  "split_preview_available": true,
+  "split_preview_count": 3,
   "closure_pass": true,
   "leak_pass": true,
   "shape_pass": true,

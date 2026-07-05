@@ -80,7 +80,51 @@ def _region_signals(mask, interior, stats, lbl, lab, gray, edges, median_area):
     }
 
 
-def detect(lineart_gray, preprocessed_path: Path, merged_map_path: Path | None = None) -> dict:
+def _split_line(mask, interior, edges):
+    """Suggest one split line for a merged region (advisory guide, not a cut).
+
+    If a coherent source edge crosses the interior (a missing border), fit a line
+    to it. Otherwise fall back to a geometric bisector perpendicular to the
+    region's major axis. Returns (p1, p2, source) in image coordinates.
+    """
+    ys, xs = np.where(mask)
+    if len(xs) == 0:
+        return None, None, None
+    x0, x1, y0, y1 = xs.min(), xs.max(), ys.min(), ys.max()
+    diag = float(np.hypot(x1 - x0, y1 - y0)) or 1.0
+
+    ie = ((edges > 0) & interior).astype(np.uint8)
+    n2, lab2, st2, _ = cv2.connectedComponentsWithStats(ie, 8)
+    best, best_len = 0, 0.0
+    for i in range(1, n2):
+        if st2[i, cv2.CC_STAT_AREA] < 15:
+            continue
+        d = float(np.hypot(st2[i, cv2.CC_STAT_WIDTH], st2[i, cv2.CC_STAT_HEIGHT]))
+        if d > best_len:
+            best_len, best = d, i
+
+    if best > 0 and best_len >= 0.30 * diag:
+        eys, exs = np.where(lab2 == best)
+        pts = np.column_stack([exs, eys]).astype(np.float32)
+        vx, vy, px, py = cv2.fitLine(pts, cv2.DIST_L2, 0, 0.01, 0.01).ravel()
+        source = "internal-edge"
+    else:
+        pts = np.column_stack([xs, ys]).astype(np.float32)
+        mean = pts.mean(axis=0)
+        cov = np.cov((pts - mean).T)
+        evals, evecs = np.linalg.eigh(cov)
+        major = evecs[:, int(np.argmax(evals))]
+        perp = np.array([-major[1], major[0]], np.float32)  # cut across the long axis
+        vx, vy, px, py = perp[0], perp[1], mean[0], mean[1]
+        source = "geometry-bisector"
+
+    p1 = (int(px - vx * diag), int(py - vy * diag))
+    p2 = (int(px + vx * diag), int(py + vy * diag))
+    return p1, p2, source
+
+
+def detect(lineart_gray, preprocessed_path: Path, merged_map_path: Path | None = None,
+           split_preview_path: Path | None = None) -> dict:
     _, bw = cv2.threshold(lineart_gray, 127, 255, cv2.THRESH_BINARY)
     num, labels, stats, _ = cv2.connectedComponentsWithStats((bw > 0).astype(np.uint8), 4)
     h, w = lineart_gray.shape
@@ -131,6 +175,7 @@ def detect(lineart_gray, preprocessed_path: Path, merged_map_path: Path | None =
         if reasons:
             suspects.append(int(lbl))
             edge_layer[s["_ie"]] = 255
+            p1, p2, line_source = _split_line(mask, inter, edges)
             recs.append({
                 "region_id": int(lbl),
                 "area": s["area"],
@@ -145,6 +190,8 @@ def detect(lineart_gray, preprocessed_path: Path, merged_map_path: Path | None =
                     "contrast": s["contrast"],
                 },
                 "suggested_split_near_bbox": s["_edge_bbox"],
+                "split_line": [list(p1), list(p2)] if p1 else None,
+                "split_line_source": line_source,
             })
 
     if merged_map_path is not None:
@@ -155,8 +202,30 @@ def detect(lineart_gray, preprocessed_path: Path, merged_map_path: Path | None =
         canvas[edge_layer > 0] = (0, 170, 255)           # missing-border edge evidence (orange)
         cv2.imwrite(str(merged_map_path), canvas)
 
+    # Quality Fix 6 — advisory split preview: original background + highlighted
+    # suspects + a clearly drawn suggested split line per region.
+    split_preview_count = sum(1 for r in recs if r.get("split_line"))
+    if split_preview_path is not None:
+        prev = cv2.addWeighted(img, 0.7, np.full_like(img, 255), 0.3, 0)  # lighten
+        prev[labels == 0] = (40, 40, 40)                 # line art for context
+        overlay = prev.copy()
+        for lbl in suspects:
+            overlay[labels == lbl] = (90, 90, 235)        # suspect tint (red)
+        prev = cv2.addWeighted(overlay, 0.30, prev, 0.70, 0)
+        for r in recs:
+            sl = r.get("split_line")
+            if not sl:
+                continue
+            line = np.zeros((h, w), np.uint8)
+            cv2.line(line, tuple(sl[0]), tuple(sl[1]), 255, 6)
+            line = cv2.bitwise_and(line, (labels == r["region_id"]).astype(np.uint8) * 255)
+            prev[line > 0] = (0, 0, 255)                  # bold red split guide
+        cv2.imwrite(str(split_preview_path), prev)
+
     return {
         "suspected_merged_region_count": len(suspects),
         "suspected_merged_region_ids": suspects,
         "split_recommendations": recs,
+        "split_preview_available": split_preview_count > 0,
+        "split_preview_count": split_preview_count,
     }
