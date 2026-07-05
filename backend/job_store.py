@@ -146,7 +146,8 @@ BACKUP_FILES = [
     "processing_policy_report.json", "processing_policy_overlay.png",
     "gradient_preservation_report.json", "gradient_preview_map.png",
     "flow_gradient_report.json", "flow_gradient_overlay.png",
-    "intelligent_split_report.json", "intelligent_split_overlay.png", "progress.json",
+    "intelligent_split_report.json", "intelligent_split_overlay.png",
+    "artistic_decision_report.json", "artistic_decision_overlay.png", "progress.json",
 ]
 
 # ---------------------------------------------------------------------------

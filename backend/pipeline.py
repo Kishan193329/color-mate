@@ -42,6 +42,7 @@ from job_store import (
 from services import (
     advanced_lineart_generator,
     ai_mode_router,
+    artistic_decision_engine,
     border_engine,
     color_sampler,
     game_preview_renderer,
@@ -241,7 +242,28 @@ def _process(
         )
     except Exception:  # noqa: BLE001
         pass
+    _apply_artistic_decisions(folder)  # QF13 — decision brain (reads reports only)
     time.sleep(STEP_DELAY_SECONDS)
+
+
+def _apply_artistic_decisions(folder: Path) -> None:
+    """Quality Fix 13 — fuse the QF7/QF8/QF9 (+QF11/QF12/QF3 when present) reports
+    into the per-region artistic decision record future engines obey. Reads reports
+    only; writes just its own two new artifacts — no regions/palette/SVG/numbers/
+    export are touched."""
+    sem = _p(folder, "semantic_region_report")
+    pol = _p(folder, "processing_policy_report")
+    if not (sem.exists() and pol.exists() and (folder / "labels.npy").exists()):
+        return
+    try:
+        artistic_decision_engine.analyze(
+            sem, _p(folder, "material_behavior_report"), pol, folder / "labels.npy",
+            _p(folder, "artistic_decision_report"), _p(folder, "artistic_decision_overlay"),
+            _p(folder, "flow_gradient_report"), _p(folder, "intelligent_split_report"),
+            _p(folder, "border_quality_report"),
+        )
+    except Exception:  # noqa: BLE001 - decision layer is best-effort, never blocks output
+        pass
 
 
 def _apply_gradient_preservation(job_id: str) -> None:
@@ -398,6 +420,7 @@ def _emit_from_region_data(job_id: str, folder: Path, region_data: dict, profile
             folder / "labels.npy", _p(folder, "processing_policy_report"),
             _p(folder, "processing_policy_overlay"),
         )
+        _apply_artistic_decisions(folder)  # QF13 refreshes decisions post-edit
     except Exception:  # noqa: BLE001
         pass
 

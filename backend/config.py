@@ -84,6 +84,9 @@ ARTIFACTS = {
     # Quality Fix 12 — intelligent region split (pixel-changing, supersedes QF11 engine).
     "intelligent_split_report": "intelligent_split_report.json",
     "intelligent_split_overlay": "intelligent_split_overlay.png",
+    # Quality Fix 13 — artistic decision layer (decision only, no pixels).
+    "artistic_decision_report": "artistic_decision_report.json",
+    "artistic_decision_overlay": "artistic_decision_overlay.png",
     "quality_report": "quality_report.json",
     "result_zip": "result.zip",
 }
