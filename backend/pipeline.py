@@ -29,6 +29,7 @@ from config import (
     PROCESSING_STEPS,
     SEMANTIC_MODE,
 )
+from core import palette_budget
 from job_store import (
     fail_job,
     finish_job,
@@ -77,6 +78,28 @@ STEP_DELAY_SECONDS = 0.6
 
 def _p(folder: Path, logical: str) -> Path:
     return folder / ARTIFACTS[logical]
+
+
+def _palette_budget(folder: Path) -> tuple[dict | None, dict | None]:
+    """Per-region LAB merge thresholds + material categories from the brain reports
+    (Commercial Opt 1).
+
+    Reads QF13 `artistic_decision_report` + QF12 `intelligent_split_report` from the
+    job folder and returns (label -> threshold, label -> category) for
+    `palette_grouper.group`. Returns (None, None) when the reports are absent (e.g.
+    the first `_process` pass, before the brain has run) so grouping transparently
+    falls back to the flat delta."""
+    art = _p(folder, "artistic_decision_report")
+    if not art.exists():
+        return None, None
+    try:
+        artistic = json.loads(art.read_text(encoding="utf-8"))
+        spl = _p(folder, "intelligent_split_report")
+        split = json.loads(spl.read_text(encoding="utf-8")) if spl.exists() else {}
+        delta, cats = palette_budget.build_label_budget(artistic, split)
+        return (delta or None), (cats or None)
+    except (ValueError, OSError):
+        return None, None
 
 
 def _process(
@@ -166,7 +189,8 @@ def _process(
     timed(mask_generator.run, region_data, _p(folder, "region_mask"))
     timed(svg_generator.run, region_data, _p(folder, "outline"))
     timed(color_sampler.sample, region_data)
-    timed(palette_grouper.group, region_data)
+    _pb_delta, _pb_cat = _palette_budget(folder)
+    timed(palette_grouper.group, region_data, label_budget=_pb_delta, label_category=_pb_cat)
     # Phase 7 — optional semantic layer (helper only; never breaks processing).
     semantic_info: dict = {"mode": "rules", "hierarchy": None}
     try:
@@ -400,7 +424,8 @@ def _emit_from_region_data(job_id: str, folder: Path, region_data: dict, profile
     mask_generator.run(region_data, _p(folder, "region_mask"))
     svg_generator.run(region_data, _p(folder, "outline"))
     color_sampler.sample(region_data)
-    palette_grouper.group(region_data)
+    _pb_delta, _pb_cat = _palette_budget(folder)
+    palette_grouper.group(region_data, label_budget=_pb_delta, label_category=_pb_cat)
     semantic_info = {"mode": "rules", "hierarchy": None}
     try:
         semantic_info = region_hierarchy.apply_all(

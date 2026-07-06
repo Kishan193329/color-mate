@@ -121,7 +121,7 @@ def _split_region(new_labels, lbl, lab, angle, coherence, material, next_label,
     mask = new_labels == lbl
     ys, xs = np.where(mask)
     if len(xs) < MIN_REGION_AREA:                 # protect small details
-        return 1, next_label, False, 0
+        return 1, next_label, False, 0, []
     pad = 6
     x0, x1 = max(0, xs.min() - pad), min(lab.shape[1], xs.max() + pad + 1)
     y0, y1 = max(0, ys.min() - pad), min(lab.shape[0], ys.max() + pad + 1)
@@ -133,7 +133,7 @@ def _split_region(new_labels, lbl, lab, angle, coherence, material, next_label,
     k = _pick_k(Lc[mc].astype(np.float32), ac[mc].astype(np.float32),
                 bc[mc].astype(np.float32), kcap, min_luma)
     if k < 2:
-        return 1, next_label, False, 0
+        return 1, next_label, False, 0, []
 
     # Full-Lab clustering: separates stripe / shadow / highlight / base by colour.
     # L is up-weighted so clustering still respects luminance structure (SSIM).
@@ -167,6 +167,7 @@ def _split_region(new_labels, lbl, lab, angle, coherence, material, next_label,
     sizes = sorted(((c, int(((bu == c) & mc).sum())) for c in range(k)),
                    key=lambda t: t[1], reverse=True)
     made, created = 1, 0
+    child_labels: list[int] = []                   # new labels created (for palette inheritance)
     for c, sz in sizes[1:]:                        # skip the largest (stays base)
         if sz < min_cluster or created >= new_labels_cap:
             continue
@@ -177,10 +178,11 @@ def _split_region(new_labels, lbl, lab, angle, coherence, material, next_label,
         full = np.zeros(new_labels.shape, bool)
         full[y0:y1, x0:x1] = cmask > 0
         new_labels[full] = next_label
+        child_labels.append(int(next_label))
         next_label += 1
         made += 1
         created += 1
-    return made, next_label, used_flow, k
+    return made, next_label, used_flow, k, child_labels
 
 
 def _selection_plan(artistic_report_path: Path | None,
@@ -247,14 +249,14 @@ def run(semantic_report_path: Path, policy_report_path: Path, labels_path: Path,
             # or a large graded background) with a relaxed luma floor. PRIMARY regions
             # keep the default behaviour.
             cap = int(entry.get("max_subregions", EXPANSION_MAX_SUBREGIONS_DEFAULT))
-            made, next_label, used_flow, k = _split_region(
+            made, next_label, used_flow, k, children = _split_region(
                 new_labels, int(lbl), lab, flow_angle, coh,
                 entry.get("semantic_class"), next_label,
                 kcap_override=max(2, min(cap, 3)), min_luma=EXPANSION_MIN_LUMA,
                 new_labels_cap=max(1, min(cap, 3) - 1), min_cluster=EXPANSION_MIN_CLUSTER,
             )
         else:
-            made, next_label, used_flow, k = _split_region(
+            made, next_label, used_flow, k, children = _split_region(
                 new_labels, int(lbl), lab, flow_angle, coh,
                 entry.get("semantic_class"), next_label,
             )
@@ -264,8 +266,9 @@ def run(semantic_report_path: Path, policy_report_path: Path, labels_path: Path,
                 "region_id": rid, "label": int(lbl),
                 "semantic_class": entry.get("semantic_class"),
                 "split_style": entry.get("split_style"),   # from QF13 (advisory)
-                "split_tier": tier,                        # PRIMARY | GRADIENT_EXPANSION
+                "split_tier": tier,                        # PRIMARY | GRADIENT_EXPANSION | BACKGROUND_EXPANSION
                 "clusters": k, "subregions": made,
+                "child_labels": children,                  # new labels -> inherit parent material (palette)
                 "flow_angle_deg": round(flow_angle % 180.0, 1),
                 "coherence": round(coh, 3), "flow_aligned": bool(used_flow),
             })
