@@ -301,7 +301,8 @@ def analyze(semantic_report_path: Path, material_report_path: Path,
             report_path: Path, overlay_path: Path,
             flow_report_path: Path | None = None,
             split_report_path: Path | None = None,
-            border_report_path: Path | None = None) -> dict:
+            border_report_path: Path | None = None,
+            profile: dict | None = None) -> dict:
     semantic = _load(semantic_report_path)
     material = _load(material_report_path)
     policy = _load(policy_report_path)
@@ -311,6 +312,16 @@ def analyze(semantic_report_path: Path, material_report_path: Path,
     labels = np.load(labels_path)
     h, w = labels.shape
     total = h * w
+
+    # Output-profile gradient-preservation gates (Product Sprint 1). Absent /
+    # medium profile falls back to the module defaults => identical behaviour.
+    profile = profile or {}
+    exp_min_area = profile.get("expansion_min_area", EXPANSION_MIN_AREA)
+    exp_min_var = profile.get("expansion_min_variance", EXPANSION_MIN_VARIANCE)
+    exp_max_sub = profile.get("expansion_max_subregions", EXPANSION_MAX_SUBREGIONS)
+    bg_min_area = profile.get("expansion_bg_min_area", EXPANSION_BG_MIN_AREA)
+    bg_min_var = profile.get("expansion_bg_min_variance", EXPANSION_BG_MIN_VARIANCE)
+    bg_max_sub = profile.get("expansion_bg_max_subregions", EXPANSION_BG_MAX_SUBREGIONS)
 
     sem_by_id = {r["region_id"]: r for r in semantic.get("regions", [])}
     mat_by_id = {r["region_id"]: r for r in material.get("regions", [])}
@@ -448,12 +459,12 @@ def analyze(semantic_report_path: Path, material_report_path: Path,
             # Appended AFTER all primary entries so primary splits stay byte-identical.
             cvar = float(s.get("color_variance", 0.0))
             exp_tier, exp_cap = None, 0
-            if (role in EXPANSION_ROLES and size >= EXPANSION_MIN_AREA
-                    and cvar >= EXPANSION_MIN_VARIANCE and bool(p.get("preserve_gradient"))):
-                exp_tier, exp_cap = "GRADIENT_EXPANSION", EXPANSION_MAX_SUBREGIONS
-            elif (role in EXPANSION_BG_ROLES and size >= EXPANSION_BG_MIN_AREA
-                    and cvar >= EXPANSION_BG_MIN_VARIANCE):
-                exp_tier, exp_cap = "BACKGROUND_EXPANSION", EXPANSION_BG_MAX_SUBREGIONS
+            if (role in EXPANSION_ROLES and size >= exp_min_area
+                    and cvar >= exp_min_var and bool(p.get("preserve_gradient"))):
+                exp_tier, exp_cap = "GRADIENT_EXPANSION", exp_max_sub
+            elif (role in EXPANSION_BG_ROLES and size >= bg_min_area
+                    and cvar >= bg_min_var):
+                exp_tier, exp_cap = "BACKGROUND_EXPANSION", bg_max_sub
             if lbl is not None and exp_tier is not None:
                 expansion_entries.append({
                     "region_id": rid,

@@ -25,7 +25,9 @@ from config import (
     ARTIFACTS,
     DEFAULT_DIFFICULTY,
     DEFAULT_LINEART_MODE,
+    DEFAULT_PROFILE,
     DIFFICULTY_PROFILES,
+    OUTPUT_PROFILES,
     PROCESSING_STEPS,
     SEMANTIC_MODE,
 )
@@ -80,9 +82,23 @@ def _p(folder: Path, logical: str) -> Path:
     return folder / ARTIFACTS[logical]
 
 
-def _palette_budget(folder: Path) -> tuple[dict | None, dict | None]:
+def _profile_material_budget(profile: dict) -> dict:
+    """The profile's per-material palette budget: the base CO1 table scaled by the
+    profile's `palette_budget_scale` (1.0 = current medium table, exact)."""
+    scale = float((profile or {}).get("palette_budget_scale", 1.0))
+    return {k: v * scale for k, v in palette_budget.MATERIAL_BUDGET.items()}
+
+
+def _profile_material_kcap(profile: dict) -> dict:
+    """The profile's per-material split k-cap: the base QF12 table offset by
+    `texture_kcap_delta` (0 = current medium table, exact), floored at 2."""
+    delta = int((profile or {}).get("texture_kcap_delta", 0))
+    return {k: max(2, v + delta) for k, v in intelligent_split_engine.MATERIAL_KCAP.items()}
+
+
+def _palette_budget(folder: Path, profile: dict | None = None) -> tuple[dict | None, dict | None]:
     """Per-region LAB merge thresholds + material categories from the brain reports
-    (Commercial Opt 1).
+    (Commercial Opt 1), using the chosen profile's per-material budget.
 
     Reads QF13 `artistic_decision_report` + QF12 `intelligent_split_report` from the
     job folder and returns (label -> threshold, label -> category) for
@@ -96,7 +112,9 @@ def _palette_budget(folder: Path) -> tuple[dict | None, dict | None]:
         artistic = json.loads(art.read_text(encoding="utf-8"))
         spl = _p(folder, "intelligent_split_report")
         split = json.loads(spl.read_text(encoding="utf-8")) if spl.exists() else {}
-        delta, cats = palette_budget.build_label_budget(artistic, split)
+        delta, cats = palette_budget.build_label_budget(
+            artistic, split, budget=_profile_material_budget(profile or {})
+        )
         return (delta or None), (cats or None)
     except (ValueError, OSError):
         return None, None
@@ -189,7 +207,7 @@ def _process(
     timed(mask_generator.run, region_data, _p(folder, "region_mask"))
     timed(svg_generator.run, region_data, _p(folder, "outline"))
     timed(color_sampler.sample, region_data)
-    _pb_delta, _pb_cat = _palette_budget(folder)
+    _pb_delta, _pb_cat = _palette_budget(folder, profile)
     timed(palette_grouper.group, region_data, label_budget=_pb_delta, label_category=_pb_cat)
     # Phase 7 — optional semantic layer (helper only; never breaks processing).
     semantic_info: dict = {"mode": "rules", "hierarchy": None}
@@ -267,7 +285,7 @@ def _process(
         )
     except Exception:  # noqa: BLE001
         pass
-    _apply_artistic_decisions(folder)  # QF13 — decision brain (reads reports only)
+    _apply_artistic_decisions(folder, profile)  # QF13 — decision brain (reads reports only)
     time.sleep(STEP_DELAY_SECONDS)
 
 
@@ -294,11 +312,12 @@ def _apply_contour_character(job_id: str) -> None:
         pass
 
 
-def _apply_artistic_decisions(folder: Path) -> None:
+def _apply_artistic_decisions(folder: Path, profile: dict | None = None) -> None:
     """Quality Fix 13 — fuse the QF7/QF8/QF9 (+QF11/QF12/QF3 when present) reports
     into the per-region artistic decision record future engines obey. Reads reports
     only; writes just its own two new artifacts — no regions/palette/SVG/numbers/
-    export are touched."""
+    export are touched. The `profile` supplies the gradient-preservation gates
+    (expansion thresholds); medium reproduces the module defaults exactly."""
     sem = _p(folder, "semantic_region_report")
     pol = _p(folder, "processing_policy_report")
     if not (sem.exists() and pol.exists() and (folder / "labels.npy").exists()):
@@ -308,13 +327,13 @@ def _apply_artistic_decisions(folder: Path) -> None:
             sem, _p(folder, "material_behavior_report"), pol, folder / "labels.npy",
             _p(folder, "artistic_decision_report"), _p(folder, "artistic_decision_overlay"),
             _p(folder, "flow_gradient_report"), _p(folder, "intelligent_split_report"),
-            _p(folder, "border_quality_report"),
+            _p(folder, "border_quality_report"), profile=profile,
         )
     except Exception:  # noqa: BLE001 - decision layer is best-effort, never blocks output
         pass
 
 
-def _apply_gradient_preservation(job_id: str) -> None:
+def _apply_gradient_preservation(job_id: str, profile: dict | None = None) -> None:
     """Quality Fix 12 — split the regions the QF13 brain selected (via its
     authoritative split_plan) by INTELLIGENT Lab k-means clustering
     (stripe/shadow/highlight/base separated by colour), keep coherent sub-regions
@@ -333,6 +352,9 @@ def _apply_gradient_preservation(job_id: str) -> None:
             _p(folder, "intelligent_split_overlay"), _p(folder, "lineart"),
             _p(folder, "material_behavior_report"),
             artistic_report_path=_p(folder, "artistic_decision_report"),  # QF13 authority
+            material_kcap=_profile_material_kcap(profile or {}),
+            min_luma=(profile or {}).get("expansion_min_luma"),
+            min_cluster=(profile or {}).get("expansion_min_cluster"),
         )
         (folder / ARTIFACTS["intelligent_split_report"]).write_text(
             json.dumps(info, indent=2), encoding="utf-8"
@@ -344,15 +366,16 @@ def _apply_gradient_preservation(job_id: str) -> None:
         pass
 
 
-def run(job_id: str) -> None:
-    """Initial processing of an upload (medium profile, AI helper if enabled)."""
+def run(job_id: str, profile_name: str = DEFAULT_PROFILE) -> None:
+    """Initial processing of an upload with the chosen output profile (default
+    medium, AI helper if enabled). The profile drives every tunable end to end."""
+    if profile_name not in OUTPUT_PROFILES:
+        profile_name = DEFAULT_PROFILE
+    profile = OUTPUT_PROFILES[profile_name]
     try:
-        _process(
-            job_id, DIFFICULTY_PROFILES[DEFAULT_DIFFICULTY], DEFAULT_DIFFICULTY,
-            "original", use_ai=True,
-        )
-        _apply_gradient_preservation(job_id)  # QF12 intelligent-split fidelity pass (policy-gated)
-        _apply_contour_character(job_id)      # QF14 adaptive contour styling (runs last)
+        _process(job_id, profile, profile_name, "original", use_ai=True)
+        _apply_gradient_preservation(job_id, profile)  # QF12 intelligent-split fidelity pass
+        _apply_contour_character(job_id)               # QF14 adaptive contour styling (runs last)
         finish_job(job_id)
     except Exception as exc:  # noqa: BLE001
         fail_job(job_id, f"Processing failed: {exc}")
@@ -421,10 +444,11 @@ def _job_difficulty(job_id: str) -> str:
 def _emit_from_region_data(job_id: str, folder: Path, region_data: dict, profile_name: str) -> None:
     """Regenerate every region-derived artifact from an (edited) region_data.
     Shared by the region tools. Lines/line art are untouched here."""
+    profile = region_data.get("_profile")
     mask_generator.run(region_data, _p(folder, "region_mask"))
     svg_generator.run(region_data, _p(folder, "outline"))
     color_sampler.sample(region_data)
-    _pb_delta, _pb_cat = _palette_budget(folder)
+    _pb_delta, _pb_cat = _palette_budget(folder, profile)
     palette_grouper.group(region_data, label_budget=_pb_delta, label_category=_pb_cat)
     semantic_info = {"mode": "rules", "hierarchy": None}
     try:
@@ -472,7 +496,7 @@ def _emit_from_region_data(job_id: str, folder: Path, region_data: dict, profile
             folder / "labels.npy", _p(folder, "processing_policy_report"),
             _p(folder, "processing_policy_overlay"),
         )
-        _apply_artistic_decisions(folder)  # QF13 refreshes decisions post-edit
+        _apply_artistic_decisions(folder, profile)  # QF13 refreshes decisions post-edit
     except Exception:  # noqa: BLE001
         pass
 

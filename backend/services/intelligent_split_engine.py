@@ -110,7 +110,7 @@ def _pick_k(Lv: np.ndarray, av: np.ndarray, bv: np.ndarray, kcap: int,
 
 def _split_region(new_labels, lbl, lab, angle, coherence, material, next_label,
                   kcap_override=None, min_luma=MIN_LUMA_RANGE, new_labels_cap=NEW_LABELS_CAP,
-                  min_cluster=MIN_CLUSTER):
+                  min_cluster=MIN_CLUSTER, material_kcap=None):
     """Cluster one region in Lab, keep coherent components. Returns
     (n_subregions, next_label, flow_aligned, k).
 
@@ -129,7 +129,8 @@ def _split_region(new_labels, lbl, lab, angle, coherence, material, next_label,
     mc = mask[y0:y1, x0:x1]
     Lc, ac, bc = labc[:, :, 0], labc[:, :, 1], labc[:, :, 2]
 
-    kcap = kcap_override if kcap_override is not None else MATERIAL_KCAP.get(material, 3)
+    kcap = kcap_override if kcap_override is not None \
+        else (material_kcap or MATERIAL_KCAP).get(material, 3)
     k = _pick_k(Lc[mc].astype(np.float32), ac[mc].astype(np.float32),
                 bc[mc].astype(np.float32), kcap, min_luma)
     if k < 2:
@@ -218,7 +219,16 @@ def run(semantic_report_path: Path, policy_report_path: Path, labels_path: Path,
         preprocessed_path: Path, overlay_path: Path | None = None,
         lineart_path: Path | None = None,
         material_report_path: Path | None = None,
-        artistic_report_path: Path | None = None) -> tuple[np.ndarray, dict]:
+        artistic_report_path: Path | None = None,
+        material_kcap: dict | None = None,
+        min_luma: float | None = None,
+        min_cluster: int | None = None) -> tuple[np.ndarray, dict]:
+    # Output-profile texture / highlight parameters (Product Sprint 1). Absent /
+    # medium profile falls back to the module defaults => identical behaviour.
+    kcap_table = material_kcap or MATERIAL_KCAP
+    exp_min_luma = EXPANSION_MIN_LUMA if min_luma is None else float(min_luma)
+    exp_min_cluster = EXPANSION_MIN_CLUSTER if min_cluster is None else int(min_cluster)
+
     semantic = json.loads(Path(semantic_report_path).read_text(encoding="utf-8"))
     labels = np.load(labels_path).astype(np.int32)
     bgr = cv2.imread(str(preprocessed_path), cv2.IMREAD_COLOR)
@@ -247,18 +257,21 @@ def run(semantic_report_path: Path, policy_report_path: Path, labels_path: Path,
         if tier in EXPANSION_TIERS:
             # QF13-permitted bounded tonal split (large body/fur/face subject area,
             # or a large graded background) with a relaxed luma floor. PRIMARY regions
-            # keep the default behaviour.
+            # keep the default behaviour. `cap` (2–3 medium; up to 4 for high-fidelity
+            # profiles) comes from QF13's per-profile max_subregions.
             cap = int(entry.get("max_subregions", EXPANSION_MAX_SUBREGIONS_DEFAULT))
             made, next_label, used_flow, k, children = _split_region(
                 new_labels, int(lbl), lab, flow_angle, coh,
                 entry.get("semantic_class"), next_label,
-                kcap_override=max(2, min(cap, 3)), min_luma=EXPANSION_MIN_LUMA,
-                new_labels_cap=max(1, min(cap, 3) - 1), min_cluster=EXPANSION_MIN_CLUSTER,
+                kcap_override=max(2, cap), min_luma=exp_min_luma,
+                new_labels_cap=max(1, cap - 1), min_cluster=exp_min_cluster,
+                material_kcap=kcap_table,
             )
         else:
             made, next_label, used_flow, k, children = _split_region(
                 new_labels, int(lbl), lab, flow_angle, coh,
                 entry.get("semantic_class"), next_label,
+                material_kcap=kcap_table,
             )
         if made > 1:
             split_mask |= region_mask

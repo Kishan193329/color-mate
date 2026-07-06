@@ -94,48 +94,146 @@ ARTIFACTS = {
     "result_zip": "result.zip",
 }
 
-# Difficulty profiles (Phase 5). Each tunes the whole pipeline: line-art
-# sensitivity, dust/gap handling, region size floor, tiny-region merging,
-# contour smoothing, and label sizing.
+# ── Output profiles (Product Sprint 1) ──────────────────────────────────────
+# The engine is now a configurable product: a chosen profile drives every tunable
+# in one place. Each profile declares eight product BUDGETS (human-facing levels)
+# and the concrete engine parameters that realise them:
 #
-# Easy   -> larger regions, fewer details, bigger labels.
-# Medium -> balanced (default).
-# Hard   -> more details, smaller regions allowed.
-DIFFICULTY_PROFILES = {
+#   palette budget        -> palette_delta (fallback) + palette_budget_scale
+#                            (scales core.palette_budget.MATERIAL_BUDGET; higher
+#                             scale = looser merge = fewer colours)
+#   region budget         -> min_area_frac / min_area_abs (region size floor)
+#   simplification budget -> smooth_passes + dust/gap kernels (line/contour cleanup)
+#   gradient preservation -> QF13 expansion gates (expansion_min_variance / _area,
+#                            expansion_bg_*) — lower = more tonal splits kept
+#   texture preservation  -> texture_kcap_delta (offsets QF12 MATERIAL_KCAP; more
+#                            k = more material bands)
+#   highlight preservation-> expansion_min_cluster / _min_luma (QF12) + FACIAL
+#                            budget (kept strict via palette_budget_scale)
+#   svg precision         -> smooth_eps_frac / smooth_passes (lower eps = crisper)
+#   number density        -> label_min_area / label_scale (smaller floor = more #s)
+#
+# MEDIUM reproduces the current engine output EXACTLY (every value equals the
+# pre-sprint constant / module default). EASY..MAXIMUM_FIDELITY span the range.
+# No algorithm changes: profiles only select existing parameters.
+OUTPUT_PROFILES = {
     "easy": {
-        "lineart_block": 11, "lineart_c": 7,
-        "dust_kernel": 3,
-        "gap_kernel": 5, "gap_dilate": 1,
+        "label": "Easy",
+        "description": "Fewest colours & regions, boldest simplification — quick, forgiving.",
+        "budgets": {
+            "palette": "minimal", "region": "minimal", "simplification": "aggressive",
+            "gradient_preservation": "low", "texture_preservation": "low",
+            "highlight_preservation": "balanced", "svg_precision": "low",
+            "number_density": "low",
+        },
+        "lineart_block": 11, "lineart_c": 7, "dust_kernel": 3, "gap_kernel": 5, "gap_dilate": 1,
         "min_area_frac": 0.0020, "min_area_abs": 200,
         "smooth_eps_frac": 0.0040, "smooth_passes": 2,
         "label_min_area": 1200, "label_scale": 1.35,
-        "palette_delta": 28,
+        "palette_delta": 28, "palette_budget_scale": 1.45,
+        "expansion_min_variance": 12.0, "expansion_min_area": 20000,
+        "expansion_bg_min_variance": 16.0, "expansion_bg_min_area": 60000,
+        "expansion_max_subregions": 2, "expansion_bg_max_subregions": 2,
+        "expansion_min_cluster": 900, "expansion_min_luma": 8.0,
+        "texture_kcap_delta": -2,
     },
     "medium": {
-        "lineart_block": 9, "lineart_c": 7,
-        "dust_kernel": 2,
-        "gap_kernel": 3, "gap_dilate": 1,
+        "label": "Medium",
+        "description": "Balanced default — the shipped engine output (unchanged).",
+        "budgets": {
+            "palette": "balanced", "region": "balanced", "simplification": "balanced",
+            "gradient_preservation": "balanced", "texture_preservation": "balanced",
+            "highlight_preservation": "balanced", "svg_precision": "balanced",
+            "number_density": "balanced",
+        },
+        "lineart_block": 9, "lineart_c": 7, "dust_kernel": 2, "gap_kernel": 3, "gap_dilate": 1,
         "min_area_frac": 0.0008, "min_area_abs": 90,
         "smooth_eps_frac": 0.0020, "smooth_passes": 1,
         "label_min_area": 500, "label_scale": 1.0,
-        # Base LAB merge threshold (fallback). Commercial Optimization 1 replaced the
-        # VI2 global fine delta (12) with per-material palette budgets
-        # (core.palette_budget): the brain now sets a per-region threshold, so this
-        # profile value is only the fallback for regions without a budget entry.
-        "palette_delta": 18,
+        # palette_delta is only the fallback: per-material budgets (Commercial Opt 1)
+        # set the real per-region merge threshold; scale 1.0 = the current table.
+        "palette_delta": 18, "palette_budget_scale": 1.0,
+        "expansion_min_variance": 4.0, "expansion_min_area": 5000,
+        "expansion_bg_min_variance": 8.0, "expansion_bg_min_area": 20000,
+        "expansion_max_subregions": 3, "expansion_bg_max_subregions": 2,
+        "expansion_min_cluster": 450, "expansion_min_luma": 5.0,
+        "texture_kcap_delta": 0,
     },
     "hard": {
-        "lineart_block": 7, "lineart_c": 5,
-        "dust_kernel": 2,
-        "gap_kernel": 3, "gap_dilate": 0,
+        "label": "Hard",
+        "description": "More regions & colours, crisper contours — for detailed painters.",
+        "budgets": {
+            "palette": "high", "region": "high", "simplification": "low",
+            "gradient_preservation": "high", "texture_preservation": "balanced",
+            "highlight_preservation": "high", "svg_precision": "high",
+            "number_density": "high",
+        },
+        "lineart_block": 7, "lineart_c": 5, "dust_kernel": 2, "gap_kernel": 3, "gap_dilate": 0,
         "min_area_frac": 0.0003, "min_area_abs": 50,
         "smooth_eps_frac": 0.0012, "smooth_passes": 0,
         "label_min_area": 250, "label_scale": 0.85,
-        "palette_delta": 10,
+        "palette_delta": 10, "palette_budget_scale": 0.78,
+        "expansion_min_variance": 3.0, "expansion_min_area": 4000,
+        "expansion_bg_min_variance": 6.0, "expansion_bg_min_area": 16000,
+        "expansion_max_subregions": 3, "expansion_bg_max_subregions": 2,
+        "expansion_min_cluster": 380, "expansion_min_luma": 4.5,
+        "texture_kcap_delta": 0,
+    },
+    "professional": {
+        "label": "Professional",
+        "description": "Print-grade: fine regions, rich palette, high-precision vector.",
+        "budgets": {
+            "palette": "high", "region": "high", "simplification": "minimal",
+            "gradient_preservation": "high", "texture_preservation": "high",
+            "highlight_preservation": "high", "svg_precision": "maximum",
+            "number_density": "high",
+        },
+        "lineart_block": 7, "lineart_c": 5, "dust_kernel": 2, "gap_kernel": 3, "gap_dilate": 0,
+        "min_area_frac": 0.0002, "min_area_abs": 40,
+        "smooth_eps_frac": 0.0009, "smooth_passes": 0,
+        "label_min_area": 180, "label_scale": 0.80,
+        "palette_delta": 8, "palette_budget_scale": 0.62,
+        "expansion_min_variance": 2.5, "expansion_min_area": 3500,
+        "expansion_bg_min_variance": 5.0, "expansion_bg_min_area": 13000,
+        "expansion_max_subregions": 4, "expansion_bg_max_subregions": 3,
+        "expansion_min_cluster": 320, "expansion_min_luma": 4.0,
+        "texture_kcap_delta": 1,
+    },
+    "maximum_fidelity": {
+        "label": "Maximum Fidelity",
+        "description": "Everything preserved: most regions, colours, tonal bands & precision.",
+        "budgets": {
+            "palette": "maximum", "region": "maximum", "simplification": "minimal",
+            "gradient_preservation": "maximum", "texture_preservation": "maximum",
+            "highlight_preservation": "maximum", "svg_precision": "maximum",
+            "number_density": "maximum",
+        },
+        "lineart_block": 7, "lineart_c": 5, "dust_kernel": 2, "gap_kernel": 3, "gap_dilate": 0,
+        "min_area_frac": 0.00012, "min_area_abs": 30,
+        "smooth_eps_frac": 0.0006, "smooth_passes": 0,
+        "label_min_area": 120, "label_scale": 0.75,
+        "palette_delta": 6, "palette_budget_scale": 0.5,
+        "expansion_min_variance": 2.0, "expansion_min_area": 3000,
+        "expansion_bg_min_variance": 4.0, "expansion_bg_min_area": 11000,
+        "expansion_max_subregions": 4, "expansion_bg_max_subregions": 3,
+        "expansion_min_cluster": 240, "expansion_min_luma": 3.5,
+        "texture_kcap_delta": 2,
     },
 }
 
+# The 8 product budgets, in display order (for the UI / report).
+PROFILE_BUDGET_KEYS = (
+    "palette", "region", "simplification", "gradient_preservation",
+    "texture_preservation", "highlight_preservation", "svg_precision", "number_density",
+)
+
+# Backward-compatible alias: existing code (region_detector, palette_grouper,
+# svg_generator, label_optimizer, pipeline) reads DIFFICULTY_PROFILES; the two new
+# profiles are simply extra keys. `reprocess`/APIs accept any profile name.
+DIFFICULTY_PROFILES = OUTPUT_PROFILES
+
 DEFAULT_DIFFICULTY = "medium"
+DEFAULT_PROFILE = "medium"
 
 # Phase 9 — line-art style modes. Each tunes the advanced line-art engine:
 # edge sensitivity (canny + optional adaptive), stroke thickness, gap-closing
