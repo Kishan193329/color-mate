@@ -60,6 +60,17 @@ NEW_LABELS_CAP = 5       # max NEW sub-regions per region (avoid over-splitting)
 KCLUSTER_STEP = 16.0     # ~1 extra cluster per this much combined Lab spread
 L_WEIGHT = 1.0           # Lab channels weighted equally (empirically best ΔE+SSIM)
 
+# Visual Improvement 1 — GRADIENT_EXPANSION tier. Large body/fur/face areas the
+# legacy gate skipped are smoothly shaded, so their L/chroma p5..p95 span can sit
+# just under MIN_LUMA_RANGE. This relaxed floor lets QF13-permitted expansion
+# regions split into a couple of tonal bands; the per-entry sub-region cap and
+# MIN_CLUSTER still prevent over-splitting / speckle.
+EXPANSION_MIN_LUMA = 5.0
+EXPANSION_MAX_SUBREGIONS_DEFAULT = 3   # fallback cap if the plan entry omits it
+EXPANSION_MIN_CLUSTER = 450            # expansion bands below this fold back to base,
+#   keeping every expansion sub-region numberable (no new clutter -> visual score held)
+#   while still admitting the tonal bands that actually reduce ΔE. Tuned on cat.png.
+
 # Per-material cluster budget (reuses QF8 semantic class). Textured materials get
 # more clusters; flat/fragile ones get fewer. Unknowns fall back to 3.
 MATERIAL_KCAP = {
@@ -83,20 +94,28 @@ def _kmeans_labels(samples: np.ndarray, k: int) -> np.ndarray:
     return labels.ravel()
 
 
-def _pick_k(Lv: np.ndarray, av: np.ndarray, bv: np.ndarray, kcap: int) -> int:
+def _pick_k(Lv: np.ndarray, av: np.ndarray, bv: np.ndarray, kcap: int,
+           min_luma: float = MIN_LUMA_RANGE) -> int:
     """Choose cluster count from combined luminance + chroma spread, capped by material."""
     l_span = float(np.percentile(Lv, 95) - np.percentile(Lv, 5))
     chroma = np.sqrt((av - 128.0) ** 2 + (bv - 128.0) ** 2)
     c_span = float(np.percentile(chroma, 95) - np.percentile(chroma, 5))
-    if l_span < MIN_LUMA_RANGE and c_span < MIN_LUMA_RANGE:
+    if l_span < min_luma and c_span < min_luma:
         return 1
     score = l_span + 0.7 * c_span
     return int(np.clip(round(1 + score / KCLUSTER_STEP), 2, kcap))
 
 
-def _split_region(new_labels, lbl, lab, angle, coherence, material, next_label):
+def _split_region(new_labels, lbl, lab, angle, coherence, material, next_label,
+                  kcap_override=None, min_luma=MIN_LUMA_RANGE, new_labels_cap=NEW_LABELS_CAP,
+                  min_cluster=MIN_CLUSTER):
     """Cluster one region in Lab, keep coherent components. Returns
-    (n_subregions, next_label, flow_aligned, k)."""
+    (n_subregions, next_label, flow_aligned, k).
+
+    PRIMARY splits pass the defaults (material k-cap, standard luma floor, full
+    NEW_LABELS_CAP). GRADIENT_EXPANSION splits pass a tighter `kcap_override`
+    (2–3 bands), a relaxed `min_luma`, and a small `new_labels_cap` so large
+    smoothly-shaded areas get a bounded tonal split without over-splitting."""
     mask = new_labels == lbl
     ys, xs = np.where(mask)
     if len(xs) < MIN_REGION_AREA:                 # protect small details
@@ -108,9 +127,9 @@ def _split_region(new_labels, lbl, lab, angle, coherence, material, next_label):
     mc = mask[y0:y1, x0:x1]
     Lc, ac, bc = labc[:, :, 0], labc[:, :, 1], labc[:, :, 2]
 
-    kcap = MATERIAL_KCAP.get(material, 3)
+    kcap = kcap_override if kcap_override is not None else MATERIAL_KCAP.get(material, 3)
     k = _pick_k(Lc[mc].astype(np.float32), ac[mc].astype(np.float32),
-                bc[mc].astype(np.float32), kcap)
+                bc[mc].astype(np.float32), kcap, min_luma)
     if k < 2:
         return 1, next_label, False, 0
 
@@ -147,11 +166,11 @@ def _split_region(new_labels, lbl, lab, angle, coherence, material, next_label):
                    key=lambda t: t[1], reverse=True)
     made, created = 1, 0
     for c, sz in sizes[1:]:                        # skip the largest (stays base)
-        if sz < MIN_CLUSTER or created >= NEW_LABELS_CAP:
+        if sz < min_cluster or created >= new_labels_cap:
             continue
         cmask = ((bu == c) & mc).astype(np.uint8)
         cmask = cv2.morphologyEx(cmask, cv2.MORPH_OPEN, ker)  # drop speckle -> base
-        if int(cmask.sum()) < MIN_CLUSTER:
+        if int(cmask.sum()) < min_cluster:
             continue
         full = np.zeros(new_labels.shape, bool)
         full[y0:y1, x0:x1] = cmask > 0
@@ -220,16 +239,29 @@ def run(semantic_report_path: Path, policy_report_path: Path, labels_path: Path,
         coh = float(s.get("edge_flow_score", 0.0))
         flow_angle = dom + 90.0                       # stroke axis ⊥ tonal gradient
         region_mask = new_labels == lbl
-        made, next_label, used_flow, k = _split_region(
-            new_labels, int(lbl), lab, flow_angle, coh,
-            entry.get("semantic_class"), next_label,
-        )
+        tier = entry.get("split_tier", "PRIMARY")
+        if tier == "GRADIENT_EXPANSION":
+            # QF13-permitted large body/fur/face area: bounded 2–3 band tonal split
+            # with a relaxed luma floor. PRIMARY regions keep the default behaviour.
+            cap = int(entry.get("max_subregions", EXPANSION_MAX_SUBREGIONS_DEFAULT))
+            made, next_label, used_flow, k = _split_region(
+                new_labels, int(lbl), lab, flow_angle, coh,
+                entry.get("semantic_class"), next_label,
+                kcap_override=max(2, min(cap, 3)), min_luma=EXPANSION_MIN_LUMA,
+                new_labels_cap=max(1, min(cap, 3) - 1), min_cluster=EXPANSION_MIN_CLUSTER,
+            )
+        else:
+            made, next_label, used_flow, k = _split_region(
+                new_labels, int(lbl), lab, flow_angle, coh,
+                entry.get("semantic_class"), next_label,
+            )
         if made > 1:
             split_mask |= region_mask
             details.append({
                 "region_id": rid, "label": int(lbl),
                 "semantic_class": entry.get("semantic_class"),
                 "split_style": entry.get("split_style"),   # from QF13 (advisory)
+                "split_tier": tier,                        # PRIMARY | GRADIENT_EXPANSION
                 "clusters": k, "subregions": made,
                 "flow_angle_deg": round(flow_angle % 180.0, 1),
                 "coherence": round(coh, 3), "flow_aligned": bool(used_flow),
@@ -263,6 +295,8 @@ def run(semantic_report_path: Path, policy_report_path: Path, labels_path: Path,
                     "material_behavior_report.json"],
         "regions_selected": len(selected),
         "regions_split": len(details),
+        "primary_regions_split": sum(1 for d in details if d.get("split_tier") != "GRADIENT_EXPANSION"),
+        "expansion_regions_split": sum(1 for d in details if d.get("split_tier") == "GRADIENT_EXPANSION"),
         "flow_aligned_regions": sum(1 for d in details if d["flow_aligned"]),
         "subregions_created": int(new_labels.max()) - int(original_labels.max()),
         "flat_fill_deltaE_after": round(de_after, 3),

@@ -59,6 +59,25 @@ SPLIT_STYLE = {  # how this role is permitted to be split (obeyed by QF12+)
     "LEAF_DETAIL": "ALONG_VEIN", "DECORATIVE_OBJECT": "ALONG_STRUCTURE",
 }
 WOOD_STYLE, CLOTH_STYLE = "ALONG_GRAIN", "ALONG_FOLD"
+
+# --- Visual Improvement 1 — Brain-Guided Gradient Expansion ----------------- #
+# The legacy split gate (legacy_split_selected) only fires on high-variance
+# regions (future_split_strength >= 0.5), so the *large, smoothly-shaded* body /
+# fur / face masses stay flat — the dominant source of rendered ΔE. This tier lets
+# QF13 (the authority) ALSO select those large gradient areas for a *bounded*
+# 2–3 band tonal split. It is deliberately conservative:
+#   • only large subject body/fur areas (SUBJECT_CORE / FUR_PATTERN),
+#   • never facial features (eyes/nose/mouth are FACIAL_FEATURE, not in the set),
+#   • never tiny regions (area floor well above QF12's MIN_REGION_AREA),
+#   • capped at EXPANSION_MAX_SUBREGIONS to avoid over-splitting.
+# Protected-shape subject cores are allowed *when safe* — a tonal split adds only
+# INTERNAL band boundaries and never moves the outer silhouette.
+EXPANSION_ROLES = {"SUBJECT_CORE", "FUR_PATTERN"}
+EXPANSION_MIN_AREA = 5000       # "large area" — ~4x QF12's MIN_REGION_AREA(1200)
+EXPANSION_MIN_VARIANCE = 4.0    # some tonal range to benefit (Lab std). Thresholds
+#   tuned on cat.png (process-isolated sweep): this pair maximised rendered-ΔE gain
+#   while holding the cleanliness score and never splitting facial features.
+EXPANSION_MAX_SUBREGIONS = 3    # 2–3 bands per large area; never more
 REJECTION = {
     "FACIAL_FEATURE": "Reject any split/merge/smoothing that alters the eye, nose or "
         "mouth silhouette or removes the catch-light highlight.",
@@ -298,7 +317,8 @@ def analyze(semantic_report_path: Path, material_report_path: Path,
     overlay = np.full((h, w, 3), 255, np.uint8)
     overlay[labels == 0] = (40, 40, 40)
     regions_out = []
-    plan_entries = []  # authoritative split selection, collected in semantic order
+    plan_entries = []       # PRIMARY split selection (legacy gate), semantic order
+    expansion_entries = []  # GRADIENT_EXPANSION selection (VI1), semantic order
 
     for rid, s in sem_by_id.items():
         m = mat_by_id.get(rid, {})
@@ -390,15 +410,16 @@ def analyze(semantic_report_path: Path, material_report_path: Path,
         })
 
         if split_selected:
-            # One plan entry per selected region, tagged with its QF9 processing
-            # priority. Collected in semantic order now; sorted by priority below
-            # so the plan order matches the legacy policy-report order QF12 used
-            # (identical split-label assignment => identical labels.npy).
+            # PRIMARY tier — one plan entry per selected region, tagged with its QF9
+            # processing priority. Collected in semantic order now; sorted by priority
+            # below so the plan order matches the legacy policy-report order QF12 used
+            # (identical split-label assignment => identical primary labels).
             plan_entries.append({
                 "region_id": rid,
                 "label": (int(lbl) if lbl is not None else None),
                 "semantic_class": sclass,
                 "split_style": _plan_split_style(role, sclass),
+                "split_tier": "PRIMARY",
                 "protect_shape": protect_shape,
                 "protect_highlight": protect_highlight,
                 "protect_shadow": protect_shadow,
@@ -407,16 +428,46 @@ def analyze(semantic_report_path: Path, material_report_path: Path,
                 "validation_priority": validation_priority,
                 "_processing_priority": int(p.get("processing_priority", 3)),
             })
+        elif (lbl is not None and role in EXPANSION_ROLES
+                and size >= EXPANSION_MIN_AREA
+                and float(s.get("color_variance", 0.0)) >= EXPANSION_MIN_VARIANCE
+                and bool(p.get("preserve_gradient"))):
+            # GRADIENT_EXPANSION tier (VI1) — a large, smoothly-shaded body/fur area
+            # the legacy gate skipped. Bounded 2–3 band tonal split; never facial
+            # (FACIAL_FEATURE is excluded by role), never tiny (area floor). Appended
+            # AFTER all primary entries so the primary splits stay byte-identical.
+            expansion_entries.append({
+                "region_id": rid,
+                "label": int(lbl),
+                "semantic_class": sclass,
+                "split_style": _plan_split_style(role, sclass),
+                "split_tier": "GRADIENT_EXPANSION",
+                "max_subregions": EXPANSION_MAX_SUBREGIONS,
+                "artistic_role": role,
+                "protect_shape": protect_shape,
+                "protect_highlight": protect_highlight,
+                "protect_shadow": protect_shadow,
+                "protect_texture": protect_texture,
+                "protect_flow": protect_flow,
+                "validation_priority": validation_priority,
+                "color_variance": round(float(s.get("color_variance", 0.0)), 2),
+                "_size": size,
+            })
 
     _legend(overlay, Counter(r["artistic_role"] for r in regions_out))
     cv2.imwrite(str(overlay_path), overlay)
 
     # Order the split plan by QF9 processing priority (stable over semantic order)
-    # so it matches exactly the order QF12 historically iterated the policy report.
-    # This preserves the split engine's label-assignment sequence (labels.npy).
+    # so the PRIMARY block matches exactly the order QF12 historically iterated the
+    # policy report — preserving the primary split-label assignment sequence. The
+    # GRADIENT_EXPANSION block is appended AFTER (largest area first) so it never
+    # perturbs the primary labels; it only adds new sub-regions.
     plan_entries.sort(key=lambda e: e["_processing_priority"])
+    expansion_entries.sort(key=lambda e: -e["_size"])
     split_plan = [{k: v for k, v in e.items() if k != "_processing_priority"}
                   for e in plan_entries]
+    split_plan += [{k: v for k, v in e.items() if k != "_size"}
+                   for e in expansion_entries]
 
     # "Protected" = the brain flags an explicit thing to guard (shape/flow/texture) or
     # ranks it HIGH/CRITICAL — NOT merely "not splittable" (that would be everything).
@@ -438,8 +489,13 @@ def analyze(semantic_report_path: Path, material_report_path: Path,
         "split_allowed_region_ids": [r["region_id"] for r in regions_out if r["split_permission"]],
         # Authoritative split selection consumed by QF12 (the split engine obeys
         # this, not QF9 policy). `split_plan` is ordered exactly as QF12 processes it.
+        # Two tiers: PRIMARY (legacy high-variance gate) + GRADIENT_EXPANSION (VI1:
+        # bounded tonal split of large body/fur/face areas).
         "split_selected_count": len(split_plan),
+        "split_primary_count": len(plan_entries),
+        "split_expansion_count": len(expansion_entries),
         "split_selected_region_ids": [e["region_id"] for e in split_plan],
+        "split_expansion_region_ids": [e["region_id"] for e in expansion_entries],
         "split_plan": split_plan,
         "palette_restriction_distribution": dict(Counter(
             r["palette_merge_permission"] for r in regions_out)),
