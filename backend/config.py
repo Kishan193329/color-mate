@@ -118,7 +118,12 @@ DIFFICULTY_PROFILES = {
         "min_area_frac": 0.0008, "min_area_abs": 90,
         "smooth_eps_frac": 0.0020, "smooth_passes": 1,
         "label_min_area": 500, "label_scale": 1.0,
-        "palette_delta": 18,
+        # VI2 palette fidelity budget: a finer LAB merge threshold so the
+        # QF13-driven tonal bands (subject + background) survive palette grouping
+        # instead of re-merging. Required to bring rendered ΔE under 10 — rendered
+        # ΔE cannot beat the per-region mean-fill floor, which needs this colour
+        # budget to be represented. Cost: more palette colours on complex images.
+        "palette_delta": 12,
     },
     "hard": {
         "lineart_block": 7, "lineart_c": 5,

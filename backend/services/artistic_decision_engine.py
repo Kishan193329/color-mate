@@ -78,6 +78,17 @@ EXPANSION_MIN_VARIANCE = 4.0    # some tonal range to benefit (Lab std). Thresho
 #   tuned on cat.png (process-isolated sweep): this pair maximised rendered-ΔE gain
 #   while holding the cleanliness score and never splitting facial features.
 EXPANSION_MAX_SUBREGIONS = 3    # 2–3 bands per large area; never more
+
+# --- VI2 — Background tonal tier -------------------------------------------- #
+# The largest remaining ΔE lives in the big smoothly-graded BACKGROUND masses
+# (~4.5 ΔE on cat.png). QF13 permits a *bounded* tonal split there too — but a
+# background must never compete with the subject, so it is capped at 2 tones and
+# gated to only genuinely large, genuinely graded backgrounds. Small/flat
+# backgrounds and any non-background role are untouched.
+EXPANSION_BG_ROLES = {"BACKGROUND_SUPPORT"}
+EXPANSION_BG_MIN_AREA = 20000     # only the big backdrop masses
+EXPANSION_BG_MIN_VARIANCE = 8.0   # only clearly-graded backgrounds (Lab std)
+EXPANSION_BG_MAX_SUBREGIONS = 2   # ≤2 tones — QF13 rejects busier backgrounds
 REJECTION = {
     "FACIAL_FEATURE": "Reject any split/merge/smoothing that alters the eye, nose or "
         "mouth silhouette or removes the catch-light highlight.",
@@ -428,31 +439,39 @@ def analyze(semantic_report_path: Path, material_report_path: Path,
                 "validation_priority": validation_priority,
                 "_processing_priority": int(p.get("processing_priority", 3)),
             })
-        elif (lbl is not None and role in EXPANSION_ROLES
-                and size >= EXPANSION_MIN_AREA
-                and float(s.get("color_variance", 0.0)) >= EXPANSION_MIN_VARIANCE
-                and bool(p.get("preserve_gradient"))):
-            # GRADIENT_EXPANSION tier (VI1) — a large, smoothly-shaded body/fur area
-            # the legacy gate skipped. Bounded 2–3 band tonal split; never facial
-            # (FACIAL_FEATURE is excluded by role), never tiny (area floor). Appended
-            # AFTER all primary entries so the primary splits stay byte-identical.
-            expansion_entries.append({
-                "region_id": rid,
-                "label": int(lbl),
-                "semantic_class": sclass,
-                "split_style": _plan_split_style(role, sclass),
-                "split_tier": "GRADIENT_EXPANSION",
-                "max_subregions": EXPANSION_MAX_SUBREGIONS,
-                "artistic_role": role,
-                "protect_shape": protect_shape,
-                "protect_highlight": protect_highlight,
-                "protect_shadow": protect_shadow,
-                "protect_texture": protect_texture,
-                "protect_flow": protect_flow,
-                "validation_priority": validation_priority,
-                "color_variance": round(float(s.get("color_variance", 0.0)), 2),
-                "_size": size,
-            })
+        else:
+            # Bounded tonal EXPANSION the legacy gate skipped. Two tiers:
+            #   GRADIENT_EXPANSION  (VI1) — large body/fur/face subject areas,
+            #   BACKGROUND_EXPANSION (VI2) — large graded backdrops, ≤2 tones so the
+            #                                background never competes with the subject.
+            # Never facial (FACIAL_FEATURE excluded by role), never tiny (area floor).
+            # Appended AFTER all primary entries so primary splits stay byte-identical.
+            cvar = float(s.get("color_variance", 0.0))
+            exp_tier, exp_cap = None, 0
+            if (role in EXPANSION_ROLES and size >= EXPANSION_MIN_AREA
+                    and cvar >= EXPANSION_MIN_VARIANCE and bool(p.get("preserve_gradient"))):
+                exp_tier, exp_cap = "GRADIENT_EXPANSION", EXPANSION_MAX_SUBREGIONS
+            elif (role in EXPANSION_BG_ROLES and size >= EXPANSION_BG_MIN_AREA
+                    and cvar >= EXPANSION_BG_MIN_VARIANCE):
+                exp_tier, exp_cap = "BACKGROUND_EXPANSION", EXPANSION_BG_MAX_SUBREGIONS
+            if lbl is not None and exp_tier is not None:
+                expansion_entries.append({
+                    "region_id": rid,
+                    "label": int(lbl),
+                    "semantic_class": sclass,
+                    "split_style": _plan_split_style(role, sclass),
+                    "split_tier": exp_tier,
+                    "max_subregions": exp_cap,
+                    "artistic_role": role,
+                    "protect_shape": protect_shape,
+                    "protect_highlight": protect_highlight,
+                    "protect_shadow": protect_shadow,
+                    "protect_texture": protect_texture,
+                    "protect_flow": protect_flow,
+                    "validation_priority": validation_priority,
+                    "color_variance": round(cvar, 2),
+                    "_size": size,
+                })
 
     _legend(overlay, Counter(r["artistic_role"] for r in regions_out))
     cv2.imwrite(str(overlay_path), overlay)

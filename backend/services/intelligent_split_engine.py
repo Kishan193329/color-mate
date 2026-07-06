@@ -67,6 +67,8 @@ L_WEIGHT = 1.0           # Lab channels weighted equally (empirically best ΔE+S
 # MIN_CLUSTER still prevent over-splitting / speckle.
 EXPANSION_MIN_LUMA = 5.0
 EXPANSION_MAX_SUBREGIONS_DEFAULT = 3   # fallback cap if the plan entry omits it
+# Tiers QF13 marks for a bounded tonal split (vs the PRIMARY high-variance splits).
+EXPANSION_TIERS = {"GRADIENT_EXPANSION", "BACKGROUND_EXPANSION"}
 EXPANSION_MIN_CLUSTER = 450            # expansion bands below this fold back to base,
 #   keeping every expansion sub-region numberable (no new clutter -> visual score held)
 #   while still admitting the tonal bands that actually reduce ΔE. Tuned on cat.png.
@@ -240,9 +242,10 @@ def run(semantic_report_path: Path, policy_report_path: Path, labels_path: Path,
         flow_angle = dom + 90.0                       # stroke axis ⊥ tonal gradient
         region_mask = new_labels == lbl
         tier = entry.get("split_tier", "PRIMARY")
-        if tier == "GRADIENT_EXPANSION":
-            # QF13-permitted large body/fur/face area: bounded 2–3 band tonal split
-            # with a relaxed luma floor. PRIMARY regions keep the default behaviour.
+        if tier in EXPANSION_TIERS:
+            # QF13-permitted bounded tonal split (large body/fur/face subject area,
+            # or a large graded background) with a relaxed luma floor. PRIMARY regions
+            # keep the default behaviour.
             cap = int(entry.get("max_subregions", EXPANSION_MAX_SUBREGIONS_DEFAULT))
             made, next_label, used_flow, k = _split_region(
                 new_labels, int(lbl), lab, flow_angle, coh,
@@ -295,8 +298,9 @@ def run(semantic_report_path: Path, policy_report_path: Path, labels_path: Path,
                     "material_behavior_report.json"],
         "regions_selected": len(selected),
         "regions_split": len(details),
-        "primary_regions_split": sum(1 for d in details if d.get("split_tier") != "GRADIENT_EXPANSION"),
-        "expansion_regions_split": sum(1 for d in details if d.get("split_tier") == "GRADIENT_EXPANSION"),
+        "primary_regions_split": sum(1 for d in details if d.get("split_tier", "PRIMARY") == "PRIMARY"),
+        "expansion_regions_split": sum(1 for d in details if d.get("split_tier") in EXPANSION_TIERS),
+        "background_regions_split": sum(1 for d in details if d.get("split_tier") == "BACKGROUND_EXPANSION"),
         "flow_aligned_regions": sum(1 for d in details if d["flow_aligned"]),
         "subregions_created": int(new_labels.max()) - int(original_labels.max()),
         "flat_fill_deltaE_after": round(de_after, 3),
