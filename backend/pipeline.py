@@ -132,6 +132,12 @@ def _process(
     folder = job_dir(job_id)
     compute_seconds = 0.0
 
+    # Reset OpenCV's global RNG to its default state so a run is deterministic
+    # regardless of any prior run in the same process (the quality-retry engine
+    # runs several profiles back to back). setRNGSeed(0) == the fresh-process
+    # default state, so this is a no-op for the first/only run (output unchanged).
+    cv2.setRNGSeed(0)
+
     def timed(fn, *args, **kwargs):
         nonlocal compute_seconds
         start = time.monotonic()

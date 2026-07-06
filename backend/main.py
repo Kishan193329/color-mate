@@ -23,6 +23,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 
 import pipeline
+import quality_retry_engine
 from config import ALLOWED_ORIGINS, ARTIFACTS, JOBS_DIR
 from job_store import (
     create_job,
@@ -139,7 +140,10 @@ def process(req: ProcessRequest, background: BackgroundTasks) -> JobResponse:
     if record["status"] == "processing":
         raise HTTPException(status_code=409, detail="Job already processing")
 
-    background.add_task(pipeline.run, req.job_id)
+    # Product Sprint 2: auto-select the best output profile with quality retry
+    # (runs Medium first, escalates/steps down only if quality is poor, keeps the
+    # best). Falls back to a plain Medium run identically when Medium is already good.
+    background.add_task(quality_retry_engine.process_upload, req.job_id)
     # Reflect that processing has been queued.
     record["status"] = "processing"
     return JobResponse(**record)
