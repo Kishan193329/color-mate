@@ -22,45 +22,24 @@ from pathlib import Path
 import cv2
 import numpy as np
 
-from services.gradient_preservation_engine import (
+# Sprint 1: shared gradient/flow primitives now live in core.gradient_common
+# (single source of truth). Re-imported so QF11 stays a drop-in helper library
+# and existing `from services.flow_gradient_engine import ...` callers keep working.
+from core.gradient_common import (  # noqa: F401  (re-exported for backward compat)
+    BLUR_LEN,
+    FLOW_MAX_STEPS,
     LUMA_STEP,
     MAX_STEPS,
+    MIN_COHERENCE,
     MIN_LUMA_RANGE,
     SELECT_POLICY,
     SPLIT_MIN_STRENGTH,
     _boundaries,
     _delta_e,
     _mean_fill,
+    _oriented_blur,
+    ssim,
 )
-
-MIN_COHERENCE = 0.25   # edge_flow_score below this -> isotropic fallback
-FLOW_MAX_STEPS = 4     # QF11 allows one more tonal step than QF10 (finer gradient)
-BLUR_LEN = 15          # oriented band-boundary smoothing kernel length
-
-
-def ssim(a_gray: np.ndarray, b_gray: np.ndarray, mask: np.ndarray | None = None) -> float:
-    a = a_gray.astype(np.float64)
-    b = b_gray.astype(np.float64)
-    c1, c2 = (0.01 * 255) ** 2, (0.03 * 255) ** 2
-    mu_a = cv2.GaussianBlur(a, (11, 11), 1.5)
-    mu_b = cv2.GaussianBlur(b, (11, 11), 1.5)
-    sa = cv2.GaussianBlur(a * a, (11, 11), 1.5) - mu_a * mu_a
-    sb = cv2.GaussianBlur(b * b, (11, 11), 1.5) - mu_b * mu_b
-    sab = cv2.GaussianBlur(a * b, (11, 11), 1.5) - mu_a * mu_b
-    m = ((2 * mu_a * mu_b + c1) * (2 * sab + c2)) / \
-        ((mu_a * mu_a + mu_b * mu_b + c1) * (sa + sb + c2) + 1e-9)
-    return float(m[mask].mean()) if mask is not None and mask.any() else float(m.mean())
-
-
-def _oriented_blur(img: np.ndarray, angle_deg: float, length: int = BLUR_LEN, thick: int = 3) -> np.ndarray:
-    k = np.zeros((length, length), np.float32)
-    cv2.line(k, (0, length // 2), (length - 1, length // 2), 1.0, thick)
-    rot = cv2.getRotationMatrix2D((length / 2 - 0.5, length / 2 - 0.5), -angle_deg, 1.0)
-    k = cv2.warpAffine(k, rot, (length, length))
-    s = k.sum()
-    if s > 0:
-        k /= s
-    return cv2.filter2D(img, -1, k)
 
 
 def _flow_step(new_labels, lbl, L, angle, coherence, next_label):

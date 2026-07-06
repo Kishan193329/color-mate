@@ -18,10 +18,20 @@ import cv2
 import numpy as np
 
 from config import DEFAULT_DIFFICULTY, DIFFICULTY_PROFILES
+from core.artistic_decisions import ArtisticDecisions
 from services import contour_smoothing
 
 STROKE = "#111111"
 STROKE_WIDTH = 2
+
+# Engineering Sprint 1 — QF13 authority seam. When a future sprint sets this True
+# and passes the QF13 decisions, per-region simplification will honour
+# `svg_precision` (HIGH -> crisper eps/more passes preserved; LOW -> stronger
+# simplification). Sprint 1 keeps it False so the emitted geometry is byte-for-byte
+# unchanged; the read path below is wired and inert.
+OBEY_QF13 = False
+# svg_precision -> (eps multiplier, passes delta). Applied only when OBEY_QF13.
+_PRECISION_TUNE = {"HIGH": (0.6, +0), "MEDIUM": (1.0, 0), "LOW": (1.6, 0)}
 
 
 def _contour_to_subpath(contour: np.ndarray) -> str:
@@ -47,7 +57,8 @@ def build_region_path(labels: np.ndarray, label: int, eps_frac: float, passes: i
     return " ".join(subpaths)
 
 
-def run(region_data: dict, out_path: Path) -> Path:
+def run(region_data: dict, out_path: Path,
+        decisions: ArtisticDecisions | None = None) -> Path:
     labels: np.ndarray = region_data["_label_map"]
     width = region_data["width"]
     height = region_data["height"]
@@ -65,7 +76,15 @@ def run(region_data: dict, out_path: Path) -> Path:
 
     path_count = 0
     for region in region_data["regions"]:
-        d = build_region_path(labels, region["label"], eps_frac, passes)
+        r_eps, r_passes = eps_frac, passes
+        # QF13 authority seam (inert in Sprint 1): tune per-region simplification
+        # to the brain's svg_precision. Read path wired via the artistic-decision
+        # bridge; gated off so the geometry is unchanged.
+        if OBEY_QF13 and decisions is not None:
+            mult, dp = _PRECISION_TUNE.get(
+                decisions.svg_precision(region["label"]), (1.0, 0))
+            r_eps, r_passes = eps_frac * mult, max(0, passes + dp)
+        d = build_region_path(labels, region["label"], r_eps, r_passes)
         region["path"] = d  # shared with json_generator
         if not d:
             continue

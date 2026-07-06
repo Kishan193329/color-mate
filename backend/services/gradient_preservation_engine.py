@@ -23,34 +23,19 @@ from pathlib import Path
 import cv2
 import numpy as np
 
-SPLIT_MIN_STRENGTH = 0.5      # policy future_split_strength gate
-MIN_LUMA_RANGE = 16.0         # Lab-L span (p5..p95) needed before splitting
-LUMA_STEP = 20.0              # ~1 band per this much L range
-MAX_STEPS = 3                 # never more than 3 tonal steps (avoid over-split)
-SELECT_POLICY = {"GRADIENT_PRESERVE", "FLOW_PROTECT"}
-
-
-def _mean_fill(labels: np.ndarray, bgr: np.ndarray) -> np.ndarray:
-    """Flat fill: every region painted with the mean original colour (label 0 = line)."""
-    num = int(labels.max()) + 1
-    flat = labels.ravel()
-    counts = np.bincount(flat, minlength=num).astype(np.float64)
-    counts[counts == 0] = 1
-    out = np.zeros_like(bgr)
-    for ch in range(3):
-        s = np.bincount(flat, weights=bgr[:, :, ch].astype(np.float64).ravel(), minlength=num)
-        m = (s / counts).astype(np.uint8)
-        out[:, :, ch] = m[labels]
-    out[labels == 0] = (35, 35, 35)
-    return out
-
-
-def _delta_e(fill_bgr: np.ndarray, orig_bgr: np.ndarray, mask: np.ndarray) -> float:
-    """Mean CIE76 Lab distance between a flat fill and the original, over `mask`."""
-    a = cv2.cvtColor(fill_bgr, cv2.COLOR_BGR2LAB).astype(np.float32)
-    b = cv2.cvtColor(orig_bgr, cv2.COLOR_BGR2LAB).astype(np.float32)
-    d = np.sqrt(((a - b) ** 2).sum(axis=2))
-    return float(d[mask].mean()) if mask.any() else 0.0
+# Sprint 1: these primitives now live in core.gradient_common (single source of
+# truth). Re-imported here so QF10 stays a drop-in helper library and existing
+# `from services.gradient_preservation_engine import ...` callers keep working.
+from core.gradient_common import (  # noqa: F401  (re-exported for backward compat)
+    LUMA_STEP,
+    MAX_STEPS,
+    MIN_LUMA_RANGE,
+    SELECT_POLICY,
+    SPLIT_MIN_STRENGTH,
+    _boundaries,
+    _delta_e,
+    _mean_fill,
+)
 
 
 def _step_region(new_labels: np.ndarray, lbl: int, L: np.ndarray, next_label: int) -> tuple[int, int]:
@@ -78,13 +63,6 @@ def _step_region(new_labels: np.ndarray, lbl: int, L: np.ndarray, next_label: in
         next_label += 1
         made += 1
     return made, next_label
-
-
-def _boundaries(labels: np.ndarray) -> np.ndarray:
-    edge = np.zeros(labels.shape, bool)
-    edge[:, :-1] |= labels[:, :-1] != labels[:, 1:]
-    edge[:-1, :] |= labels[:-1, :] != labels[1:, :]
-    return edge
 
 
 def run(semantic_report_path: Path, policy_report_path: Path, labels_path: Path,

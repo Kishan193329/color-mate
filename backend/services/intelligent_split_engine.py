@@ -12,11 +12,20 @@ Because k-means minimises within-cluster colour variance (exactly what the flat-
 ΔE measures), each sub-region's sampled colour fits its pixels better than a
 luminance band's — so the cat gets measurably closer to the original.
 
-Reuses (NO recompute): QF7 `semantic_region_report.json` (region_id → label, flow
-direction + coherence), QF8 `material_behavior_report.json` (per-class split budget),
-QF9 `processing_policy_report.json` (selection + limits), QF11
-`flow_gradient_report.json`. Colours are sampled downstream from the original by the
-existing pipeline; this engine only edits region geometry.
+Engineering Sprint 1 rewired selection: QF12 is now an **actuator that obeys the
+QF13 artistic decision brain**. Instead of re-deriving the split set from QF9
+policy, it consumes QF13's authoritative `split_plan` (`artistic_decision_report
+.json`) — the ordered list of regions to split, each with its semantic class,
+split style and protection flags. QF13 builds that plan with the exact historical
+QF12 predicate, so the selection (and every resulting pixel) is unchanged. If the
+QF13 report is unavailable, QF12 falls back to the legacy QF9 predicate for
+robustness (identical result).
+
+Reuses (NO recompute): QF13 `artistic_decision_report.json` (split_plan — the
+selection authority), QF7 `semantic_region_report.json` (region_id → label, flow
+direction + coherence), QF8 `material_behavior_report.json` (per-class split budget).
+Colours are sampled downstream from the original by the existing pipeline; this
+engine only edits region geometry.
 """
 from __future__ import annotations
 
@@ -26,18 +35,21 @@ from pathlib import Path
 import cv2
 import numpy as np
 
-from services.gradient_preservation_engine import (
+# Sprint 1: shared gradient/split primitives live in core.gradient_common — the
+# single source of truth. QF12 imports them directly instead of borrowing math
+# from the QF10/QF11 engine modules (which are now helper libraries only).
+from core.gradient_common import (
+    BLUR_LEN,
+    MIN_COHERENCE,
     MIN_LUMA_RANGE,
-    SELECT_POLICY,
-    SPLIT_MIN_STRENGTH,
+    SELECT_POLICY,           # noqa: F401 — kept for backward-compatible re-export
+    SPLIT_MIN_STRENGTH,      # noqa: F401 — kept for backward-compatible re-export
+    SPLIT_PROTECT_CLASSES,
     _boundaries,
     _delta_e,
     _mean_fill,
-)
-from services.flow_gradient_engine import (
-    BLUR_LEN,
-    MIN_COHERENCE,
     _oriented_blur,
+    legacy_split_selected,
     ssim,
 )
 
@@ -54,8 +66,10 @@ MATERIAL_KCAP = {
     "FUR": 5, "HAIR": 5, "CLOTH": 5, "LEAF": 4, "WOOD": 4,
     "SKIN": 4, "STONE": 4, "METAL": 3, "PLASTIC": 3,
 }
-# Never split these (small / fragile / structural detail), even if policy selects.
-PROTECT_CLASSES = {"FLOWER", "GLASS", "EYE", "SKY"}
+# Classes never split (small / fragile / structural detail) now live in
+# core.gradient_common.SPLIT_PROTECT_CLASSES and are enforced by QF13's selection
+# (legacy_split_selected). Kept here as a backward-compatible alias.
+PROTECT_CLASSES = SPLIT_PROTECT_CLASSES
 
 
 def _kmeans_labels(samples: np.ndarray, k: int) -> np.ndarray:
@@ -148,32 +162,58 @@ def _split_region(new_labels, lbl, lab, angle, coherence, material, next_label):
     return made, next_label, used_flow, k
 
 
+def _selection_plan(artistic_report_path: Path | None,
+                    policy_report_path: Path | None) -> tuple[list[dict], str]:
+    """The regions to split, in order, from the QF13 brain (authority).
+
+    Primary: QF13's `split_plan` in `artistic_decision_report.json` — the
+    authoritative selection + style + protection. Fallback (only if that report is
+    missing/unreadable): re-derive the exact legacy selection straight from QF9
+    policy so a QF13 failure never disables the fidelity pass. Both paths yield the
+    same ordered set, so the result is identical."""
+    if artistic_report_path is not None and Path(artistic_report_path).exists():
+        try:
+            artistic = json.loads(Path(artistic_report_path).read_text(encoding="utf-8"))
+            plan = artistic.get("split_plan")
+            if plan is not None:
+                return list(plan), "artistic_decision_report.split_plan (QF13)"
+        except (ValueError, OSError):
+            pass
+    if policy_report_path is not None and Path(policy_report_path).exists():
+        policy = json.loads(Path(policy_report_path).read_text(encoding="utf-8"))
+        plan = [
+            {"region_id": r["region_id"], "semantic_class": r.get("semantic_class"),
+             "split_style": None}
+            for r in policy.get("regions", [])
+            if legacy_split_selected(r, r.get("semantic_class"))
+        ]
+        return plan, "processing_policy_report (QF9 fallback)"
+    return [], "none"
+
+
 def run(semantic_report_path: Path, policy_report_path: Path, labels_path: Path,
         preprocessed_path: Path, overlay_path: Path | None = None,
         lineart_path: Path | None = None,
-        material_report_path: Path | None = None) -> tuple[np.ndarray, dict]:
+        material_report_path: Path | None = None,
+        artistic_report_path: Path | None = None) -> tuple[np.ndarray, dict]:
     semantic = json.loads(Path(semantic_report_path).read_text(encoding="utf-8"))
-    policy = json.loads(Path(policy_report_path).read_text(encoding="utf-8"))
     labels = np.load(labels_path).astype(np.int32)
     bgr = cv2.imread(str(preprocessed_path), cv2.IMREAD_COLOR)
     lab = cv2.cvtColor(bgr, cv2.COLOR_BGR2LAB)
 
     sem_by_id = {r["region_id"]: r for r in semantic.get("regions", [])}
-    selected = [
-        r for r in policy.get("regions", [])
-        if r.get("policy_class") in SELECT_POLICY and r.get("preserve_gradient")
-        and float(r.get("future_split_strength", 0.0)) >= SPLIT_MIN_STRENGTH
-        and r.get("semantic_class") not in PROTECT_CLASSES     # protect small details
-    ]
+    # QF13 is the decision authority — obey its ordered split_plan.
+    selected, selection_source = _selection_plan(artistic_report_path, policy_report_path)
 
     original_labels = labels.copy()
     new_labels = labels.copy()
     next_label = int(labels.max()) + 1
     split_mask = np.zeros(labels.shape, bool)
     details = []
-    for r in selected:
-        s = sem_by_id.get(r["region_id"], {})
-        lbl = s.get("label")
+    for entry in selected:
+        rid = entry.get("region_id")
+        s = sem_by_id.get(rid, {})
+        lbl = s.get("label")                          # geometry authority stays QF7
         if lbl is None:
             continue
         dom = float(s.get("dominant_gradient_direction", 0.0))
@@ -182,13 +222,14 @@ def run(semantic_report_path: Path, policy_report_path: Path, labels_path: Path,
         region_mask = new_labels == lbl
         made, next_label, used_flow, k = _split_region(
             new_labels, int(lbl), lab, flow_angle, coh,
-            r.get("semantic_class"), next_label,
+            entry.get("semantic_class"), next_label,
         )
         if made > 1:
             split_mask |= region_mask
             details.append({
-                "region_id": r["region_id"], "label": int(lbl),
-                "semantic_class": r.get("semantic_class"),
+                "region_id": rid, "label": int(lbl),
+                "semantic_class": entry.get("semantic_class"),
+                "split_style": entry.get("split_style"),   # from QF13 (advisory)
                 "clusters": k, "subregions": made,
                 "flow_angle_deg": round(flow_angle % 180.0, 1),
                 "coherence": round(coh, 3), "flow_aligned": bool(used_flow),
@@ -213,11 +254,13 @@ def run(semantic_report_path: Path, policy_report_path: Path, labels_path: Path,
 
     info = {
         "version": 1,
-        "note": "Intelligent Lab k-means + connected-component region splits; "
-                "reuses QF7 flow, QF8 material budget, QF9 policy, QF11 (no recompute).",
-        "sources": ["semantic_region_report.json", "material_behavior_report.json",
-                    "processing_policy_report.json", "flow_gradient_report.json",
-                    "border_quality_report.json"],
+        "note": "Intelligent Lab k-means + connected-component region splits. "
+                "Selection obeys the QF13 artistic decision brain (split_plan); "
+                "reuses QF7 flow + QF8 material budget (no recompute).",
+        "selection_authority": "QF13 artistic_decision_engine",
+        "selection_source": selection_source,
+        "sources": ["artistic_decision_report.json", "semantic_region_report.json",
+                    "material_behavior_report.json"],
         "regions_selected": len(selected),
         "regions_split": len(details),
         "flow_aligned_regions": sum(1 for d in details if d["flow_aligned"]),

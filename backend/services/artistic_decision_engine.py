@@ -2,10 +2,19 @@
 
 QF7 = WHAT a region is, QF8 = HOW its material behaves, QF9 = the processing
 policy, QF10-12 = the pixel changes those enabled. QF13 is the **central artist
-brain**: for every region it fuses all prior reports into one authoritative
-artistic decision record — role, importance, what must be protected, and exactly
-what future engines are *permitted* to do (split / merge palette / smooth SVG /
-renumber). Future pixel-changing fixes read THIS instead of re-deriving intent.
+brain and the single decision authority**: for every region it fuses all prior
+reports into one authoritative artistic decision record — role, importance, what
+must be protected, and exactly what future engines are *permitted* to do (split /
+merge palette / smooth SVG / renumber). Future engines read THIS report instead
+of re-deriving policy from QF9.
+
+Engineering Sprint 1 wired QF13 to the actuators. It now publishes, in addition
+to the per-region decision, an authoritative **`split_plan`**: the ordered list of
+regions the split engine (QF12) must process, each carrying its label, semantic
+class, split style, protection flags and validation priority. QF12 obeys this plan
+verbatim; it no longer re-derives selection from QF9. The plan reproduces the
+historical QF12 selection exactly (see `core.gradient_common.legacy_split_selected`
+and the `split_selected` per-region flag), so wiring the brain changes no pixels.
 
 It **reuses** (recomputes nothing): QF7 `semantic_region_report.json`, QF8
 `material_behavior_report.json`, QF9 `processing_policy_report.json`, and — when
@@ -25,6 +34,8 @@ from pathlib import Path
 
 import cv2
 import numpy as np
+
+from core.gradient_common import legacy_split_selected
 
 # Artistic roles (RGB legend colours).
 ROLE_COLOR = {
@@ -232,6 +243,21 @@ def _role(sclass, size, embedded_in_subject, preserve_stripes, split_strength):
     return "UNKNOWN_SUPPORT"
 
 
+def _plan_split_style(role, sclass):
+    """The authoritative split style for a region QF12 will actually split.
+
+    Unlike the per-region `split_style` field (which QF13 zeroes to "NONE" when
+    its own stricter `split_permission` gate denies), this always names a concrete
+    style so every entry in `split_plan` tells the splitter *how* to split. It is
+    advisory for Sprint 1 (QF12 records but does not yet branch on it), so it can
+    never change pixels."""
+    if role == "DECORATIVE_OBJECT" and sclass == "WOOD":
+        return WOOD_STYLE
+    if role == "DECORATIVE_OBJECT" and sclass == "CLOTH":
+        return CLOTH_STYLE
+    return SPLIT_STYLE.get(role, "LAB_CLUSTER_TONAL")
+
+
 def _prec(svg_policy):
     return {"KEEP_DETAIL": "HIGH", "LIGHT": "MEDIUM", "STRONG": "LOW"}.get(svg_policy, "MEDIUM")
 
@@ -272,6 +298,7 @@ def analyze(semantic_report_path: Path, material_report_path: Path,
     overlay = np.full((h, w, 3), 255, np.uint8)
     overlay[labels == 0] = (40, 40, 40)
     regions_out = []
+    plan_entries = []  # authoritative split selection, collected in semantic order
 
     for rid, s in sem_by_id.items():
         m = mat_by_id.get(rid, {})
@@ -330,8 +357,15 @@ def analyze(semantic_report_path: Path, material_report_path: Path,
         if lbl is not None:
             overlay[labels == lbl] = ROLE_COLOR[role][::-1]
 
+        # Authoritative split selection: the exact historical QF12 gate, evaluated
+        # once HERE so QF13 is the single decision authority. QF12 obeys this flag
+        # (via `split_plan`) instead of re-deriving policy from QF9. Byte-identical
+        # to the pre-Sprint-1 QF12 filter (see core.gradient_common).
+        split_selected = legacy_split_selected(p, sclass)
+
         regions_out.append({
             "region_id": rid,
+            "label": (int(lbl) if lbl is not None else None),  # geometry key for actuators
             "semantic_class": sclass,
             "material_behavior": bclass,
             "artistic_role": role,
@@ -342,6 +376,7 @@ def analyze(semantic_report_path: Path, material_report_path: Path,
             "protect_texture": protect_texture,
             "protect_flow": protect_flow,
             "split_permission": split_permission,
+            "split_selected": bool(split_selected),
             "split_style": split_style,
             "palette_merge_permission": palette_merge_permission,
             "svg_precision": svg_precision,
@@ -354,8 +389,34 @@ def analyze(semantic_report_path: Path, material_report_path: Path,
             "was_pattern_split_upstream": sclass in split_classes,
         })
 
+        if split_selected:
+            # One plan entry per selected region, tagged with its QF9 processing
+            # priority. Collected in semantic order now; sorted by priority below
+            # so the plan order matches the legacy policy-report order QF12 used
+            # (identical split-label assignment => identical labels.npy).
+            plan_entries.append({
+                "region_id": rid,
+                "label": (int(lbl) if lbl is not None else None),
+                "semantic_class": sclass,
+                "split_style": _plan_split_style(role, sclass),
+                "protect_shape": protect_shape,
+                "protect_highlight": protect_highlight,
+                "protect_shadow": protect_shadow,
+                "protect_texture": protect_texture,
+                "protect_flow": protect_flow,
+                "validation_priority": validation_priority,
+                "_processing_priority": int(p.get("processing_priority", 3)),
+            })
+
     _legend(overlay, Counter(r["artistic_role"] for r in regions_out))
     cv2.imwrite(str(overlay_path), overlay)
+
+    # Order the split plan by QF9 processing priority (stable over semantic order)
+    # so it matches exactly the order QF12 historically iterated the policy report.
+    # This preserves the split engine's label-assignment sequence (labels.npy).
+    plan_entries.sort(key=lambda e: e["_processing_priority"])
+    split_plan = [{k: v for k, v in e.items() if k != "_processing_priority"}
+                  for e in plan_entries]
 
     # "Protected" = the brain flags an explicit thing to guard (shape/flow/texture) or
     # ranks it HIGH/CRITICAL — NOT merely "not splittable" (that would be everything).
@@ -375,16 +436,21 @@ def analyze(semantic_report_path: Path, material_report_path: Path,
         "split_permission_distribution": dict(Counter(
             "ALLOW" if r["split_permission"] else "DENY" for r in regions_out)),
         "split_allowed_region_ids": [r["region_id"] for r in regions_out if r["split_permission"]],
+        # Authoritative split selection consumed by QF12 (the split engine obeys
+        # this, not QF9 policy). `split_plan` is ordered exactly as QF12 processes it.
+        "split_selected_count": len(split_plan),
+        "split_selected_region_ids": [e["region_id"] for e in split_plan],
+        "split_plan": split_plan,
         "palette_restriction_distribution": dict(Counter(
             r["palette_merge_permission"] for r in regions_out)),
         "svg_precision_distribution": dict(Counter(r["svg_precision"] for r in regions_out)),
         "validation_priority_distribution": dict(Counter(
             r["validation_priority"] for r in regions_out)),
         "future_modules_affected": {
-            "split/gradient engines (QF12+)": "obey split_permission + split_style",
-            "palette engine": "obey palette_merge_permission",
-            "svg generator": "obey svg_precision",
-            "numbering": "obey numbering_sensitivity",
+            "split engine (QF12)": "WIRED — consumes split_plan (selection + style + protection)",
+            "palette engine": "prepared — reads palette_merge_permission (Sprint 1: advisory)",
+            "svg generator": "prepared — reads svg_precision (Sprint 1: advisory)",
+            "numbering": "prepared — reads numbering_sensitivity (Sprint 1: advisory)",
             "validation/QA": "order by validation_priority; enforce rejection_reason_if_low_quality",
         },
         "border_baseline": {

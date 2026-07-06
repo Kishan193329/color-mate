@@ -17,8 +17,16 @@ import cv2
 import numpy as np
 
 from config import DEFAULT_DIFFICULTY, DIFFICULTY_PROFILES
+from core.artistic_decisions import ArtisticDecisions
 
 DEFAULT_DELTA = 18.0
+
+# Engineering Sprint 1 — QF13 authority seam. When a future sprint sets this True
+# and passes the QF13 decisions, the grouper will honour `palette_merge_permission`
+# (LOCKED regions keep their own colour; WITHIN_MATERIAL only merges same-material
+# regions). Sprint 1 keeps it False so behaviour is byte-for-byte unchanged; the
+# read path below is wired and inert.
+OBEY_QF13 = False
 
 
 def _to_lab(rgb: tuple[int, int, int]) -> np.ndarray:
@@ -31,7 +39,7 @@ def _hex_to_rgb(value: str) -> tuple[int, int, int]:
     return (int(value[0:2], 16), int(value[2:4], 16), int(value[4:6], 16))
 
 
-def group(region_data: dict) -> list[dict]:
+def group(region_data: dict, decisions: ArtisticDecisions | None = None) -> list[dict]:
     profile = region_data.get("_profile") or DIFFICULTY_PROFILES[DEFAULT_DIFFICULTY]
     max_delta = float(profile.get("palette_delta", DEFAULT_DELTA))
 
@@ -50,6 +58,12 @@ def group(region_data: dict) -> list[dict]:
             d = float(np.linalg.norm(lab - g["lab"]))
             if d < best_d:
                 best_d, best = d, gi
+        # QF13 authority seam (inert in Sprint 1): a LOCKED region keeps its own
+        # colour and is never merged into a neighbour's group. Read path wired via
+        # the artistic-decision bridge; gated off so behaviour is unchanged.
+        if OBEY_QF13 and decisions is not None and \
+                decisions.palette_merge_permission(regions[i].get("label")) == "LOCKED":
+            best = -1
         if best >= 0 and best_d <= max_delta:
             g = groups[best]
             g["lab"] = (g["lab"] * g["count"] + lab) / (g["count"] + 1)

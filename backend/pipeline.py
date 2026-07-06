@@ -291,12 +291,13 @@ def _apply_artistic_decisions(folder: Path) -> None:
 
 
 def _apply_gradient_preservation(job_id: str) -> None:
-    """Quality Fix 12 — split policy-selected high-gradient regions by INTELLIGENT
-    Lab k-means clustering (stripe/shadow/highlight/base separated by colour), keep
-    coherent sub-regions with flow-aligned boundaries, then rebuild everything
-    consistently. Supersedes the QF10/QF11 luminance engines while reusing their
-    helpers. Policy-gated: on flat content nothing is selected and the output is
-    unchanged (backward compatible)."""
+    """Quality Fix 12 — split the regions the QF13 brain selected (via its
+    authoritative split_plan) by INTELLIGENT Lab k-means clustering
+    (stripe/shadow/highlight/base separated by colour), keep coherent sub-regions
+    with flow-aligned boundaries, then rebuild everything consistently. Supersedes
+    the QF10/QF11 luminance engines while reusing their helpers (now in
+    core.gradient_common). Decision-gated: on flat content QF13 selects nothing and
+    the output is unchanged (backward compatible)."""
     folder = job_dir(job_id)
     sem = _p(folder, "semantic_region_report")
     pol = _p(folder, "processing_policy_report")
@@ -307,6 +308,7 @@ def _apply_gradient_preservation(job_id: str) -> None:
             sem, pol, folder / "labels.npy", _p(folder, "preprocessed"),
             _p(folder, "intelligent_split_overlay"), _p(folder, "lineart"),
             _p(folder, "material_behavior_report"),
+            artistic_report_path=_p(folder, "artistic_decision_report"),  # QF13 authority
         )
         (folder / ARTIFACTS["intelligent_split_report"]).write_text(
             json.dumps(info, indent=2), encoding="utf-8"
