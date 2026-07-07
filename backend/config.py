@@ -91,6 +91,8 @@ ARTIFACTS = {
     "contour_character_report": "contour_character_report.json",
     "contour_character_overlay": "contour_character_overlay.png",
     "quality_report": "quality_report.json",
+    # Engineering Sprint — image type router (classification report; no behaviour change).
+    "image_type_report": "image_type_report.json",
     # Product Core — original-pixel reveal mode (main product mode; additive).
     "reveal_master": "reveal_master.png",
     "reveal_blank": "reveal_blank.png",

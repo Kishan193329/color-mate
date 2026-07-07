@@ -147,8 +147,13 @@ def detect(lineart_gray, preprocessed_path: Path, merged_map_path: Path | None =
     if not interior:
         if merged_map_path is not None:
             cv2.imwrite(str(merged_map_path), np.full((h, w, 3), 255, np.uint8))
+        # No interior regions (degenerate line art, e.g. a photo on a smooth
+        # background) -> no split previews. Return the FULL contract so callers that
+        # read `split_preview_available` / `_count` never KeyError. Stability only;
+        # detection result is unchanged (there is nothing to split here).
         return {"suspected_merged_region_count": 0,
-                "suspected_merged_region_ids": [], "split_recommendations": []}
+                "suspected_merged_region_ids": [], "split_recommendations": [],
+                "split_preview_available": False, "split_preview_count": 0}
 
     median_area = float(np.median([stats[L, cv2.CC_STAT_AREA] for L in interior]))
 

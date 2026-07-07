@@ -55,6 +55,7 @@ from services import (
     flow_gradient_engine,
     intelligent_split_engine,
     image_preprocess,
+    image_type_router,
     json_generator,
     label_optimizer,
     lineart_quality_score,
@@ -152,6 +153,13 @@ def _process(
         preprocessed = timed(image_preprocess.run, _p(folder, "original"), _p(folder, "preprocessed"))
     else:
         preprocessed = _p(folder, "preprocessed")
+
+    # Router — classify the input type (Input -> Router -> Processing -> Reveal).
+    # Reporting only; never raises, changes no downstream processing.
+    try:
+        image_type_router.route(_p(folder, "original"), _p(folder, "image_type_report"))
+    except Exception:  # noqa: BLE001 - routing must never break processing
+        pass
     time.sleep(STEP_DELAY_SECONDS)
 
     # Optional AI helper (enhance + AI line art + semantics). Never the region
