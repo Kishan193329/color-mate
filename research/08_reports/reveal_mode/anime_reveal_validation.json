@@ -1,0 +1,9 @@
+{
+  "completed_reveal_delta_e": 0.0,
+  "completed_reveal_pixel_diff": 0,
+  "completed_reveal_pixel_diff_percent": 0.0,
+  "mask_coverage_percent": 77.904,
+  "unrevealed_pixel_percent": 22.096,
+  "matches_original_under_masks": true,
+  "note": "unrevealed pixels are the thin line-art skeleton (label 0), which is an overlay layer, not part of the reveal (rules 5 & 6)."
+}

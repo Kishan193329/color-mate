@@ -91,6 +91,13 @@ ARTIFACTS = {
     "contour_character_report": "contour_character_report.json",
     "contour_character_overlay": "contour_character_overlay.png",
     "quality_report": "quality_report.json",
+    # Product Core — original-pixel reveal mode (main product mode; additive).
+    "reveal_master": "reveal_master.png",
+    "reveal_blank": "reveal_blank.png",
+    "reveal_highlight": "reveal_highlight.png",
+    "reveal_partial": "reveal_partial.png",
+    "reveal_completed": "reveal_completed.png",
+    "reveal_validation": "reveal_validation.json",
     "result_zip": "result.zip",
 }
 

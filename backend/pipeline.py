@@ -60,6 +60,7 @@ from services import (
     lineart_quality_score,
     mask_generator,
     material_behavior_engine,
+    original_pixel_reveal_renderer,
     processing_policy_engine,
     palette_grouper,
     preview_renderer,
@@ -292,7 +293,40 @@ def _process(
     except Exception:  # noqa: BLE001
         pass
     _apply_artistic_decisions(folder, profile)  # QF13 — decision brain (reads reports only)
+    _apply_reveal(folder, region_data)           # Product Core — original-pixel reveal mode
     time.sleep(STEP_DELAY_SECONDS)
+
+
+def _apply_reveal(folder: Path, region_data: dict) -> None:
+    """Product Core — original-pixel reveal mode. Renders the reveal master + the 4
+    preview states + validation from the (immutable) original and the region masks,
+    then advertises reveal as the primary mode in game_config. Purely additive: the
+    flat-fill (game_preview) and palette/region/number data are untouched. Best-effort
+    — never blocks export."""
+    try:
+        out = {name: _p(folder, key) for name, key in (
+            ("master", "reveal_master"), ("blank", "reveal_blank"),
+            ("highlight", "reveal_highlight"), ("partial", "reveal_partial"),
+            ("completed", "reveal_completed"), ("validation", "reveal_validation"),
+        )}
+        manifest = original_pixel_reveal_renderer.render_all(
+            region_data, _p(folder, "original"), out
+        )
+        gc_path = _p(folder, "game_config")
+        if gc_path.exists():
+            gc = json.loads(gc_path.read_text(encoding="utf-8"))
+            gc["default_mode"] = "reveal"                    # reveal is the main mode
+            gc["modes"] = {"primary": "reveal", "available": ["reveal", "palette", "texture"]}
+            gc["reveal"] = manifest
+            gc.setdefault("assets", {}).update({
+                "reveal_master": manifest["master_asset"],
+                "reveal_blank": manifest["previews"]["blank"],
+                "reveal_partial": manifest["previews"]["partial"],
+                "reveal_completed": manifest["previews"]["completed"],
+            })
+            gc_path.write_text(json.dumps(gc, indent=2), encoding="utf-8")
+    except Exception:  # noqa: BLE001 - reveal is a best-effort additive layer
+        pass
 
 
 def _apply_contour_character(job_id: str) -> None:
@@ -505,6 +539,7 @@ def _emit_from_region_data(job_id: str, folder: Path, region_data: dict, profile
         _apply_artistic_decisions(folder, profile)  # QF13 refreshes decisions post-edit
     except Exception:  # noqa: BLE001
         pass
+    _apply_reveal(folder, region_data)  # Product Core — refresh reveal mode after edits
 
 
 def rebuild_from_labels(job_id: str) -> None:
