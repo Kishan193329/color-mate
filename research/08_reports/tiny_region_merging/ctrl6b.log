@@ -1,0 +1,11 @@
+[15:10:37] chunk 10..18
+[15:11:30] img 10 professional PASS=True regions 30->30 (-0) renderDEd=0.0 revDE=0.0 leak=0 t=53.1s
+[15:12:16] img 11 professional PASS=True regions 8->8 (-0) renderDEd=0.0 revDE=0.0 leak=0 t=45.8s
+[15:12:50] img 12 professional PASS=True regions 6->6 (-0) renderDEd=0.0 revDE=0.0 leak=0 t=33.6s
+[15:13:41] img 13 professional PASS=True regions 53->50 (-3) renderDEd=-0.543 revDE=0.0 leak=0 t=51.0s
+[15:15:04] img 14 hard PASS=True regions 170->153 (-17) renderDEd=0.012 revDE=0.0 leak=0 t=83.0s
+[15:16:08] img 15 easy PASS=True regions 73->68 (-5) renderDEd=0.407 revDE=0.0 leak=0 t=64.6s
+[15:17:13] img 16 medium PASS=True regions 92->86 (-6) renderDEd=0.0 revDE=0.0 leak=0 t=65.0s
+[15:18:17] img 17 easy PASS=True regions 55->55 (-0) renderDEd=0.0 revDE=0.0 leak=0 t=64.0s
+[15:19:08] img 18 easy PASS=True regions 44->44 (-0) renderDEd=0.0 revDE=0.0 leak=0 t=50.8s
+[15:19:08] batch complete

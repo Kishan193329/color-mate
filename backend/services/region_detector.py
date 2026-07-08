@@ -20,6 +20,20 @@ from services import tiny_region_merger
 
 LINE_COLOR_RGB = (40, 40, 40)
 
+# Upstream tiny-region merging: a region is dissolved into a neighbour only when it is
+# BOTH tiny (≤ the profile floor × `INSIGNIFICANT_AREA_MULT` — a profile-relative "tiny"
+# that scales with the profile's own region scale) AND nearly the same colour. The colour
+# gate is the profile's `palette_delta` (the ΔE within which two regions already collapse
+# to one palette colour downstream), hard-capped at `INSIGNIFICANT_DELTA_CAP` so a loose
+# profile (Easy = 28) can never fuse genuinely different colours and cost accuracy — this
+# ΔE cap is the real accuracy guard (a ≤6 ΔE merge is visually the same colour, well under
+# the ~2.3 JND floor even after flat-fill). A distinct feature (eye / lip / accessory) has a
+# larger ΔE and is spared. Chosen at 6 (not 8) because 8 let one Easy image creep +0.618
+# rendered ΔE while 6 holds every image ≤ +0.41 for effectively the same region reduction.
+INSIGNIFICANT_AREA_MULT = 5.0
+INSIGNIFICANT_DELTA_CAP = 6.0        # never merge across a larger ΔE (accuracy guard)
+_PALETTE_DELTA_DEFAULT = 18.0
+
 
 def run(closed_lineart_path: Path, preprocessed_path: Path, profile: dict | None = None) -> dict:
     profile = profile or DIFFICULTY_PROFILES[DEFAULT_DIFFICULTY]
@@ -42,6 +56,24 @@ def run(closed_lineart_path: Path, preprocessed_path: Path, profile: dict | None
         labels, num_labels, stats, keep_area, width, height
     )
     labels = remap[labels]
+
+    # Upstream tiny-region merging: dissolve visually-insignificant (colour-similar)
+    # tiny regions into their neighbour. Only reassigns to a non-zero label, so the
+    # union — and the completed reveal — is unchanged; high-contrast features are spared
+    # by the ΔE gate. Composes into `remap` so the geometry recompute below is consistent.
+    lab_img = cv2.cvtColor(color_bgr, cv2.COLOR_BGR2LAB)
+    insignificant_delta_e = min(
+        float(profile.get("palette_delta", _PALETTE_DELTA_DEFAULT)), INSIGNIFICANT_DELTA_CAP
+    )
+    insignificant_area = int(keep_area * INSIGNIFICANT_AREA_MULT)
+    remap2, insignificant_merged = tiny_region_merger.plan_insignificant_merge(
+        labels, lab_img, num_labels, stats, kept, insignificant_area, insignificant_delta_e,
+    )
+    if insignificant_merged:
+        labels = remap2[labels]
+        remap = remap2[remap]                       # compose: remap2 after remap1
+        kept = [k for k in kept if remap2[k] == k]
+        merged_count += insignificant_merged
 
     # --- vectorized geometry recompute (handles merged areas) ---------------
     areas_orig = stats[:, cv2.CC_STAT_AREA].astype(np.int64)
@@ -109,6 +141,7 @@ def run(closed_lineart_path: Path, preprocessed_path: Path, profile: dict | None
         "palette": [],
         "small_regions_removed": int(removed_count),
         "tiny_regions_merged": int(merged_count),
+        "insignificant_regions_merged": int(insignificant_merged),
         # In-memory helpers (not serialized):
         "_label_map": labels,
         "_color_lut": lut,
