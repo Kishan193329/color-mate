@@ -1,0 +1,76 @@
+{
+  "version": 2,
+  "note": "Router-driven default + quality retry. The image-type router picks the start profile/mode; the retry loop refines from there and keeps the best-scoring attempt.",
+  "image_type": "Sketch",
+  "recommended_mode": "reveal",
+  "recommended_profile": "easy",
+  "router_reason": "Line drawing / few colours \u2014 simplest profile.",
+  "start_profile": "easy",
+  "chosen_profile": "hard",
+  "chosen_reason": "easy:TOO_FLAT \u2192 medium:TOO_FLAT \u2192 hard:TOO_FLAT. Chose hard (best score 34.74, rendered \u0394E 19.42, 10 colours).",
+  "attempts": [
+    {
+      "attempt": 1,
+      "profile": "easy",
+      "verdict": "TOO_FLAT",
+      "direction": "up",
+      "rendered_deltaE": 19.891,
+      "palette_count": 4,
+      "region_count": 9,
+      "leak_count": 0,
+      "tiny_region_count": 0,
+      "protected_highlight_loss": 0,
+      "score": 21.327
+    },
+    {
+      "attempt": 2,
+      "profile": "medium",
+      "verdict": "TOO_FLAT",
+      "direction": "up",
+      "rendered_deltaE": 20.286,
+      "palette_count": 6,
+      "region_count": 24,
+      "leak_count": 0,
+      "tiny_region_count": 2,
+      "protected_highlight_loss": 0,
+      "score": 21.142
+    },
+    {
+      "attempt": 3,
+      "profile": "hard",
+      "verdict": "TOO_FLAT",
+      "direction": "up",
+      "rendered_deltaE": 19.42,
+      "palette_count": 10,
+      "region_count": 29,
+      "leak_count": 0,
+      "tiny_region_count": 0,
+      "protected_highlight_loss": 0,
+      "score": 34.74
+    }
+  ],
+  "reran_winner": false,
+  "ranking": [
+    {
+      "profile": "hard",
+      "score": 34.74,
+      "rendered_deltaE": 19.42,
+      "palette_count": 10,
+      "region_count": 29
+    },
+    {
+      "profile": "easy",
+      "score": 21.327,
+      "rendered_deltaE": 19.891,
+      "palette_count": 4,
+      "region_count": 9
+    },
+    {
+      "profile": "medium",
+      "score": 21.142,
+      "rendered_deltaE": 20.286,
+      "palette_count": 6,
+      "region_count": 24
+    }
+  ]
+}

@@ -175,3 +175,15 @@ def rank(assessments: list[dict]) -> list[dict]:
     """Assessments sorted best-first, each annotated with its score."""
     scored = [dict(a, score=score(a)) for a in assessments]
     return sorted(scored, key=lambda a: -a["score"])
+
+
+def recommended_start(image_type_report: dict | None) -> str:
+    """Respect the router's recommendation as the retry STARTING point (task 3).
+
+    Maps the router's `recommended_profile` to a valid start profile. `"auto"`
+    (clean cartoons) and any unknown value fall back to Medium — i.e. the default
+    Medium-first exploration, unchanged. A concrete profile (e.g. Mandala/Sketch/
+    Logo -> "easy") starts the retry there. This only moves the starting point;
+    the escalate/step-down logic is untouched."""
+    prof = (image_type_report or {}).get("recommended_profile")
+    return prof if prof in PROFILE_ORDER else "medium"

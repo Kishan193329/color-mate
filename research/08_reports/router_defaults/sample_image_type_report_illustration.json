@@ -1,0 +1,38 @@
+{
+  "image_type": "Illustration",
+  "confidence": 0.511,
+  "runner_up": "Anime",
+  "scores": {
+    "Mandala": -0.6384,
+    "Sketch": -0.0977,
+    "Logo": -0.4556,
+    "Landscape": 0.0075,
+    "Portrait": 0.5866,
+    "Object": -0.3375,
+    "Anime": 1.0696,
+    "Illustration": 1.0869
+  },
+  "features": {
+    "aspect": 1.0,
+    "sat_mean": 0.4739,
+    "grayscale": 0.5261,
+    "value_mean": 0.9296,
+    "edge_density": 0.1067,
+    "detail": 0.2596,
+    "flatness": 0.6215,
+    "unique_colors": 788,
+    "color_simplicity": 0.0,
+    "white_frac": 0.1704,
+    "blackline_frac": 0.0159,
+    "skin_frac": 0.4763,
+    "center_skin": 0.3696,
+    "bg_uniform": 0.068,
+    "mandala_sym": 0.0,
+    "top_sky": 0.1825
+  },
+  "recommended_mode": "auto",
+  "recommended_profile": "auto",
+  "reason": "Clean cartoon \u2014 auto-profile picks the best flat-fill fidelity; reveal available.",
+  "version": 2,
+  "note": "Type classification + safe default recommendation. The router only picks the default mode / retry-start profile (no visual, border, palette, region, or Quality-Fix algorithm change)."
+}

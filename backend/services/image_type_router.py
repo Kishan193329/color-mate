@@ -125,6 +125,31 @@ def scores(f: dict) -> dict:
     return {k: round(v, 4) for k, v in s.items()}
 
 
+# Router-driven safe defaults (mode, retry-start profile, reason). These pick a
+# SAFE DEFAULT only — no algorithm changes. `profile == "auto"` means "let the
+# quality-retry engine explore from Medium". Reveal is the primary product mode for
+# photographic types (flat-fill posterises them); cartoons use the auto profile;
+# intricate/minimal graphics start from a simpler profile to avoid an over-complex
+# color-by-number sheet (the reveal completion is exact either way).
+RECOMMENDATION = {
+    "Portrait":     ("reveal", "medium", "Photographic subject — reveal reproduces the original (flat-fill posterises faces); medium keeps region/number overhead modest."),
+    "Landscape":    ("reveal", "medium", "Detailed/photographic scene — reveal is reliable; medium avoids an over-complex sheet."),
+    "Illustration": ("auto",   "auto",   "Clean cartoon — auto-profile picks the best flat-fill fidelity; reveal available."),
+    "Anime":        ("auto",   "auto",   "Flat cel art — auto-profile; reveal available."),
+    "Object":       ("auto",   "auto",   "Single subject — auto-profile."),
+    "Mandala":      ("reveal", "easy",   "Intricate radial pattern — start simple to avoid an over-complex sheet; reveal reproduces the detail."),
+    "Sketch":       ("reveal", "easy",   "Line drawing / few colours — simplest profile."),
+    "Logo":         ("reveal", "easy",   "Few colours, plain background — simplest profile avoids over-splitting."),
+}
+_DEFAULT_RECOMMENDATION = ("reveal", "auto", "Default — reveal primary, auto profile.")
+
+
+def recommend(image_type: str) -> dict:
+    """Map a detected type to a safe default mode + retry-start profile (task 1/2)."""
+    mode, profile, reason = RECOMMENDATION.get(image_type, _DEFAULT_RECOMMENDATION)
+    return {"recommended_mode": mode, "recommended_profile": profile, "reason": reason}
+
+
 def classify(bgr: np.ndarray) -> dict:
     f = features(bgr)
     sc = scores(f)
@@ -132,13 +157,15 @@ def classify(bgr: np.ndarray) -> dict:
     top, second = ranked[0], ranked[1]
     # confidence = separation of the top score over the runner-up, squashed to [0,1]
     conf = round(float(1 / (1 + np.exp(-(top[1] - second[1]) * 2.5))), 3)
-    return {
+    result = {
         "image_type": top[0],
         "confidence": conf,
         "runner_up": second[0],
         "scores": sc,
         "features": f,
     }
+    result.update(recommend(top[0]))
+    return result
 
 
 def route(original_path: Path, report_path: Path) -> dict:
@@ -150,10 +177,11 @@ def route(original_path: Path, report_path: Path) -> dict:
     except Exception as exc:  # noqa: BLE001 - routing must never break processing
         result = {"image_type": "Illustration", "confidence": 0.0,
                   "runner_up": None, "scores": {}, "features": {},
-                  "error": f"{type(exc).__name__}: {exc}"}
-    result["version"] = 1
-    result["note"] = ("Routing foundation only — classification is reported but does not "
-                      "change processing yet (no visual/border/palette/QF change).")
+                  **recommend("Illustration"), "error": f"{type(exc).__name__}: {exc}"}
+    result["version"] = 2
+    result["note"] = ("Type classification + safe default recommendation. The router only "
+                      "picks the default mode / retry-start profile (no visual, border, "
+                      "palette, region, or Quality-Fix algorithm change).")
     try:
         Path(report_path).write_text(json.dumps(result, indent=2), encoding="utf-8")
     except OSError:

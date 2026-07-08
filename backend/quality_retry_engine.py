@@ -19,6 +19,7 @@ from pathlib import Path
 import auto_profile_selector as selector
 import pipeline
 from job_store import finish_job, get_job, job_dir, update_job
+from services import image_type_router
 
 DEFAULT_START = "medium"
 MAX_ATTEMPTS = 3          # Medium + up to two targeted retries (bounded cost)
@@ -35,16 +36,28 @@ def _run_profile(job_id: str, profile: str) -> str:
     return status
 
 
-def process_upload(job_id: str, start: str = DEFAULT_START,
+def process_upload(job_id: str, start: str | None = None,
                    max_attempts: int = MAX_ATTEMPTS) -> dict:
     """Auto-select the best output profile for this upload, with quality retry.
 
-    Runs Medium first, retries a better-suited profile only when the quality
-    signals demand it, keeps the best-scoring attempt as the final output, and
-    finishes the job exactly once. Returns the decision record (also written to
+    Router-driven default (this sprint): the image type router picks a safe
+    retry-START profile (e.g. Mandala/Sketch/Logo -> "easy"; cartoons/photos ->
+    Medium). The quality loop then retries from there exactly as before — keeping
+    the best-scoring attempt and finishing the job once. Pass an explicit `start`
+    to override the router. Returns the decision record (also written to
     `auto_profile_report.json`)."""
     folder = job_dir(job_id)
     update_job(job_id, status="processing")
+
+    # Router-driven starting point (does not change algorithms; only the default).
+    router = {}
+    try:
+        router = image_type_router.route(folder / "original.png", folder / "image_type_report.json")
+    except Exception:  # noqa: BLE001 - routing must never break processing
+        router = {}
+    if start is None:
+        start = selector.recommended_start(router)
+
     tried: dict[str, dict] = {}
     trace: list[dict] = []
     profile = start if start in selector.PROFILE_ORDER else DEFAULT_START
@@ -87,9 +100,15 @@ def process_upload(job_id: str, start: str = DEFAULT_START,
         rerun = True
 
     result = {
-        "version": 1,
-        "note": "Auto profile selection + quality retry. Medium first, then targeted "
-                "retries; best-scoring attempt kept as the final output.",
+        "version": 2,
+        "note": "Router-driven default + quality retry. The image-type router picks the "
+                "start profile/mode; the retry loop refines from there and keeps the "
+                "best-scoring attempt.",
+        "image_type": router.get("image_type"),
+        "recommended_mode": router.get("recommended_mode"),
+        "recommended_profile": router.get("recommended_profile"),
+        "router_reason": router.get("reason"),
+        "start_profile": start,
         "chosen_profile": chosen,
         "chosen_reason": _reason(trace, chosen, ranking),
         "attempts": trace,

@@ -1,0 +1,38 @@
+{
+  "image_type": "Mandala",
+  "confidence": 0.998,
+  "runner_up": "Sketch",
+  "scores": {
+    "Mandala": 2.5241,
+    "Sketch": 0.0833,
+    "Logo": -0.1357,
+    "Landscape": -0.109,
+    "Portrait": -0.3598,
+    "Object": -0.5061,
+    "Anime": -0.6568,
+    "Illustration": -0.1502
+  },
+  "features": {
+    "aspect": 1.0,
+    "sat_mean": 0.5686,
+    "grayscale": 0.4314,
+    "value_mean": 0.7501,
+    "edge_density": 0.2138,
+    "detail": 0.6026,
+    "flatness": 0.3168,
+    "unique_colors": 1584,
+    "color_simplicity": 0.0,
+    "white_frac": 0.3297,
+    "blackline_frac": 0.2101,
+    "skin_frac": 0.042,
+    "center_skin": 0.0636,
+    "bg_uniform": 0.324,
+    "mandala_sym": 0.6346,
+    "top_sky": 0.0824
+  },
+  "recommended_mode": "reveal",
+  "recommended_profile": "easy",
+  "reason": "Intricate radial pattern \u2014 start simple to avoid an over-complex sheet; reveal reproduces the detail.",
+  "version": 2,
+  "note": "Type classification + safe default recommendation. The router only picks the default mode / retry-start profile (no visual, border, palette, region, or Quality-Fix algorithm change)."
+}
