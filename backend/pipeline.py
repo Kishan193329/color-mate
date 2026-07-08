@@ -46,6 +46,7 @@ from services import (
     advanced_lineart_generator,
     ai_mode_router,
     artistic_border_engine,
+    artistic_border_renderer,
     artistic_decision_engine,
     border_engine,
     contour_character_engine,
@@ -381,6 +382,29 @@ def _apply_artistic_border(job_id: str) -> None:
         pass
 
 
+def _apply_artistic_border_render(job_id: str) -> None:
+    """Artistic Border Render Pass — execute the decided border actions on the SVG/vector
+    layer only (outline.svg + region path strings). Reads artistic_border_report +
+    contour_character_report; gated on border quality (rejects if worse, keeping the QF14
+    baseline). Touches no raster line art, labels, masks, palette, numbers, or reveal —
+    so leaks and reveal==original are preserved. Runs after the intelligence pass.
+    Best-effort; never blocks output."""
+    folder = job_dir(job_id)
+    abr = _p(folder, "artistic_border_report")
+    cc = _p(folder, "contour_character_report")
+    if not (abr.exists() and cc.exists() and (folder / "labels.npy").exists()
+            and _p(folder, "game_config").exists()):
+        return
+    try:
+        artistic_border_renderer.render(
+            folder / "labels.npy", abr, cc, _p(folder, "regions"),
+            _p(folder, "game_config"), _p(folder, "outline"),
+            _p(folder, "artistic_border_render_report"), _p(folder, "artistic_border_overlay"),
+        )
+    except Exception:  # noqa: BLE001 - render pass is best-effort, never blocks output
+        pass
+
+
 def _apply_artistic_decisions(folder: Path, profile: dict | None = None) -> None:
     """Quality Fix 13 — fuse the QF7/QF8/QF9 (+QF11/QF12/QF3 when present) reports
     into the per-region artistic decision record future engines obey. Reads reports
@@ -446,6 +470,7 @@ def run(job_id: str, profile_name: str = DEFAULT_PROFILE) -> None:
         _apply_gradient_preservation(job_id, profile)  # QF12 intelligent-split fidelity pass
         _apply_contour_character(job_id)               # QF14 adaptive contour styling (runs last)
         _apply_artistic_border(job_id)                 # Artistic Border Intelligence (analysis only)
+        _apply_artistic_border_render(job_id)          # Artistic Border Render Pass (SVG layer only, gated)
         finish_job(job_id)
     except Exception as exc:  # noqa: BLE001
         fail_job(job_id, f"Processing failed: {exc}")
@@ -585,6 +610,7 @@ def rebuild_from_labels(job_id: str) -> None:
     np.save(folder / "labels.npy", region_data["_label_map"])
     _apply_contour_character(job_id)  # QF14 re-styles contours after any region edit
     _apply_artistic_border(job_id)    # Artistic Border Intelligence refresh (analysis only)
+    _apply_artistic_border_render(job_id)  # Artistic Border Render Pass (SVG layer only, gated)
     write_progress(job_id, [])
     finish_job(job_id)
 

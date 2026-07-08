@@ -93,6 +93,10 @@ ARTIFACTS = {
     # Artistic Border Intelligence — per-segment artistic scoring + action decision
     # (intelligence only: no rendering, no border/geometry/palette/export change).
     "artistic_border_report": "artistic_border_report.json",
+    # Artistic Border Render Pass — applies the decided actions to the SVG/vector layer
+    # (line-art rendering only; gated on border quality, rejects if worse).
+    "artistic_border_render_report": "artistic_border_render_report.json",
+    "artistic_border_overlay": "artistic_border_overlay.png",
     "quality_report": "quality_report.json",
     # Engineering Sprint — image type router (classification report; no behaviour change).
     "image_type_report": "image_type_report.json",

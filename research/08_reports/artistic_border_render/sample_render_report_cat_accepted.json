@@ -1,0 +1,49 @@
+{
+  "version": 1,
+  "note": "Artistic border render pass \u2014 applies the decided actions to the SVG/vector layer only. No border re-detection, no region/label/mask/palette/number/reveal change; raster line art and leaks untouched. KEEP reproduces QF14 exactly.",
+  "sources": [
+    "artistic_border_report.json",
+    "contour_character_report.json"
+  ],
+  "segment_count": 464,
+  "rendered_count": 364,
+  "removed_count": 100,
+  "action_applied_distribution": {
+    "SIMPLIFY": 17,
+    "EMPHASIZE": 66,
+    "KEEP": 249,
+    "THICKEN": 2,
+    "REMOVE": 100,
+    "SOFTEN": 2,
+    "THIN": 28
+  },
+  "stroke_settings": {
+    "KEEP": 2.0,
+    "SOFTEN": 2.0,
+    "SIMPLIFY": 2.0,
+    "THICKEN": 3.0,
+    "EMPHASIZE": 2.6,
+    "THIN": 1.2
+  },
+  "quality": {
+    "shape_iou_before": 0.9595,
+    "shape_iou_after": 0.9554,
+    "shape_iou_delta": -0.0041,
+    "shape_iou_vs_qf14_full": 0.96,
+    "fragments_before": 464,
+    "fragments_after": 364,
+    "fragments_removed": 100,
+    "removed_border_length_fraction": 0.0137,
+    "transformed_vertices_before": 450,
+    "transformed_vertices_after": 380
+  },
+  "gate": {
+    "iou_tol": 0.01,
+    "remove_len_frac_max": 0.2,
+    "faithful": true,
+    "bounded_removal": true
+  },
+  "accepted": true,
+  "outputs_updated": true,
+  "decision_reason": "accepted \u2014 transformed contours shape-faithful and removal bounded"
+}
