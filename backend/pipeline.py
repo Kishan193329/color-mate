@@ -45,6 +45,7 @@ from job_store import (
 from services import (
     advanced_lineart_generator,
     ai_mode_router,
+    artistic_border_engine,
     artistic_decision_engine,
     border_engine,
     contour_character_engine,
@@ -360,6 +361,26 @@ def _apply_contour_character(job_id: str) -> None:
         pass
 
 
+def _apply_artistic_border(job_id: str) -> None:
+    """Artistic Border Intelligence — score every existing border segment and decide
+    its artistic action (KEEP/SIMPLIFY/EMPHASIZE/REMOVE/THICKEN/THIN/SOFTEN) from the
+    QF14 contours + QF13/QF8/QF7 reports. Writes only `artistic_border_report.json`.
+    Analysis ONLY — no rendering, no border/geometry/palette/number/export change.
+    Runs after QF14 so the contour segments exist. Best-effort; never blocks output."""
+    folder = job_dir(job_id)
+    contour = _p(folder, "contour_character_report")
+    art = _p(folder, "artistic_decision_report")
+    if not (contour.exists() and art.exists()):
+        return
+    try:
+        artistic_border_engine.analyze(
+            contour, art, _p(folder, "material_behavior_report"),
+            _p(folder, "semantic_region_report"), _p(folder, "artistic_border_report"),
+        )
+    except Exception:  # noqa: BLE001 - intelligence layer is best-effort, never blocks output
+        pass
+
+
 def _apply_artistic_decisions(folder: Path, profile: dict | None = None) -> None:
     """Quality Fix 13 — fuse the QF7/QF8/QF9 (+QF11/QF12/QF3 when present) reports
     into the per-region artistic decision record future engines obey. Reads reports
@@ -424,6 +445,7 @@ def run(job_id: str, profile_name: str = DEFAULT_PROFILE) -> None:
         _process(job_id, profile, profile_name, "original", use_ai=True)
         _apply_gradient_preservation(job_id, profile)  # QF12 intelligent-split fidelity pass
         _apply_contour_character(job_id)               # QF14 adaptive contour styling (runs last)
+        _apply_artistic_border(job_id)                 # Artistic Border Intelligence (analysis only)
         finish_job(job_id)
     except Exception as exc:  # noqa: BLE001
         fail_job(job_id, f"Processing failed: {exc}")
@@ -562,6 +584,7 @@ def rebuild_from_labels(job_id: str) -> None:
     _emit_from_region_data(job_id, folder, region_data, profile_name)
     np.save(folder / "labels.npy", region_data["_label_map"])
     _apply_contour_character(job_id)  # QF14 re-styles contours after any region edit
+    _apply_artistic_border(job_id)    # Artistic Border Intelligence refresh (analysis only)
     write_progress(job_id, [])
     finish_job(job_id)
 

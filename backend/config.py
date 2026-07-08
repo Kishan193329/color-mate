@@ -90,6 +90,9 @@ ARTIFACTS = {
     # Quality Fix 14 — artistic contour character (adaptive vector contour geometry).
     "contour_character_report": "contour_character_report.json",
     "contour_character_overlay": "contour_character_overlay.png",
+    # Artistic Border Intelligence — per-segment artistic scoring + action decision
+    # (intelligence only: no rendering, no border/geometry/palette/export change).
+    "artistic_border_report": "artistic_border_report.json",
     "quality_report": "quality_report.json",
     # Engineering Sprint — image type router (classification report; no behaviour change).
     "image_type_report": "image_type_report.json",
