@@ -38,8 +38,9 @@ import cv2
 import numpy as np
 
 from services.contour_character_engine import (
-    CLASS_STYLE, STYLE_POLICY,
-    _adaptive_subpath, _sample_d, _shape_similarity,
+    CLASS_STYLE, MIN_CONTOUR_PTS, STYLE_POLICY,
+    _catmull_bezier, _corner_indices, _polyline,
+    _sample_d, _shape_similarity,
 )
 
 STROKE_DARK = "#111111"
@@ -48,6 +49,11 @@ STROKE_W = {"KEEP": 2.0, "SOFTEN": 2.0, "SIMPLIFY": 2.0,
             "THICKEN": 3.0, "EMPHASIZE": 2.6, "THIN": 1.2}
 IOU_TOL = 0.010           # transformed-contour IoU may not fall below the baseline by more than this
 REMOVE_LEN_FRAC = 0.20    # removed specks may not exceed this fraction of total border length
+# Absolute cap on the simplification tolerance. eps grows with a contour's perimeter, so
+# a large region gets a big boundary shift (~11px) that fails the fidelity gate. Capping
+# eps to a few px bounds that shift on large contours while leaving small ones untouched —
+# this is what lets the render safely apply on heavily-detailed images.
+MAX_EPS_PX = 4.0
 
 
 def _load(path: Path) -> dict:
@@ -79,6 +85,23 @@ def _policy_for(action: str, style: str) -> dict:
 def _stroke_for(action: str) -> tuple[float, str]:
     return (STROKE_W.get(action, 2.0),
             STROKE_EMPH if action == "EMPHASIZE" else STROKE_DARK)
+
+
+def _adaptive(contour: np.ndarray, policy: dict, cap: float | None) -> str:
+    """QF14's adaptive contour subpath, but with an optional absolute cap on the
+    simplification tolerance so large contours are not over-shifted. `cap=None`
+    reproduces QF14 exactly (used for the baseline and the geometry-neutral actions)."""
+    perim = cv2.arcLength(contour, True)
+    eps = max(1.0, policy["eps_frac"] * perim)
+    if cap is not None:
+        eps = min(eps, cap)
+    approx = cv2.approxPolyDP(contour, eps, True).reshape(-1, 2).astype(np.float64)
+    if len(approx) < MIN_CONTOUR_PTS:
+        approx = contour.reshape(-1, 2).astype(np.float64)
+    if not policy["bezier"] or len(approx) < MIN_CONTOUR_PTS:
+        return _polyline(approx)
+    corners = _corner_indices(approx, policy["corner_deg"]) if policy["corner_keep"] else set()
+    return _catmull_bezier(approx, corners)
 
 
 def _panel(paths_w: list, h: int, w: int) -> np.ndarray:
@@ -161,7 +184,7 @@ def render(labels_path: Path, artistic_border_report_path: Path, contour_report_
             if key not in action_by:                       # matches QF14's <4pt skip
                 continue
             style = style_by.get(key, CLASS_STYLE.get("UNKNOWN", "HYBRID"))
-            base_d = _adaptive_subpath(contour, STYLE_POLICY.get(style, STYLE_POLICY["HYBRID"]))
+            base_d = _adaptive(contour, STYLE_POLICY.get(style, STYLE_POLICY["HYBRID"]), None)
             baseline_all_ds.append(base_d)
             before_w.append((base_d, 2.0))
             perim = float(cv2.arcLength(contour, True))
@@ -175,7 +198,8 @@ def render(labels_path: Path, artistic_border_report_path: Path, contour_report_
                 removed_ds.append(base_d)
                 continue
 
-            art_d = _adaptive_subpath(contour, _policy_for(action, style))
+            cap = MAX_EPS_PX if action in ("SIMPLIFY", "SOFTEN") else None
+            art_d = _adaptive(contour, _policy_for(action, style), cap)
             sw, color = _stroke_for(action)
             baseline_kept_ds.append(base_d)
             artistic_ds.append(art_d)

@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "note": "Line-art fragmentation reduction \u2014 dissolves non-primary compact fragments into their dominant neighbour to shrink the tiny-contour explosion before the SVG/render stage. Union (labels>0) preserved exactly, so reveal==original and masks stay closed; every numbered region survives (palette/numbers unchanged); facial/flower/leaf/fur/decorative labels never dissolved.",
+  "sources": [
+    "labels.npy",
+    "artistic_decision_report.json"
+  ],
+  "frag_area_max": 300,
+  "frag_len_max": 250,
+  "protected_label_count": 104,
+  "labels_before": 109,
+  "labels_after": 109,
+  "labels_lost": [],
+  "fragments_before": 464,
+  "fragments_after": 445,
+  "fragments_removed": 19,
+  "components_dissolved": 39,
+  "dissolved_area_px": 850,
+  "dissolved_area_percent": 0.06,
+  "union_before": 1419976,
+  "union_after": 1419976,
+  "union_preserved": true
+}

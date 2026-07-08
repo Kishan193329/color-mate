@@ -97,6 +97,10 @@ ARTIFACTS = {
     # (line-art rendering only; gated on border quality, rejects if worse).
     "artistic_border_render_report": "artistic_border_render_report.json",
     "artistic_border_overlay": "artistic_border_overlay.png",
+    # Line-Art Fragmentation Reduction — cleaned label map (border chain only) + report.
+    # Dissolves non-primary compact fragments; union/palette/numbers/reveal unchanged.
+    "labels_render": "labels_render.npy",
+    "fragment_cleanup_report": "fragment_cleanup_report.json",
     "quality_report": "quality_report.json",
     # Engineering Sprint — image type router (classification report; no behaviour change).
     "image_type_report": "image_type_report.json",
