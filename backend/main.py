@@ -1112,6 +1112,161 @@ def admin_experience_policy() -> dict:
     return experience_policy.status()
 
 
+# ---------------------------------------------------------------------------
+# Local admin gallery — visual review of a batch of processed jobs
+# ---------------------------------------------------------------------------
+
+_GALLERY_PAGE_HTML = """<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>ColorForge — Admin Gallery (27)</title>
+<style>
+:root{--bg:#0f1216;--card:#181d24;--line:#262d37;--fg:#e6e9ef;--mut:#9aa4b2;--acc:#4f8cff;
+--ok:#2ecc71;--warn:#f5a623;--bad:#ff5d5d;--pub:#8b5cf6}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);
+font:13px/1.5 system-ui,Segoe UI,Roboto,sans-serif}
+header{display:flex;align-items:center;gap:14px;padding:14px 20px;border-bottom:1px solid var(--line);
+position:sticky;top:0;background:var(--bg);z-index:5}
+header h1{font-size:16px;margin:0}header .sp{flex:1}
+header a{color:var(--acc);text-decoration:none;font-size:12px;margin-left:14px}
+#summary{color:var(--mut);font-size:12px}
+main{padding:18px;display:grid;grid-template-columns:repeat(auto-fill,minmax(460px,1fr));gap:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.card .top{display:flex;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid var(--line)}
+.card .jn{font-weight:700}
+.chip{padding:2px 9px;border-radius:999px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.03em}
+.v-PASS{background:#123020;color:var(--ok)}.v-REVIEW{background:#3a3410;color:var(--warn)}.v-FAIL{background:#3a1414;color:var(--bad)}
+.st-draft{background:#2a2f36;color:var(--mut)}.st-processing{background:#10233a;color:var(--acc)}
+.st-review{background:#20252d;color:var(--fg)}.st-approved{background:#123020;color:var(--ok)}
+.st-rejected{background:#3a1414;color:var(--bad)}.st-published{background:#241a3a;color:var(--pub)}
+.previews{display:grid;grid-template-columns:repeat(5,1fr);gap:2px;background:#0c0f13}
+.previews figure{margin:0;position:relative}
+.previews img{width:100%;aspect-ratio:1;object-fit:cover;display:block;background:#fff}
+.previews figcaption{position:absolute;bottom:0;left:0;right:0;font-size:9px;text-align:center;
+background:rgba(0,0,0,.55);color:#dfe3ea;padding:1px 0}
+.meta{padding:8px 12px;color:var(--mut);font-size:12px;display:flex;flex-wrap:wrap;gap:4px 12px}
+.meta b{color:var(--fg);font-weight:600}
+.acts{display:flex;gap:8px;padding:0 12px 12px;align-items:center}
+button{border:1px solid var(--line);background:#10141a;color:var(--fg);padding:7px 14px;border-radius:7px;
+font-weight:600;cursor:pointer}button.ok:hover{border-color:var(--ok);color:var(--ok)}
+button.bad:hover{border-color:var(--bad);color:var(--bad)}
+.acts a{color:var(--acc);text-decoration:none;font-size:12px}
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--card);
+border:1px solid var(--acc);padding:12px 20px;border-radius:8px;opacity:0;transition:.3s;pointer-events:none}
+</style></head><body>
+<header><h1>ColorForge · Admin Gallery</h1><span id="summary">loading…</span><span class="sp"></span>
+<a href="/api/admin/publishing/page" target="_blank">publishing dashboard ↗</a>
+<a href="/api/catalog/page" target="_blank">user catalog ↗</a></header>
+<main id="grid"></main><div id="toast"></div>
+<script>
+const P=[["original","Original"],["border","Border"],["numbered","Numbered"],["reveal","Reveal"],["completed","Completed"]];
+function toast(m){const t=document.getElementById("toast");t.textContent=m;t.style.opacity=1;setTimeout(()=>t.style.opacity=0,2200);}
+async function load(){
+  const d=await (await fetch("/api/admin/gallery")).json();
+  const v={PASS:0,REVIEW:0,FAIL:0}; d.items.forEach(i=>v[i.verdict]++);
+  document.getElementById("summary").textContent=
+    `${d.count} images · PASS ${v.PASS} · REVIEW ${v.REVIEW} · FAIL ${v.FAIL}`;
+  document.getElementById("grid").innerHTML=d.items.map(card).join("");
+}
+function card(i){
+  const pv=P.map(([k,l])=>`<figure><img loading="lazy" src="${i.previews[k]}" onerror="this.style.opacity=.12"/><figcaption>${l}</figcaption></figure>`).join("");
+  return `<div class="card" id="c-${i.job_id}">
+    <div class="top"><span class="jn">${i.job_id}</span>
+      <span class="chip v-${i.verdict}">${i.verdict}</span>
+      <span class="chip st-${i.review_status}" id="s-${i.job_id}">${i.review_status}</span></div>
+    <div class="previews">${pv}</div>
+    <div class="meta"><span><b>${i.image_type||'?'}</b> type</span><span><b>${i.profile||'?'}</b> profile</span>
+      <span><b>${i.region_count}</b> regions</span><span><b>${i.palette_count}</b> colours</span>
+      <span><b>${i.play_time_min}</b> min</span><span>reveal ΔE <b>${i.reveal_deltaE}</b></span></div>
+    <div class="acts"><button class="ok" onclick="approve('${i.job_id}')">✓ Approve</button>
+      <button class="bad" onclick="reject('${i.job_id}')">✕ Reject</button>
+      <span class="sp" style="flex:1"></span>
+      <a href="${i.review_url}" target="_blank">full review ↗</a>
+      <a href="${i.package_url}" target="_blank">package ↗</a></div></div>`;
+}
+function setStatus(job,s){const e=document.getElementById("s-"+job);if(e){e.textContent=s;e.className="chip st-"+s;}}
+async function approve(job){const r=await fetch(`/api/job/${job}/review/approve`,{method:"POST"});
+  const d=await r.json().catch(()=>({}));setStatus(job,d.status||"approved");toast(job+" approved ✓");}
+async function reject(job){const reason=prompt("Reject reason:")||"";
+  const r=await fetch(`/api/job/${job}/review/reject`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({reason})});
+  const d=await r.json().catch(()=>({}));setStatus(job,d.status||"rejected");toast(job+" rejected ✕");}
+load();
+</script></body></html>"""
+
+
+def _gj(folder: Path, name: str):
+    p = folder / name
+    try:
+        return json.loads(p.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+
+
+def _gallery_verdict(record: dict, stats: dict, review: dict, rv: dict, bq: dict) -> str:
+    """PASS / REVIEW / FAIL from the review + reveal + border-quality signals."""
+    if record.get("status") != "done" or not review:
+        return "FAIL"
+    if rv.get("completed_reveal_delta_e") not in (0, 0.0) or rv.get("matches_original_under_masks") is False:
+        return "FAIL"
+    if int(bq.get("region_leak_count", 0) or 0) > 0:
+        return "FAIL"
+    verdict = (review.get("recommendation") or {}).get("verdict")
+    bqs = stats.get("border_quality_score")
+    cx = stats.get("complexity_score")
+    if verdict in ("likely_reject", "needs_attention") or (isinstance(bqs, (int, float)) and bqs < 65) \
+            or (isinstance(cx, (int, float)) and cx >= 82):
+        return "REVIEW"
+    return "PASS"
+
+
+@app.get("/api/admin/gallery")
+def admin_gallery(prefix: str = "br_") -> dict:
+    """Aggregated visual-review data for the processed test batch (jobs whose id starts with
+    `prefix`; default the 27 test-image jobs). Read-only."""
+    items = []
+    for record in list_jobs():
+        job_id = record.get("job_id", "")
+        if prefix and not job_id.startswith(prefix):
+            continue
+        folder = job_dir(job_id)
+        gc = _gj(folder, "game_config.json")
+        if not gc:
+            continue
+        review = _gj(folder, "review.json")
+        stats = review.get("statistics", {}) or {}
+        itr = _gj(folder, "image_type_report.json")
+        rv = _gj(folder, "reveal_validation.json")
+        bq = _gj(folder, "border_quality_report.json")
+        base = f"/api/job/{job_id}"
+        items.append({
+            "job_id": job_id,
+            "previews": {
+                "original": f"{base}/review/asset/original.png",
+                "border": f"{base}/review/asset/review_border_preview.png",
+                "numbered": f"{base}/review/asset/game_preview.png",
+                "reveal": f"{base}/publish/asset/reveal_partial.png",
+                "completed": f"{base}/review/asset/reveal_completed.png",
+            },
+            "profile": gc.get("difficulty") or (gc.get("stats") or {}).get("difficulty"),
+            "image_type": itr.get("image_type"),
+            "region_count": stats.get("region_count") or len(gc.get("regions", [])),
+            "palette_count": stats.get("palette_count") or len(gc.get("palette", [])),
+            "play_time_min": stats.get("estimated_play_time_min"),
+            "reveal_deltaE": rv.get("completed_reveal_delta_e"),
+            "verdict": _gallery_verdict(record, stats, review, rv, bq),
+            "review_status": publishing.status(folder),
+            "review_url": f"{base}/review/page",
+            "package_url": f"{base}/package",
+        })
+    items.sort(key=lambda x: x["job_id"])
+    return {"count": len(items), "prefix": prefix, "items": items}
+
+
+@app.get("/api/admin/gallery/page", response_class=HTMLResponse)
+def admin_gallery_page() -> HTMLResponse:
+    return HTMLResponse(_GALLERY_PAGE_HTML)
+
+
 @app.get("/api/download/{job_id}/{file_type}")
 def download(job_id: str, file_type: str) -> FileResponse:
     if file_type not in ARTIFACTS:
