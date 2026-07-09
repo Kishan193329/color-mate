@@ -73,6 +73,7 @@ from services import (
     region_detector,
     region_hierarchy,
     review_engine,
+    publishing,
     semantic_region_analyzer,
     svg_generator,
     texture_preview_renderer,
@@ -449,6 +450,15 @@ def _apply_review(job_id: str) -> None:
         pass
 
 
+def _set_publish(job_id: str, status: str) -> None:
+    """Advance the Admin Publishing Flow lifecycle (metadata only — no algorithm change).
+    Force-set so a regenerate cleanly resets an already-approved image. Best-effort."""
+    try:
+        publishing.set_status(job_dir(job_id), status, validate=False, actor="pipeline")
+    except Exception:  # noqa: BLE001
+        pass
+
+
 def _apply_artistic_decisions(folder: Path, profile: dict | None = None) -> None:
     """Quality Fix 13 — fuse the QF7/QF8/QF9 (+QF11/QF12/QF3 when present) reports
     into the per-region artistic decision record future engines obey. Reads reports
@@ -510,6 +520,7 @@ def run(job_id: str, profile_name: str = DEFAULT_PROFILE) -> None:
         profile_name = DEFAULT_PROFILE
     profile = OUTPUT_PROFILES[profile_name]
     try:
+        _set_publish(job_id, "processing")             # Admin Publishing Flow: draft -> processing
         _process(job_id, profile, profile_name, "original", use_ai=True)
         _apply_gradient_preservation(job_id, profile)  # QF12 intelligent-split fidelity pass
         _apply_fragment_cleanup(job_id)                # Fragmentation reduction (cleaned label map)
@@ -518,6 +529,7 @@ def run(job_id: str, profile_name: str = DEFAULT_PROFILE) -> None:
         _apply_artistic_border_render(job_id)          # Artistic Border Render Pass (SVG layer only, gated)
         finish_job(job_id)
         _apply_review(job_id)                          # Admin Review System (read-only assets + review.json)
+        _set_publish(job_id, "review")                 # Admin Publishing Flow: processing -> review
     except Exception as exc:  # noqa: BLE001
         fail_job(job_id, f"Processing failed: {exc}")
 
@@ -529,11 +541,13 @@ def reprocess(job_id: str, difficulty: str) -> None:
         difficulty = DEFAULT_DIFFICULTY
     try:
         make_backup(job_id)  # always back up before cleanup
+        _set_publish(job_id, "processing")             # Admin Publishing Flow: -> processing
         # Reprocessing forces the LOCAL engine (deterministic, no AI dependency).
         _process(job_id, DIFFICULTY_PROFILES[difficulty], difficulty, "preprocessed", use_ai=False)
         write_progress(job_id, [])  # regions changed -> clear coloring
         finish_job(job_id)
         _apply_review(job_id)                          # Admin Review System refresh (read-only)
+        _set_publish(job_id, "review")                 # Admin Publishing Flow: processing -> review
     except Exception as exc:  # noqa: BLE001
         fail_job(job_id, f"Reprocessing failed: {exc}")
 

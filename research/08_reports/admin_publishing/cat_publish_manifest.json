@@ -1,0 +1,132 @@
+{
+  "complete": true,
+  "components": {
+    "original_image": {
+      "required": [
+        "original.png"
+      ],
+      "optional": [],
+      "present": [
+        "original.png"
+      ],
+      "missing_required": [],
+      "complete": true
+    },
+    "border_image": {
+      "required": [
+        "outline.svg"
+      ],
+      "optional": [
+        "review_border_preview.png"
+      ],
+      "present": [
+        "outline.svg",
+        "review_border_preview.png"
+      ],
+      "missing_required": [],
+      "complete": true
+    },
+    "numbered_image": {
+      "required": [
+        "game_preview.png"
+      ],
+      "optional": [],
+      "present": [
+        "game_preview.png"
+      ],
+      "missing_required": [],
+      "complete": true
+    },
+    "labels_regions": {
+      "required": [
+        "labels.npy",
+        "regions.json"
+      ],
+      "optional": [],
+      "present": [
+        "labels.npy",
+        "regions.json"
+      ],
+      "missing_required": [],
+      "complete": true
+    },
+    "palette_navigation": {
+      "required": [
+        "palette.json"
+      ],
+      "optional": [],
+      "present": [
+        "palette.json"
+      ],
+      "missing_required": [],
+      "complete": true
+    },
+    "reveal_masks": {
+      "required": [
+        "reveal_master.png",
+        "region_mask.png",
+        "labels.npy"
+      ],
+      "optional": [
+        "reveal_blank.png",
+        "reveal_partial.png",
+        "reveal_highlight.png",
+        "reveal_completed.png"
+      ],
+      "present": [
+        "reveal_master.png",
+        "region_mask.png",
+        "labels.npy",
+        "reveal_blank.png",
+        "reveal_partial.png",
+        "reveal_highlight.png",
+        "reveal_completed.png"
+      ],
+      "missing_required": [],
+      "complete": true
+    },
+    "game_config": {
+      "required": [
+        "game_config.json"
+      ],
+      "optional": [],
+      "present": [
+        "game_config.json"
+      ],
+      "missing_required": [],
+      "complete": true
+    },
+    "thumbnail_grid": {
+      "required": [
+        "publish_thumbnail.png"
+      ],
+      "optional": [],
+      "present": [
+        "publish_thumbnail.png"
+      ],
+      "missing_required": [],
+      "complete": true
+    },
+    "category_metadata": {
+      "category": {
+        "name": "cats",
+        "title": "Curious Cat",
+        "tags": [
+          "animal",
+          "cat"
+        ]
+      },
+      "complete": true
+    }
+  },
+  "published_at": "2026-07-09T02:57:59.255688+00:00",
+  "job_id": "cat_publish_test",
+  "category": {
+    "name": "cats",
+    "title": "Curious Cat",
+    "tags": [
+      "animal",
+      "cat"
+    ]
+  }
+}

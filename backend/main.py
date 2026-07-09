@@ -18,7 +18,7 @@ import shutil
 import uuid
 from pathlib import Path
 
-from fastapi import BackgroundTasks, Body, FastAPI, File, HTTPException, UploadFile
+from fastapi import BackgroundTasks, Body, FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse
 
@@ -49,6 +49,7 @@ from job_store import (
 from services import (
     advanced_lineart_generator,
     ai_mode_router,
+    publishing,
     quality_analyzer,
     region_editor,
     region_hierarchy,
@@ -145,7 +146,8 @@ def process(req: ProcessRequest, background: BackgroundTasks) -> JobResponse:
     # (runs Medium first, escalates/steps down only if quality is poor, keeps the
     # best). Falls back to a plain Medium run identically when Medium is already good.
     background.add_task(quality_retry_engine.process_upload, req.job_id)
-    # Reflect that processing has been queued.
+    # Reflect that processing has been queued (job status + publishing lifecycle).
+    publishing.set_status(job_dir(req.job_id), "processing", validate=False, actor="admin")
     record["status"] = "processing"
     return JobResponse(**record)
 
@@ -669,6 +671,8 @@ def rebuild_review(job_id: str) -> dict:
 @app.post("/api/job/{job_id}/review/approve")
 def review_approve(job_id: str) -> dict:
     _require_job(job_id)
+    # The review decision also advances the publishing lifecycle (review -> approved).
+    publishing.set_status(job_dir(job_id), "approved", validate=False, actor="admin")
     return review_engine.set_status(job_dir(job_id), "approved")
 
 
@@ -676,6 +680,7 @@ def review_approve(job_id: str) -> dict:
 def review_reject(job_id: str, payload: dict | None = Body(default=None)) -> dict:
     _require_job(job_id)
     reason = (payload or {}).get("reason") if isinstance(payload, dict) else None
+    publishing.set_status(job_dir(job_id), "rejected", validate=False, reason=reason, actor="admin")
     return review_engine.set_status(job_dir(job_id), "rejected", reason)
 
 
@@ -726,6 +731,244 @@ def review_page(job_id: str) -> HTMLResponse:
     four one-click actions. No build step — vanilla HTML/JS that consumes the review API."""
     _require_job(job_id)
     return HTMLResponse(_REVIEW_PAGE_HTML.replace("__JOB_ID__", job_id))
+
+
+# ---------------------------------------------------------------------------
+# Admin Publishing Flow — admin uploads, lifecycle, package, catalog
+# ---------------------------------------------------------------------------
+
+_PUBLISH_PAGE_HTML = """<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>ColorForge — Admin Publishing</title>
+<style>
+:root{--bg:#0f1216;--card:#181d24;--line:#262d37;--fg:#e6e9ef;--mut:#9aa4b2;--acc:#4f8cff;
+--ok:#2ecc71;--warn:#f5a623;--bad:#ff5d5d;--pub:#8b5cf6}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);
+font:14px/1.5 system-ui,Segoe UI,Roboto,sans-serif;display:flex;flex-direction:column;height:100vh}
+header{display:flex;align-items:center;gap:14px;padding:14px 20px;border-bottom:1px solid var(--line)}
+header h1{font-size:16px;margin:0}header a{color:var(--acc);text-decoration:none;font-size:13px}
+.wrap{display:flex;flex:1;overflow:hidden}
+.list{width:320px;border-right:1px solid var(--line);overflow:auto;padding:10px}
+.job{display:flex;gap:10px;padding:8px;border:1px solid transparent;border-radius:8px;cursor:pointer}
+.job:hover{background:var(--card)}.job.sel{border-color:var(--acc);background:var(--card)}
+.job img{width:48px;height:48px;object-fit:cover;border-radius:6px;background:#000}
+.job .jn{font-weight:600}.job .jc{color:var(--mut);font-size:12px}
+.detail{flex:1;overflow:auto;padding:20px}
+.chip{padding:2px 10px;border-radius:999px;font-size:11px;font-weight:700;text-transform:uppercase}
+.st-draft{background:#2a2f36;color:var(--mut)}.st-processing{background:#10233a;color:var(--acc)}
+.st-review{background:#3a3410;color:var(--warn)}.st-approved{background:#123020;color:var(--ok)}
+.st-rejected{background:#3a1414;color:var(--bad)}.st-published{background:#241a3a;color:var(--pub)}
+.flow{display:flex;gap:6px;align-items:center;margin:8px 0 18px;flex-wrap:wrap}
+.flow .s{padding:3px 10px;border-radius:6px;background:#20252d;color:var(--mut);font-size:12px}
+.flow .s.on{background:var(--acc);color:#fff}.flow .a{color:var(--mut)}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0}
+button{border:1px solid var(--line);background:var(--card);color:var(--fg);padding:9px 16px;border-radius:8px;font-weight:600;cursor:pointer}
+button:hover{border-color:var(--acc)}button.pub{border-color:var(--pub);color:#c4b5fd}
+button.ok:hover{border-color:var(--ok);color:var(--ok)}button.bad:hover{border-color:var(--bad);color:var(--bad)}
+input{background:#10141a;border:1px solid var(--line);color:var(--fg);padding:8px;border-radius:6px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-top:8px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.card .cap{padding:8px 12px;font-weight:600;border-bottom:1px solid var(--line);font-size:13px}
+.card img{width:100%;display:block;background:#fff}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:6px 16px;padding:12px}
+.stats div{display:flex;justify-content:space-between;border-bottom:1px solid var(--line);padding:3px 0}
+.stats .k{color:var(--mut)}
+.pkg{margin-top:16px;font-size:13px}.pkg .c{color:var(--ok)}.pkg .x{color:var(--bad)}
+h2{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--mut);margin:22px 0 6px}
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--card);border:1px solid var(--acc);padding:12px 20px;border-radius:8px;opacity:0;transition:.3s}
+</style></head><body>
+<header><h1>ColorForge · Admin Publishing</h1><a href="/api/catalog/page" target="_blank">↗ view user catalog</a>
+<span style="flex:1"></span><span id="count" style="color:var(--mut);font-size:12px"></span></header>
+<div class="wrap"><div class="list" id="list"></div><div class="detail" id="detail">
+<p style="color:var(--mut)">Select an image to review and publish.</p></div></div>
+<div id="toast"></div>
+<script>
+const STATES=["draft","processing","review","approved","published"];
+const PREV=[["publish_thumbnail.png","1. Category Grid Preview"],["original.png","2. Original"],
+["review_border_preview.png","3. Border-only"],["game_preview.png","4. Numbered"],
+["reveal_partial.png","5. Reveal / Fill Simulation"],["reveal_completed.png","6. Final Completed"]];
+let cur=null;
+function toast(m){const t=document.getElementById("toast");t.textContent=m;t.style.opacity=1;setTimeout(()=>t.style.opacity=0,2200);}
+const PA=(j,n)=>`/api/job/${j}/publish/asset/${n}`;
+async function loadList(){
+  const d=await (await fetch("/api/admin/publishing")).json();
+  document.getElementById("count").textContent=d.jobs.length+" images";
+  document.getElementById("list").innerHTML=d.jobs.map(j=>{
+    const cat=(j.category||{});const th=j.thumbnail?`<img src="${PA(j.job_id,j.thumbnail)}"/>`:`<img/>`;
+    return `<div class="job ${cur===j.job_id?'sel':''}" onclick="open_('${j.job_id}')">${th}
+      <div><div class="jn">${cat.title||j.job_id}</div>
+      <div class="jc">${cat.name||'—'} · <span class="chip st-${j.status}">${j.status}</span></div></div></div>`;
+  }).join("")||"<p style='color:var(--mut)'>No images yet.</p>";
+}
+async function open_(job){
+  cur=job; loadList();
+  const p=await (await fetch(`/api/job/${job}/publish`)).json();
+  let stats={};try{stats=(await (await fetch(`/api/job/${job}/review`)).json()).statistics||{};}catch(e){}
+  const cat=p.category||{};const st=p.status;
+  const flow=STATES.map((s,i)=>`<span class="s ${s===st?'on':''}">${s}</span>`+(i<STATES.length-1?'<span class="a">›</span>':'')).join("");
+  const stEntries=[["Region count",stats.region_count],["Palette count",stats.palette_count],
+    ["Tiny regions",stats.tiny_regions],["Difficulty",stats.estimated_difficulty],
+    ["Play time",stats.estimated_play_time_min!=null?stats.estimated_play_time_min+" min":"—"],
+    ["Complexity",stats.complexity_score],["Border quality",stats.border_quality_score],["Artistic",stats.artistic_score]];
+  const previews=PREV.map(([f,l])=>`<div class="card"><div class="cap">${l}</div><img loading="lazy" src="${PA(job,f)}" onerror="this.style.opacity=.15"/></div>`).join("");
+  const m=p.manifest||{components:{}};
+  const pkg=Object.entries(m.components).map(([k,v])=>`<span class="${v.complete?'c':'x'}">${v.complete?'✓':'✗'} ${k}</span>`).join(" &nbsp; ");
+  const acts=[];
+  if(st==="review"){acts.push(`<button class="ok" onclick="act('review/approve')">✓ Approve</button>`,`<button class="bad" onclick="rej()">✕ Reject</button>`);}
+  if(st==="approved"){acts.push(`<button class="pub" onclick="act('publish/publish')">▲ Publish</button>`,`<button class="bad" onclick="rej()">✕ Reject</button>`);}
+  if(st==="published"){acts.push(`<button onclick="act('publish/unpublish')">▼ Unpublish</button>`);}
+  acts.push(`<button onclick="act('review/regenerate')">↻ Regenerate</button>`);
+  document.getElementById("detail").innerHTML=`
+    <div style="display:flex;align-items:center;gap:12px"><h1 style="margin:0;font-size:18px">${cat.title||job}</h1>
+      <span class="chip st-${st}">${st}</span></div>
+    <div class="flow">${flow}</div>
+    <div class="row"><input id="cn" value="${cat.name||''}" placeholder="category"/>
+      <input id="ct" value="${cat.title||''}" placeholder="title" style="flex:1"/>
+      <button onclick="saveCat('${job}')">Save category</button></div>
+    <div class="row">${acts.join("")}</div>
+    <div class="pkg"><b>Approved package:</b> ${m.complete?'<span class=c>complete ✓</span>':'<span class=x>incomplete</span>'}<br>${pkg}</div>
+    <h2>Quality stats</h2><div class="card"><div class="stats">${stEntries.map(([k,v])=>`<div><span class="k">${k}</span><span>${v??'—'}</span></div>`).join("")}</div></div>
+    <h2>Admin review previews</h2><div class="grid">${previews}</div>`;
+}
+async function act(path){const r=await fetch(`/api/job/${cur}/${path}`,{method:"POST"});
+  const d=await r.json().catch(()=>({}));
+  if(!r.ok){toast("⚠ "+(d.detail||"failed"));return;}
+  toast(path.split("/").pop()+" ✓");open_(cur);}
+async function rej(){const reason=prompt("Reject reason:")||"";
+  await fetch(`/api/job/${cur}/review/reject`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({reason})});
+  toast("rejected");open_(cur);}
+async function saveCat(job){const name=document.getElementById("cn").value,title=document.getElementById("ct").value;
+  await fetch(`/api/job/${job}/publish/category`,{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({name,title})});
+  toast("category saved");open_(job);}
+loadList();
+</script></body></html>"""
+
+_CATALOG_PAGE_HTML = """<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>ColorForge — Catalog</title>
+<style>
+:root{--bg:#0f1216;--card:#181d24;--line:#262d37;--fg:#e6e9ef;--mut:#9aa4b2}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 system-ui,Segoe UI,Roboto,sans-serif}
+header{padding:20px 26px;border-bottom:1px solid var(--line)}header h1{margin:0;font-size:18px}
+header p{margin:4px 0 0;color:var(--mut);font-size:13px}
+main{padding:22px 26px;max-width:1300px;margin:0 auto}
+h2{font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--mut);margin:26px 0 12px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px}
+.tile{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.tile img{width:100%;aspect-ratio:1;object-fit:cover;display:block;background:#000}
+.tile .m{padding:10px 12px}.tile .t{font-weight:600}.tile .s{color:var(--mut);font-size:12px;margin-top:2px}
+.empty{color:var(--mut);padding:40px 0}
+</style></head><body>
+<header><h1>ColorForge · Colour-by-Number Catalog</h1><p>Published images available to play.</p></header>
+<main id="main"><p class="empty">Loading…</p></main>
+<script>
+const PA=(j,n)=>`/api/job/${j}/publish/asset/${n}`;
+async function load(){
+  const d=await (await fetch("/api/catalog")).json();
+  const main=document.getElementById("main");
+  if(!d.images.length){main.innerHTML='<p class="empty">No published images yet.</p>';return;}
+  const byCat={};d.images.forEach(i=>{const c=(i.category||{}).name||"uncategorized";(byCat[c]=byCat[c]||[]).push(i);});
+  main.innerHTML=Object.entries(byCat).map(([cat,items])=>`
+    <h2>${cat}</h2><div class="grid">${items.map(i=>{
+      const c=i.category||{},s=i.stats||{};
+      const th=i.thumbnail?`<img src="${PA(i.job_id,i.thumbnail)}"/>`:`<img/>`;
+      return `<div class="tile">${th}<div class="m"><div class="t">${c.title||i.job_id}</div>
+        <div class="s">${s.regions??'—'} regions · ${s.difficulty||'—'}</div></div></div>`;
+    }).join("")}</div>`).join("");
+}
+load();
+</script></body></html>"""
+
+
+@app.post("/api/admin/upload", response_model=UploadResponse)
+async def admin_upload(file: UploadFile = File(...),
+                       category: str = Form("uncategorized"),
+                       title: str | None = Form(None)) -> UploadResponse:
+    """Admin-only upload of a colour image. Creates the job in the `draft` publish state
+    with its category metadata. (Users never upload — they only see published images.)"""
+    if file.content_type not in ALLOWED_UPLOAD_TYPES:
+        raise HTTPException(status_code=400,
+                            detail=f"Unsupported file type '{file.content_type}'. Use PNG, JPEG, or WebP.")
+    job_id = uuid.uuid4().hex[:12]
+    create_job(job_id)
+    with (job_dir(job_id) / ARTIFACTS["original"]).open("wb") as out:
+        shutil.copyfileobj(file.file, out)
+    publishing.init(job_dir(job_id), category=category, title=title, job_id=job_id)  # -> draft
+    return UploadResponse(job_id=job_id, status=JobStatus.created,
+                          original_url=f"/api/download/{job_id}/original")
+
+
+@app.get("/api/job/{job_id}/publish")
+def get_publish(job_id: str) -> dict:
+    """Publish status + category + package manifest for a job."""
+    _require_job(job_id)
+    folder = job_dir(job_id)
+    data = publishing.load(folder) or publishing.init(folder, job_id=job_id)
+    publishing.ensure_thumbnail(folder)                 # so the grid preview is available
+    return {**data, "manifest": publishing.package_manifest(folder)}
+
+
+@app.put("/api/job/{job_id}/publish/category")
+def set_publish_category(job_id: str, payload: dict = Body(...)) -> dict:
+    _require_job(job_id)
+    return publishing.set_category(job_dir(job_id), name=payload.get("name"),
+                                   title=payload.get("title"), tags=payload.get("tags"))
+
+
+@app.post("/api/job/{job_id}/publish/publish")
+def publish_job(job_id: str) -> dict:
+    """approved -> published. Assembles + verifies the package; refuses if not approved
+    or the package is incomplete."""
+    _require_job(job_id)
+    try:
+        return publishing.publish(job_dir(job_id))
+    except ValueError as exc:
+        raise HTTPException(status_code=409, detail=str(exc))
+
+
+@app.post("/api/job/{job_id}/publish/unpublish")
+def unpublish_job(job_id: str) -> dict:
+    _require_job(job_id)
+    try:
+        return publishing.unpublish(job_dir(job_id))
+    except ValueError as exc:
+        raise HTTPException(status_code=409, detail=str(exc))
+
+
+@app.get("/api/job/{job_id}/publish/asset/{name}")
+def publish_asset(job_id: str, name: str) -> FileResponse:
+    """Serve a publishing/catalog asset (thumbnail, previews, package files). Whitelisted."""
+    _require_job(job_id)
+    if name not in publishing.SERVEABLE:
+        raise HTTPException(status_code=404, detail="Not a publishable asset")
+    path = job_dir(job_id) / name
+    if not path.exists():
+        raise HTTPException(status_code=404, detail="Asset not found")
+    return FileResponse(path)
+
+
+@app.get("/api/catalog")
+def catalog() -> dict:
+    """The user-facing catalog — ONLY published images (the category grid users see)."""
+    return {"images": publishing.catalog(published_only=True)}
+
+
+@app.get("/api/admin/publishing")
+def admin_publishing() -> dict:
+    """Admin dashboard — every job with its publish status (all lifecycle states)."""
+    return {"jobs": publishing.catalog(published_only=False)}
+
+
+@app.get("/api/admin/publishing/page", response_class=HTMLResponse)
+def admin_publishing_page() -> HTMLResponse:
+    return HTMLResponse(_PUBLISH_PAGE_HTML)
+
+
+@app.get("/api/catalog/page", response_class=HTMLResponse)
+def catalog_page() -> HTMLResponse:
+    return HTMLResponse(_CATALOG_PAGE_HTML)
 
 
 @app.get("/api/download/{job_id}/{file_type}")
