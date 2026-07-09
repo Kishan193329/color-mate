@@ -44,7 +44,7 @@ from pathlib import Path
 import cv2
 import numpy as np
 
-from services import hvi_border_guidance
+from services import hsu_strategy_routing, hvi_border_guidance
 from services.contour_character_engine import (
     CLASS_STYLE, MIN_CONTOUR_PTS, STYLE_POLICY,
     _catmull_bezier, _corner_indices, _polyline,
@@ -56,6 +56,10 @@ from services.contour_character_engine import (
 # beauty / fun / tracing / drawing) before rendering. Purely an action choice on the SVG
 # layer — no reveal / mask / region / palette / number change. Toggle for A/B validation.
 HVI_GUIDANCE = True
+# HSU-Guided Strategy Routing: after HVI, the scene's recommended strategy modulates the
+# action per scene role (protect face/symmetry, simplify background, emphasise subject/near,
+# clean lines). Still the SVG layer only. Toggle for A/B validation.
+HSU_GUIDANCE = True
 
 STROKE_DARK = "#111111"
 STROKE_EMPH = "#000000"
@@ -207,6 +211,12 @@ def render(labels_path: Path, artistic_border_report_path: Path, contour_report_
     hvi_changed = 0
     hvi_by_rule: Counter = Counter()
     hvi_transitions: Counter = Counter()
+    # HSU-Guided Strategy Routing: scene-strategy modulation (analysis only, read-only).
+    hsu_plan = hsu_strategy_routing.load_plan(Path(game_config_path).parent) if HSU_GUIDANCE else None
+    hsu_on = bool(hsu_plan and hsu_plan.get("strategy") not in (None, "UNKNOWN_CONSERVATIVE"))
+    hsu_changed = 0
+    hsu_by_rule: Counter = Counter()
+    hsu_transitions: Counter = Counter()
     if not action_by:                                      # nothing decided — no-op
         report = {"version": 1, "note": "No artistic_border_report segments; render skipped.",
                   "segment_count": 0, "accepted": False, "outputs_updated": False}
@@ -248,6 +258,15 @@ def render(labels_path: Path, artistic_border_report_path: Path, contour_report_
                         hvi_transitions[f"{action}->{adj.value}"] += 1
                         hvi_by_rule[adj.evidence.get("rule", "?")] += 1
                     action = adj.value
+            if hsu_on:                                      # HSU scene strategy modulates it
+                sd = hsu_strategy_routing.border_action(
+                    hsu_plan["strategy"], action, hsu_plan["role_of"].get(lbl, "neutral"),
+                    lbl in hsu_plan["focal_set"], outer_by.get(key, ci == 0))
+                if sd.value != action:
+                    hsu_changed += 1
+                    hsu_transitions[f"{action}->{sd.value}"] += 1
+                    hsu_by_rule[sd.evidence.get("rule", "?")] += 1
+                action = sd.value
             action_counts[action] += 1
             if action == "REMOVE":
                 removed += 1
@@ -333,6 +352,11 @@ def render(labels_path: Path, artistic_border_report_path: Path, contour_report_
         "hvi_guided": hvi_on,
         "hvi_adjustments": {"changed": hvi_changed, "by_rule": dict(hvi_by_rule),
                             "transitions": dict(hvi_transitions.most_common())},
+        "hsu_guided": hsu_on,
+        "hsu_strategy": (hsu_plan or {}).get("strategy"),
+        "hsu_start_profile_hint_advisory": (hsu_plan or {}).get("start_profile_hint"),
+        "hsu_adjustments": {"changed": hsu_changed, "by_rule": dict(hsu_by_rule),
+                            "transitions": dict(hsu_transitions.most_common())},
         "stroke_settings": {a: {"width": w_, "colour": c_, "opacity": o_}
                             for a, (w_, c_, o_) in STROKE_STYLE.items()},
         "baseline_svg": baseline_svg_path.name,

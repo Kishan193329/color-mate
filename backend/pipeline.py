@@ -555,11 +555,11 @@ def run(job_id: str, profile_name: str = DEFAULT_PROFILE) -> None:
         _apply_fragment_cleanup(job_id)                # Fragmentation reduction (cleaned label map)
         _apply_contour_character(job_id)               # QF14 adaptive contour styling (runs last)
         _apply_human_visual(job_id)                    # Human Visual Intelligence (analysis only) — before borders
+        _apply_human_scene(job_id)                     # Human Scene Understanding (analysis only) — before borders
         _apply_artistic_border(job_id)                 # Artistic Border Intelligence (analysis only)
-        _apply_artistic_border_render(job_id)          # Artistic Border Render Pass (SVG layer only, HVI-guided, gated)
+        _apply_artistic_border_render(job_id)          # Artistic Border Render Pass (SVG layer only, HVI+HSU-guided, gated)
         finish_job(job_id)
         _apply_review(job_id)                          # Admin Review System (read-only assets + review.json)
-        _apply_human_scene(job_id)                     # Human Scene Understanding (analysis only)
         _set_publish(job_id, "review")                 # Admin Publishing Flow: processing -> review
     except Exception as exc:  # noqa: BLE001
         fail_job(job_id, f"Processing failed: {exc}")
