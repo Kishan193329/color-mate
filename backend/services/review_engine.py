@@ -29,6 +29,7 @@ from pathlib import Path
 import cv2
 import numpy as np
 
+from core.decision import Decision, decide
 from services.contour_character_engine import _sample_d
 
 # A region below this share of the frame (or the absolute floor) reads as "tiny" — the
@@ -152,8 +153,19 @@ def _artistic_border_preview(folder: Path, h: int, w: int) -> str | None:
 
 
 # --------------------------------------------------------------------------- #
-# scoring — all indices are explainable admin-triage measures, 0..100
+# scoring — future-learning-compatible heuristic decisions (see core.decision).
+# Each score is a Decision: `.value` goes into `statistics`, and the full record
+# (reason / confidence / evidence / override_point) is exposed in review.json under
+# `decisions`, so a future experience database can replace the static rule via
+# core.decision.set_policy_provider — with no rewrite here. Static-rule confidences are
+# moderate; learning from real play/quality data would raise them.
 # --------------------------------------------------------------------------- #
+CONF_COMPLEXITY = 0.55         # blended heuristic
+CONF_BORDER_QUALITY = 0.70     # grounded in concrete leak / pass / jaggedness signals
+CONF_ARTISTIC = 0.50           # soft scores averaged over many segments
+CONF_PLAY_TIME = 0.45          # coarse per-region time model, not yet calibrated to real play
+
+
 def _play_time_seconds(areas: list) -> float:
     total = 0.0
     for a in areas:
@@ -162,39 +174,76 @@ def _play_time_seconds(areas: list) -> float:
     return total
 
 
-def _complexity_score(region_count: int, border_density: float, tiny_frac: float) -> int:
+def _play_time_decision(areas: list) -> Decision:
+    minutes = int(round(_play_time_seconds(areas) / 60.0))
+    return decide(
+        "review.estimated_play_time_min", minutes,
+        reason=f"per-region model: find {FIND_SEC:g}s + fill(area/{FILL_AREA_PER_SEC:g}, "
+               f"clamp {FILL_MIN_SEC:g}-{FILL_MAX_SEC:g}s) over {len(areas)} regions",
+        confidence=CONF_PLAY_TIME,
+        evidence={"region_count": len(areas), "find_sec": FIND_SEC,
+                  "fill_area_per_sec": FILL_AREA_PER_SEC,
+                  "fill_bounds_sec": [FILL_MIN_SEC, FILL_MAX_SEC]},
+        override_point="review.estimated_play_time_min")
+
+
+def _complexity_decision(region_count: int, border_density: float, tiny_frac: float) -> Decision:
     region_c = 100 * min(1.0, region_count / CX_REGION_CAP)
     density_c = 100 * min(1.0, border_density / CX_DENSITY_CAP)
     tiny_c = 100 * min(1.0, tiny_frac / CX_TINY_CAP)
-    return int(round(_clamp(0.5 * region_c + 0.35 * density_c + 0.15 * tiny_c)))
+    value = int(round(_clamp(0.5 * region_c + 0.35 * density_c + 0.15 * tiny_c)))
+    return decide(
+        "review.complexity_score", value,
+        reason="0.5*regions + 0.35*border-density + 0.15*tiny-fraction (each capped)",
+        confidence=CONF_COMPLEXITY,
+        evidence={"region_count": region_count, "border_density": round(border_density, 4),
+                  "tiny_fraction": round(tiny_frac, 4),
+                  "weights": {"region": 0.5, "density": 0.35, "tiny": 0.15},
+                  "caps": {"region": CX_REGION_CAP, "density": CX_DENSITY_CAP, "tiny": CX_TINY_CAP}},
+        override_point="review.complexity_score")
 
 
-def _border_quality_score(bq: dict | None) -> int | None:
+def _border_quality_decision(bq: dict | None) -> Decision:
     if not bq:
-        return None
+        return decide("review.border_quality_score", None,
+                      reason="no border_quality_report available", confidence=0.0,
+                      evidence={}, override_point="review.border_quality_score")
     s = 100.0
+    penalties: dict = {}
     leaks = int(bq.get("region_leak_count", 0) or 0)
     if leaks or bq.get("leak_pass") is False:
-        s -= min(30.0, 10.0 + leaks * 5.0)
+        p = min(30.0, 10.0 + leaks * 5.0); s -= p; penalties["leak"] = p
     if bq.get("shape_pass") is False:
-        s -= 15.0
+        s -= 15.0; penalties["shape_fail"] = 15.0
     if bq.get("closure_pass") is False:
-        s -= 10.0
-    s -= min(25.0, float(bq.get("jaggedness_score_after", 0.0) or 0.0) * 160.0)
-    s -= min(10.0, int(bq.get("fragments_after", 0) or 0) * 0.2)
-    return int(round(_clamp(s)))
+        s -= 10.0; penalties["closure_fail"] = 10.0
+    jag = min(25.0, float(bq.get("jaggedness_score_after", 0.0) or 0.0) * 160.0)
+    frag = min(10.0, int(bq.get("fragments_after", 0) or 0) * 0.2)
+    s -= jag + frag
+    penalties["jaggedness"] = round(jag, 2); penalties["fragments"] = round(frag, 2)
+    return decide(
+        "review.border_quality_score", int(round(_clamp(s))),
+        reason="100 minus penalties for leaks, failed closure/shape passes, jaggedness, fragments",
+        confidence=CONF_BORDER_QUALITY,
+        evidence={"region_leak_count": leaks, "leak_pass": bq.get("leak_pass"),
+                  "shape_pass": bq.get("shape_pass"), "closure_pass": bq.get("closure_pass"),
+                  "jaggedness_score_after": bq.get("jaggedness_score_after"),
+                  "fragments_after": bq.get("fragments_after"), "penalties": penalties},
+        override_point="review.border_quality_score")
 
 
-def _artistic_score(abr: dict | None) -> int | None:
-    if not abr:
-        return None
-    ms = abr.get("mean_scores") or {}
+def _artistic_decision(abr: dict | None) -> Decision:
+    ms = (abr or {}).get("mean_scores") or {}
     keys = ["visual_importance", "colouring_enjoyment", "structural_importance",
             "artistic_importance", "playability"]
-    vals = [float(ms[k]) for k in keys if k in ms]
-    if not vals:
-        return None
-    return int(round(_clamp(100.0 * sum(vals) / len(vals))))
+    vals = {k: float(ms[k]) for k in keys if k in ms}
+    value = int(round(_clamp(100.0 * sum(vals.values()) / len(vals)))) if vals else None
+    reason = ("mean of the artistic-border engine's per-segment visual/enjoyment/structural/"
+              "artistic/playability scores" if vals else "no artistic_border_report available")
+    return decide(
+        "review.artistic_score", value, reason=reason,
+        confidence=CONF_ARTISTIC if vals else 0.0,
+        evidence={"mean_scores": vals}, override_point="review.artistic_score")
 
 
 # --------------------------------------------------------------------------- #
@@ -274,9 +323,18 @@ def build_review(folder: Path, job_id: str | None = None) -> dict:
     total = h * w or 1
     largest = max(areas) if areas else 0
     tiny_frac = (len(tiny_labels) / len(regions)) if regions else 0.0
-    play_sec = _play_time_seconds(areas)
     bq = _load(folder / "border_quality_report.json")
     abr = _load(folder / "artistic_border_report.json")
+
+    # Heuristic scores as future-learning-compatible Decisions (rule value used today;
+    # a future experience policy can override via each decision's override_point).
+    decisions = [
+        _play_time_decision(areas),
+        _complexity_decision(len(regions), border_density, tiny_frac),
+        _border_quality_decision(bq),
+        _artistic_decision(abr),
+    ]
+    by_key = {d.key: d for d in decisions}
 
     statistics = {
         "region_count": len(regions),
@@ -286,10 +344,10 @@ def build_review(folder: Path, job_id: str | None = None) -> dict:
         "largest_region": {"area_px": largest, "area_pct": round(100.0 * largest / total, 2)},
         "average_region_size": int(round(sum(areas) / len(areas))) if areas else 0,
         "estimated_difficulty": gc.get("difficulty") or (gc.get("stats") or {}).get("difficulty"),
-        "estimated_play_time_min": int(round(play_sec / 60.0)),
-        "complexity_score": _complexity_score(len(regions), border_density, tiny_frac),
-        "border_quality_score": _border_quality_score(bq),
-        "artistic_score": _artistic_score(abr),
+        "estimated_play_time_min": by_key["review.estimated_play_time_min"].value,
+        "complexity_score": by_key["review.complexity_score"].value,
+        "border_quality_score": by_key["review.border_quality_score"].value,
+        "artistic_score": by_key["review.artistic_score"].value,
     }
 
     prev = _load(folder / "review_previous.json")
@@ -304,6 +362,10 @@ def build_review(folder: Path, job_id: str | None = None) -> dict:
                 "no rendering, regions, palette, numbers or reveal are modified.",
         "assets": assets,
         "statistics": statistics,
+        # Future-learning-compatible: each heuristic score exposes its reason, confidence,
+        # evidence and override_point (core.decision). An experience DB can later override
+        # any of these via set_policy_provider — no change here. Learning not implemented yet.
+        "decisions": [d.to_dict() for d in decisions],
         "actions": _actions(job_id),
         "comparison": _compare(statistics, prev),
         "readonly": True,
