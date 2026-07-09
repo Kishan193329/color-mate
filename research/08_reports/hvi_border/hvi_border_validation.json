@@ -1,0 +1,947 @@
+{
+  "summary": {
+    "images": 27,
+    "accepted": 27,
+    "reveal_deltaE_zero": 27,
+    "regions_unchanged": 27,
+    "numbers_unchanged": 27,
+    "palette_unchanged": 27,
+    "reveal_masks_labels_unchanged": 27,
+    "outline_changed_by_hvi": 27,
+    "total_hvi_adjustments": 3830,
+    "by_rule_total": {
+      "preserve_detail": 31,
+      "emphasize_silhouette": 2549,
+      "emphasize_focal": 691,
+      "beautify": 559
+    }
+  },
+  "rows": [
+    {
+      "index": 1,
+      "accepted_on": true,
+      "hvi_guided": true,
+      "hvi_changed": 154,
+      "by_rule": {
+        "preserve_detail": 2,
+        "emphasize_silhouette": 67,
+        "emphasize_focal": 51,
+        "beautify": 34
+      },
+      "regions_same": true,
+      "numbers_same": true,
+      "palette_same": true,
+      "invariant_files_same": true,
+      "reveal_deltaE": 0.0,
+      "outline_changed_by_hvi": true,
+      "iou_delta_on": -0.0005,
+      "removed_frac_on": 0.0339,
+      "actions_off": {
+        "SIMPLIFY": 3,
+        "EMPHASIZE": 63,
+        "KEEP": 292,
+        "REMOVE": 227,
+        "THIN": 57,
+        "THICKEN": 20
+      },
+      "actions_on": {
+        "KEEP": 148,
+        "EMPHASIZE": 114,
+        "REMOVE": 227,
+        "THICKEN": 87,
+        "SIMPLIFY": 1,
+        "SOFTEN": 34,
+        "THIN": 51
+      }
+    },
+    {
+      "index": 2,
+      "accepted_on": true,
+      "hvi_guided": true,
+      "hvi_changed": 86,
+      "by_rule": {
+        "beautify": 40,
+        "emphasize_focal": 7,
+        "emphasize_silhouette": 38,
+        "preserve_detail": 1
+      },
+      "regions_same": true,
+      "numbers_same": true,
+      "palette_same": true,
+      "invariant_files_same": true,
+      "reveal_deltaE": 0.0,
+      "outline_changed_by_hvi": true,
+      "iou_delta_on": 0.0008,
+      "removed_frac_on": 0.0204,
+      "actions_off": {
+        "SIMPLIFY": 4,
+        "EMPHASIZE": 38,
+        "KEEP": 357,
+        "REMOVE": 148,
+        "THIN": 32,
+        "THICKEN": 3
+      },
+      "actions_on": {
+        "SIMPLIFY": 1,
+        "EMPHASIZE": 45,
+        "SOFTEN": 40,
+        "KEEP": 296,
+        "REMOVE": 148,
+        "THICKEN": 41,
+        "THIN": 11
+      }
+    },
+    {
+      "index": 3,
+      "accepted_on": true,
+      "hvi_guided": true,
+      "hvi_changed": 81,
+      "by_rule": {
+        "beautify": 6,
+        "emphasize_silhouette": 73,
+        "emphasize_focal": 2
+      },
+      "regions_same": true,
+      "numbers_same": true,
+      "palette_same": true,
+      "invariant_files_same": true,
+      "reveal_deltaE": 0.0,
+      "outline_changed_by_hvi": true,
+      "iou_delta_on": 0.0,
+      "removed_frac_on": 0.0214,
+      "actions_off": {
+        "SIMPLIFY": 14,
+        "REMOVE": 92,
+        "KEEP": 178,
+        "EMPHASIZE": 48,
+        "THIN": 53,
+        "SOFTEN": 3
+      },
+      "actions_on": {
+        "SIMPLIFY": 12,
+        "REMOVE": 92,
+        "KEEP": 149,
+        "SOFTEN": 6,
+        "EMPHASIZE": 50,
+        "THICKEN": 73,
+        "THIN": 6
+      }
+    },
+    {
+      "index": 4,
+      "accepted_on": true,
+      "hvi_guided": true,
+      "hvi_changed": 112,
+      "by_rule": {
+        "emphasize_silhouette": 61,
+        "emphasize_focal": 51
+      },
+      "regions_same": true,
+      "numbers_same": true,
+      "palette_same": true,
+      "invariant_files_same": true,
+      "reveal_deltaE": 0.0,
+      "outline_changed_by_hvi": true,
+      "iou_delta_on": 0.0004,
+      "removed_frac_on": 0.0324,
+      "actions_off": {
+        "SIMPLIFY": 238,
+        "REMOVE": 240,
+        "KEEP": 88,
+        "EMPHASIZE": 24,
+        "THIN": 29
+      },
+      "actions_on": {
+        "THICKEN": 61,
+        "REMOVE": 240,
+        "EMPHASIZE": 75,
+        "KEEP": 80,
+        "SIMPLIFY": 155,
+        "THIN": 8
+      }
+    },
+    {
+      "index": 5,
+      "accepted_on": true,
+      "hvi_guided": true,
+      "hvi_changed": 106,
+      "by_rule": {
+        "preserve_detail": 1,
+        "emphasize_silhouette": 5,
+        "emphasize_focal": 1,
+        "beautify": 99
+      },
+      "regions_same": true,
+      "numbers_same": true,
+      "palette_same": true,
+      "invariant_files_same": true,
+      "reveal_deltaE": 0.0,
+      "outline_changed_by_hvi": true,
+      "iou_delta_on": 0.0154,
+      "removed_frac_on": 0.0259,
+      "actions_off": {
+        "SIMPLIFY": 60,
+        "REMOVE": 176,
+        "EMPHASIZE": 28,
+        "KEEP": 196,
+        "THIN": 41
+      },
+      "actions_on": {
+        "SIMPLIFY": 59,
+        "REMOVE": 176,
+        "EMPHASIZE": 29,
+        "KEEP": 97,
+        "THIN": 36,
+        "THICKEN": 5,
+        "SOFTEN": 99
+      }
+    },
+    {
+      "index": 6,
+      "accepted_on": true,
+      "hvi_guided": true,
+      "hvi_changed": 24,
+      "by_rule": {
+        "emphasize_silhouette": 23,
+        "emphasize_focal": 1
+      },
+      "regions_same": true,
+      "numbers_same": true,
+      "palette_same": true,
+      "invariant_files_same": true,
+      "reveal_deltaE": 0.0,
+      "outline_changed_by_hvi": true,
+      "iou_delta_on": 0.0082,
+      "removed_frac_on": 0.0102,
+      "actions_off": {
+        "KEEP": 41,
+        "REMOVE": 30,
+        "EMPHASIZE": 22,
+        "THIN": 17,
+        "SIMPLIFY": 15
+      },
+      "actions_on": {
+        "KEEP": 32,
+        "REMOVE": 30,
+        "EMPHASIZE": 23,
+        "THICKEN": 23,
+        "THIN": 2,
+        "SIMPLIFY": 15
+      }
+    },
+    {
+      "index": 7,
+      "accepted_on": true,
+      "hvi_guided": true,
+      "hvi_changed": 428,
+      "by_rule": {
+        "emphasize_silhouette": 324,
+        "emphasize_focal": 102,
+        "beautify": 2
+      },
+      "regions_same": true,
+      "numbers_same": true,
+      "palette_same": true,
+      "invariant_files_same": true,
+      "reveal_deltaE": 0.0,
+      "outline_changed_by_hvi": true,
+      "iou_delta_on": 0.0,
+      "removed_frac_on": 0.0543,
+      "actions_off": {
+        "SIMPLIFY": 372,
+        "REMOVE": 520,
+        "EMPHASIZE": 36,
+        "KEEP": 120,
+        "THIN": 26
+      },
+      "actions_on": {
+        "THICKEN": 324,
+        "REMOVE": 520,
+        "EMPHASIZE": 138,
+        "KEEP": 87,
+        "SIMPLIFY": 3,
+        "SOFTEN": 2
+      }
+    },
+    {
+      "index": 8,
+      "accepted_on": true,
+      "hvi_guided": true,
+      "hvi_changed": 6,
+      "by_rule": {
+        "emphasize_silhouette": 6
+      },
+      "regions_same": true,
+      "numbers_same": true,
+      "palette_same": true,
+      "invariant_files_same": true,
+      "reveal_deltaE": 0.0,
+      "outline_changed_by_hvi": true,
+      "iou_delta_on": 0.0035,
+      "removed_frac_on": 0.0183,
+      "actions_off": {
+        "REMOVE": 36,
+        "SIMPLIFY": 25,
+        "KEEP": 3
+      },
+      "actions_on": {
+        "REMOVE": 36,
+        "THICKEN": 6,
+        "KEEP": 3,
+        "SIMPLIFY": 19
+      }
+    },
+    {
+      "index": 9,
+      "accepted_on": true,
+      "hvi_guided": true,
+      "hvi_changed": 49,
+      "by_rule": {
+        "emphasize_silhouette": 37,
+        "emphasize_focal": 12
+      },
+      "regions_same": true,
+      "numbers_same": true,
+      "palette_same": true,
+      "invariant_files_same": true,
+      "reveal_deltaE": 0.0,
+      "outline_changed_by_hvi": true,
+      "iou_delta_on": 0.0,
+      "removed_frac_on": 0.0122,
+      "actions_off": {
+        "SIMPLIFY": 27,
+        "REMOVE": 40,
+        "EMPHASIZE": 13,
+        "KEEP": 27
+      },
+      "actions_on": {
+        "THICKEN": 37,
+        "REMOVE": 40,
+        "EMPHASIZE": 25,
+        "KEEP": 5
+      }
+    },
+    {
+      "index": 10,
+      "accepted_on": true,
+      "hvi_guided": true,
+      "hvi_changed": 79,
+      "by_rule": {
+        "emphasize_silhouette": 54,
+        "emphasize_focal": 25
+      },
+      "regions_same": true,
+      "numbers_same": true,
+      "palette_same": true,
+      "invariant_files_same": true,
+      "reveal_deltaE": 0.0,
+      "outline_changed_by_hvi": true,
+      "iou_delta_on": 0.0,
+      "removed_frac_on": 0.0266,
+      "actions_off": {
+        "SIMPLIFY": 55,
+        "REMOVE": 83,
+        "KEEP": 33,
+        "EMPHASIZE": 13,
+        "THIN": 7
+      },
+      "actions_on": {
+        "THICKEN": 54,
+        "REMOVE": 83,
+        "EMPHASIZE": 38,
+        "KEEP": 16
+      }
+    },
+    {
+      "index": 11,
+      "accepted_on": true,
+      "hvi_guided": true,
+      "hvi_changed": 9,
+      "by_rule": {
+        "emphasize_silhouette": 3,
+        "emphasize_focal": 6
+      },
+      "regions_same": true,
+      "numbers_same": true,
+      "palette_same": true,
+      "invariant_files_same": true,
+      "reveal_deltaE": 0.0,
+      "outline_changed_by_hvi": true,
+      "iou_delta_on": 0.0054,
+      "removed_frac_on": 0.0211,
+      "actions_off": {
+        "SIMPLIFY": 55,
+        "REMOVE": 52,
+        "KEEP": 5
+      },
+      "actions_on": {
+        "SIMPLIFY": 46,
+        "REMOVE": 52,
+        "KEEP": 5,
+        "THICKEN": 3,
+        "EMPHASIZE": 6
+      }
+    },
+    {
+      "index": 12,
+      "accepted_on": true,
+      "hvi_guided": true,
+      "hvi_changed": 14,
+      "by_rule": {
+        "emphasize_silhouette": 11,
+        "emphasize_focal": 3
+      },
+      "regions_same": true,
+      "numbers_same": true,
+      "palette_same": true,
+      "invariant_files_same": true,
+      "reveal_deltaE": 0.0,
+      "outline_changed_by_hvi": true,
+      "iou_delta_on": 0.0,
+      "removed_frac_on": 0.0022,
+      "actions_off": {
+        "SIMPLIFY": 14,
+        "REMOVE": 4,
+        "EMPHASIZE": 2,
+        "KEEP": 1
+      },
+      "actions_on": {
+        "THICKEN": 11,
+        "EMPHASIZE": 5,
+        "REMOVE": 4,
+        "KEEP": 1
+      }
+    },
+    {
+      "index": 13,
+      "accepted_on": true,
+      "hvi_guided": true,
+      "hvi_changed": 62,
+      "by_rule": {
+        "emphasize_silhouette": 38,
+        "preserve_detail": 21,
+        "emphasize_focal": 3
+      },
+      "regions_same": true,
+      "numbers_same": true,
+      "palette_same": true,
+      "invariant_files_same": true,
+      "reveal_deltaE": 0.0,
+      "outline_changed_by_hvi": true,
+      "iou_delta_on": 0.0109,
+      "removed_frac_on": 0.0218,
+      "actions_off": {
+        "SIMPLIFY": 94,
+        "EMPHASIZE": 35,
+        "REMOVE": 126,
+        "KEEP": 78,
+        "THIN": 5
+      },
+      "actions_on": {
+        "THICKEN": 38,
+        "EMPHASIZE": 38,
+        "REMOVE": 126,
+        "KEEP": 69,
+        "SIMPLIFY": 67
+      }
+    },
+    {
+      "index": 14,
+      "accepted_on": true,
+      "hvi_guided": true,
+      "hvi_changed": 83,
+      "by_rule": {
+        "preserve_detail": 2,
+        "beautify": 18,
+        "emphasize_silhouette": 57,
+        "emphasize_focal": 6
+      },
+      "regions_same": true,
+      "numbers_same": true,
+      "palette_same": true,
+      "invariant_files_same": true,
+      "reveal_deltaE": 0.0,
+      "outline_changed_by_hvi": true,
+      "iou_delta_on": 0.0086,
+      "removed_frac_on": 0.0273,
+      "actions_off": {
+        "SIMPLIFY": 126,
+        "REMOVE": 220,
+        "EMPHASIZE": 69,
+        "KEEP": 153,
+        "THIN": 42,
+        "THICKEN": 4
+      },
+      "actions_on": {
+        "KEEP": 91,
+        "SIMPLIFY": 124,
+        "REMOVE": 220,
+        "EMPHASIZE": 75,
+        "SOFTEN": 18,
+        "THICKEN": 61,
+        "THIN": 25
+      }
+    },
+    {
+      "index": 15,
+      "accepted_on": true,
+      "hvi_guided": true,
+      "hvi_changed": 70,
+      "by_rule": {
+        "emphasize_silhouette": 22,
+        "emphasize_focal": 38,
+        "beautify": 10
+      },
+      "regions_same": true,
+      "numbers_same": true,
+      "palette_same": true,
+      "invariant_files_same": true,
+      "reveal_deltaE": 0.0,
+      "outline_changed_by_hvi": true,
+      "iou_delta_on": -0.0028,
+      "removed_frac_on": 0.013,
+      "actions_off": {
+        "REMOVE": 80,
+        "SIMPLIFY": 40,
+        "EMPHASIZE": 22,
+        "KEEP": 90,
+        "THIN": 30,
+        "SOFTEN": 1,
+        "THICKEN": 2
+      },
+      "actions_on": {
+        "REMOVE": 80,
+        "THICKEN": 24,
+        "EMPHASIZE": 60,
+        "KEEP": 66,
+        "SOFTEN": 11,
+        "THIN": 23,
+        "SIMPLIFY": 1
+      }
+    },
+    {
+      "index": 16,
+      "accepted_on": true,
+      "hvi_guided": true,
+      "hvi_changed": 23,
+      "by_rule": {
+        "emphasize_silhouette": 12,
+        "emphasize_focal": 5,
+        "beautify": 6
+      },
+      "regions_same": true,
+      "numbers_same": true,
+      "palette_same": true,
+      "invariant_files_same": true,
+      "reveal_deltaE": 0.0,
+      "outline_changed_by_hvi": true,
+      "iou_delta_on": 0.0005,
+      "removed_frac_on": 0.025,
+      "actions_off": {
+        "SIMPLIFY": 31,
+        "EMPHASIZE": 24,
+        "KEEP": 114,
+        "REMOVE": 126,
+        "THIN": 58
+      },
+      "actions_on": {
+        "THICKEN": 12,
+        "EMPHASIZE": 29,
+        "KEEP": 102,
+        "REMOVE": 126,
+        "THIN": 53,
+        "SIMPLIFY": 25,
+        "SOFTEN": 6
+      }
+    },
+    {
+      "index": 17,
+      "accepted_on": true,
+      "hvi_guided": true,
+      "hvi_changed": 52,
+      "by_rule": {
+        "emphasize_silhouette": 31,
+        "emphasize_focal": 19,
+        "beautify": 2
+      },
+      "regions_same": true,
+      "numbers_same": true,
+      "palette_same": true,
+      "invariant_files_same": true,
+      "reveal_deltaE": 0.0,
+      "outline_changed_by_hvi": true,
+      "iou_delta_on": -0.0021,
+      "removed_frac_on": 0.0478,
+      "actions_off": {
+        "EMPHASIZE": 22,
+        "SIMPLIFY": 42,
+        "REMOVE": 273,
+        "KEEP": 124,
+        "THIN": 84,
+        "THICKEN": 5
+      },
+      "actions_on": {
+        "EMPHASIZE": 41,
+        "THICKEN": 36,
+        "REMOVE": 273,
+        "KEEP": 102,
+        "THIN": 71,
+        "SOFTEN": 2,
+        "SIMPLIFY": 25
+      }
+    },
+    {
+      "index": 18,
+      "accepted_on": true,
+      "hvi_guided": true,
+      "hvi_changed": 74,
+      "by_rule": {
+        "emphasize_silhouette": 38,
+        "emphasize_focal": 23,
+        "beautify": 13
+      },
+      "regions_same": true,
+      "numbers_same": true,
+      "palette_same": true,
+      "invariant_files_same": true,
+      "reveal_deltaE": 0.0,
+      "outline_changed_by_hvi": true,
+      "iou_delta_on": 0.0021,
+      "removed_frac_on": 0.0565,
+      "actions_off": {
+        "REMOVE": 340,
+        "SIMPLIFY": 99,
+        "KEEP": 126,
+        "THIN": 58,
+        "EMPHASIZE": 12,
+        "SOFTEN": 1
+      },
+      "actions_on": {
+        "REMOVE": 340,
+        "THICKEN": 38,
+        "EMPHASIZE": 35,
+        "KEEP": 97,
+        "THIN": 55,
+        "SOFTEN": 14,
+        "SIMPLIFY": 57
+      }
+    },
+    {
+      "index": 19,
+      "accepted_on": true,
+      "hvi_guided": true,
+      "hvi_changed": 368,
+      "by_rule": {
+        "emphasize_silhouette": 98,
+        "emphasize_focal": 15,
+        "beautify": 255
+      },
+      "regions_same": true,
+      "numbers_same": true,
+      "palette_same": true,
+      "invariant_files_same": true,
+      "reveal_deltaE": 0.0,
+      "outline_changed_by_hvi": true,
+      "iou_delta_on": 0.0016,
+      "removed_frac_on": 0.0438,
+      "actions_off": {
+        "SIMPLIFY": 221,
+        "REMOVE": 470,
+        "KEEP": 495,
+        "EMPHASIZE": 60,
+        "THIN": 17
+      },
+      "actions_on": {
+        "SIMPLIFY": 221,
+        "REMOVE": 470,
+        "THICKEN": 98,
+        "EMPHASIZE": 75,
+        "KEEP": 136,
+        "THIN": 8,
+        "SOFTEN": 255
+      }
+    },
+    {
+      "index": 20,
+      "accepted_on": true,
+      "hvi_guided": true,
+      "hvi_changed": 200,
+      "by_rule": {
+        "emphasize_silhouette": 145,
+        "emphasize_focal": 55
+      },
+      "regions_same": true,
+      "numbers_same": true,
+      "palette_same": true,
+      "invariant_files_same": true,
+      "reveal_deltaE": 0.0,
+      "outline_changed_by_hvi": true,
+      "iou_delta_on": -0.0011,
+      "removed_frac_on": 0.0441,
+      "actions_off": {
+        "SIMPLIFY": 59,
+        "REMOVE": 249,
+        "EMPHASIZE": 26,
+        "KEEP": 174,
+        "THIN": 70
+      },
+      "actions_on": {
+        "THICKEN": 145,
+        "REMOVE": 249,
+        "EMPHASIZE": 81,
+        "KEEP": 65,
+        "THIN": 26,
+        "SIMPLIFY": 12
+      }
+    },
+    {
+      "index": 21,
+      "accepted_on": true,
+      "hvi_guided": true,
+      "hvi_changed": 210,
+      "by_rule": {
+        "emphasize_silhouette": 121,
+        "emphasize_focal": 85,
+        "beautify": 4
+      },
+      "regions_same": true,
+      "numbers_same": true,
+      "palette_same": true,
+      "invariant_files_same": true,
+      "reveal_deltaE": 0.0,
+      "outline_changed_by_hvi": true,
+      "iou_delta_on": 0.0,
+      "removed_frac_on": 0.0297,
+      "actions_off": {
+        "EMPHASIZE": 33,
+        "THIN": 160,
+        "REMOVE": 234,
+        "KEEP": 277,
+        "SOFTEN": 3
+      },
+      "actions_on": {
+        "EMPHASIZE": 118,
+        "THICKEN": 121,
+        "REMOVE": 234,
+        "KEEP": 141,
+        "SOFTEN": 5,
+        "THIN": 88
+      }
+    },
+    {
+      "index": 22,
+      "accepted_on": true,
+      "hvi_guided": true,
+      "hvi_changed": 97,
+      "by_rule": {
+        "emphasize_silhouette": 92,
+        "beautify": 1,
+        "emphasize_focal": 4
+      },
+      "regions_same": true,
+      "numbers_same": true,
+      "palette_same": true,
+      "invariant_files_same": true,
+      "reveal_deltaE": 0.0,
+      "outline_changed_by_hvi": true,
+      "iou_delta_on": 0.0072,
+      "removed_frac_on": 0.0934,
+      "actions_off": {
+        "KEEP": 45,
+        "REMOVE": 448,
+        "EMPHASIZE": 7,
+        "THIN": 10,
+        "SIMPLIFY": 130
+      },
+      "actions_on": {
+        "THICKEN": 92,
+        "REMOVE": 448,
+        "EMPHASIZE": 11,
+        "KEEP": 16,
+        "SOFTEN": 1,
+        "SIMPLIFY": 72
+      }
+    },
+    {
+      "index": 23,
+      "accepted_on": true,
+      "hvi_guided": true,
+      "hvi_changed": 478,
+      "by_rule": {
+        "emphasize_silhouette": 394,
+        "emphasize_focal": 84
+      },
+      "regions_same": true,
+      "numbers_same": true,
+      "palette_same": true,
+      "invariant_files_same": true,
+      "reveal_deltaE": 0.0,
+      "outline_changed_by_hvi": true,
+      "iou_delta_on": 0.0,
+      "removed_frac_on": 0.0909,
+      "actions_off": {
+        "KEEP": 297,
+        "REMOVE": 1432,
+        "EMPHASIZE": 104,
+        "THIN": 547,
+        "SOFTEN": 13,
+        "SIMPLIFY": 7
+      },
+      "actions_on": {
+        "THICKEN": 394,
+        "REMOVE": 1432,
+        "EMPHASIZE": 188,
+        "THIN": 196,
+        "KEEP": 183,
+        "SIMPLIFY": 7
+      }
+    },
+    {
+      "index": 24,
+      "accepted_on": true,
+      "hvi_guided": true,
+      "hvi_changed": 585,
+      "by_rule": {
+        "emphasize_silhouette": 503,
+        "emphasize_focal": 73,
+        "beautify": 9
+      },
+      "regions_same": true,
+      "numbers_same": true,
+      "palette_same": true,
+      "invariant_files_same": true,
+      "reveal_deltaE": 0.0,
+      "outline_changed_by_hvi": true,
+      "iou_delta_on": -0.0006,
+      "removed_frac_on": 0.1294,
+      "actions_off": {
+        "SIMPLIFY": 45,
+        "REMOVE": 1453,
+        "THIN": 465,
+        "KEEP": 135,
+        "EMPHASIZE": 97,
+        "SOFTEN": 7
+      },
+      "actions_on": {
+        "THICKEN": 503,
+        "REMOVE": 1453,
+        "EMPHASIZE": 170,
+        "KEEP": 14,
+        "SIMPLIFY": 44,
+        "SOFTEN": 9,
+        "THIN": 9
+      }
+    },
+    {
+      "index": 25,
+      "accepted_on": true,
+      "hvi_guided": true,
+      "hvi_changed": 114,
+      "by_rule": {
+        "beautify": 30,
+        "emphasize_silhouette": 77,
+        "emphasize_focal": 7
+      },
+      "regions_same": true,
+      "numbers_same": true,
+      "palette_same": true,
+      "invariant_files_same": true,
+      "reveal_deltaE": 0.0,
+      "outline_changed_by_hvi": true,
+      "iou_delta_on": 0.0004,
+      "removed_frac_on": 0.0181,
+      "actions_off": {
+        "KEEP": 124,
+        "REMOVE": 134,
+        "EMPHASIZE": 30,
+        "THIN": 36,
+        "SOFTEN": 4,
+        "SIMPLIFY": 60
+      },
+      "actions_on": {
+        "SOFTEN": 30,
+        "REMOVE": 134,
+        "THICKEN": 77,
+        "EMPHASIZE": 37,
+        "SIMPLIFY": 60,
+        "KEEP": 33,
+        "THIN": 17
+      }
+    },
+    {
+      "index": 26,
+      "accepted_on": true,
+      "hvi_guided": true,
+      "hvi_changed": 50,
+      "by_rule": {
+        "preserve_detail": 1,
+        "emphasize_silhouette": 19,
+        "emphasize_focal": 2,
+        "beautify": 28
+      },
+      "regions_same": true,
+      "numbers_same": true,
+      "palette_same": true,
+      "invariant_files_same": true,
+      "reveal_deltaE": 0.0,
+      "outline_changed_by_hvi": true,
+      "iou_delta_on": 0.0013,
+      "removed_frac_on": 0.0237,
+      "actions_off": {
+        "KEEP": 146,
+        "REMOVE": 148,
+        "EMPHASIZE": 26,
+        "SIMPLIFY": 56,
+        "THIN": 25,
+        "SOFTEN": 1
+      },
+      "actions_on": {
+        "KEEP": 105,
+        "REMOVE": 148,
+        "EMPHASIZE": 28,
+        "SIMPLIFY": 55,
+        "THICKEN": 19,
+        "THIN": 18,
+        "SOFTEN": 29
+      }
+    },
+    {
+      "index": 27,
+      "accepted_on": true,
+      "hvi_guided": true,
+      "hvi_changed": 216,
+      "by_rule": {
+        "preserve_detail": 3,
+        "beautify": 2,
+        "emphasize_silhouette": 200,
+        "emphasize_focal": 11
+      },
+      "regions_same": true,
+      "numbers_same": true,
+      "palette_same": true,
+      "invariant_files_same": true,
+      "reveal_deltaE": 0.0,
+      "outline_changed_by_hvi": true,
+      "iou_delta_on": 0.0,
+      "removed_frac_on": 0.0126,
+      "actions_off": {
+        "SIMPLIFY": 12,
+        "EMPHASIZE": 66,
+        "KEEP": 242,
+        "THICKEN": 2,
+        "REMOVE": 93,
+        "SOFTEN": 2,
+        "THIN": 28
+      },
+      "actions_on": {
+        "KEEP": 58,
+        "EMPHASIZE": 77,
+        "SOFTEN": 2,
+        "THICKEN": 202,
+        "REMOVE": 93,
+        "SIMPLIFY": 9,
+        "THIN": 4
+      }
+    }
+  ]
+}

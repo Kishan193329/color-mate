@@ -44,11 +44,18 @@ from pathlib import Path
 import cv2
 import numpy as np
 
+from services import hvi_border_guidance
 from services.contour_character_engine import (
     CLASS_STYLE, MIN_CONTOUR_PTS, STYLE_POLICY,
     _catmull_bezier, _corner_indices, _polyline,
     _sample_d, _shape_similarity,
 )
+
+# HVI-Guided Border Decisions: when human_visual_report.json is present, each segment's
+# decided action is re-weighted by its region's perceptual scores (recognition / attention /
+# beauty / fun / tracing / drawing) before rendering. Purely an action choice on the SVG
+# layer — no reveal / mask / region / palette / number change. Toggle for A/B validation.
+HVI_GUIDANCE = True
 
 STROKE_DARK = "#111111"
 STROKE_EMPH = "#000000"
@@ -190,6 +197,16 @@ def render(labels_path: Path, artistic_border_report_path: Path, contour_report_
                  for s in border.get("segments", [])}
     style_by = {(r.get("label"), r.get("contour_index")): r.get("style", "HYBRID")
                 for r in contour.get("contours", [])}
+    outer_by = {(r.get("label"), r.get("contour_index")): bool(r.get("is_outer"))
+                for r in contour.get("contours", [])}
+    # HVI-Guided Border Decisions: per-region perceptual scores (analysis only, read-only).
+    hvi_report = _load(Path(game_config_path).parent / "human_visual_report.json")
+    hvi_by_label = {r.get("label"): r.get("scores", {})
+                    for r in (hvi_report or {}).get("regions", [])} if hvi_report else {}
+    hvi_on = bool(HVI_GUIDANCE and hvi_by_label)
+    hvi_changed = 0
+    hvi_by_rule: Counter = Counter()
+    hvi_transitions: Counter = Counter()
     if not action_by:                                      # nothing decided — no-op
         report = {"version": 1, "note": "No artistic_border_report segments; render skipped.",
                   "segment_count": 0, "accepted": False, "outputs_updated": False}
@@ -222,6 +239,15 @@ def render(labels_path: Path, artistic_border_report_path: Path, contour_report_
             total_len += perim
 
             action = action_by[key]
+            if hvi_on:                                     # HVI re-weights the decided action
+                hvi = hvi_by_label.get(lbl)
+                if hvi:
+                    adj = hvi_border_guidance.guide(action, hvi, outer_by.get(key, ci == 0), style_by.get(key))
+                    if adj.value != action:
+                        hvi_changed += 1
+                        hvi_transitions[f"{action}->{adj.value}"] += 1
+                        hvi_by_rule[adj.evidence.get("rule", "?")] += 1
+                    action = adj.value
             action_counts[action] += 1
             if action == "REMOVE":
                 removed += 1
@@ -298,11 +324,15 @@ def render(labels_path: Path, artistic_border_report_path: Path, contour_report_
         "note": "Artistic border render pass — applies the decided actions to the SVG/vector "
                 "layer only. No border re-detection, no region/label/mask/palette/number/reveal "
                 "change; raster line art and leaks untouched. KEEP reproduces QF14 exactly.",
-        "sources": ["artistic_border_report.json", "contour_character_report.json"],
+        "sources": ["artistic_border_report.json", "contour_character_report.json",
+                    "human_visual_report.json"],
         "segment_count": len(action_by),
         "rendered_count": len(artistic_ds),
         "removed_count": removed,
         "action_applied_distribution": dict(action_counts),
+        "hvi_guided": hvi_on,
+        "hvi_adjustments": {"changed": hvi_changed, "by_rule": dict(hvi_by_rule),
+                            "transitions": dict(hvi_transitions.most_common())},
         "stroke_settings": {a: {"width": w_, "colour": c_, "opacity": o_}
                             for a, (w_, c_, o_) in STROKE_STYLE.items()},
         "baseline_svg": baseline_svg_path.name,
