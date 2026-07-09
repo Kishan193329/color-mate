@@ -1,0 +1,159 @@
+{
+  "image_type": {
+    "type": "Illustration",
+    "confidence": 0.551,
+    "runner_up": "Landscape"
+  },
+  "scene": {
+    "main_subject_regions": [
+      18,
+      414,
+      415,
+      397,
+      93,
+      396,
+      416,
+      110,
+      133,
+      274,
+      357,
+      382,
+      419
+    ],
+    "secondary_subject_regions": [
+      21,
+      23,
+      391,
+      33,
+      72,
+      80,
+      99,
+      104,
+      105,
+      113,
+      417,
+      107,
+      118,
+      126,
+      137,
+      151,
+      159,
+      404,
+      205,
+      214,
+      237,
+      245,
+      248,
+      252,
+      260,
+      265,
+      279,
+      289,
+      301,
+      324,
+      333,
+      335,
+      347,
+      349,
+      381,
+      418,
+      386
+    ],
+    "background_regions": [
+      1,
+      2,
+      413,
+      6,
+      7,
+      412,
+      11,
+      15,
+      64,
+      70,
+      88,
+      129,
+      400,
+      154,
+      327,
+      336
+    ],
+    "foreground_regions": [],
+    "focal_regions": [
+      18,
+      414,
+      415,
+      397,
+      93,
+      396,
+      104,
+      416,
+      110,
+      133,
+      274,
+      357,
+      382,
+      419
+    ],
+    "low_importance_regions": [
+      327
+    ],
+    "subject_background_separation_score": 0.403,
+    "composition_score": 0.737,
+    "scene_complexity": 0.723,
+    "depth_layers": 3,
+    "lighting_direction_estimate": "top_left",
+    "eye_flow_direction": "top_to_bottom",
+    "scene_type": "portrait",
+    "recommended_scene_strategy": "PORTRAIT_PROTECT_FACE"
+  },
+  "decisions_sample": {
+    "scene_type": {
+      "key": "hsu.scene_type",
+      "value": "portrait",
+      "reason": "image-type router ('Illustration', conf 0.55) refined by skin / subject signals",
+      "confidence": 0.551,
+      "evidence": {
+        "image_type": "Illustration",
+        "runner_up": "Landscape",
+        "skin_frac": 0.1664,
+        "center_skin": 0.1219,
+        "has_face": true
+      },
+      "override_point": "hsu.scene_type",
+      "source": "rule",
+      "alternatives": []
+    },
+    "recommended_scene_strategy": {
+      "key": "hsu.recommended_scene_strategy",
+      "value": "PORTRAIT_PROTECT_FACE",
+      "reason": "derived from scene_type='portrait', separation 0.40, depth 3",
+      "confidence": 0.671,
+      "evidence": {
+        "scene_type": "portrait",
+        "separation": 0.403,
+        "depth_layers": 3,
+        "dominant_area_frac": 0.009,
+        "background_share": 0.111,
+        "has_face": true
+      },
+      "override_point": "hsu.recommended_scene_strategy",
+      "source": "rule",
+      "alternatives": []
+    },
+    "subject_background_separation_score": {
+      "key": "hsu.subject_background_separation_score",
+      "value": 0.403,
+      "reason": "recognition + attention gap between subject and background",
+      "confidence": 0.55,
+      "evidence": {
+        "rec_gap": 0.481,
+        "att_gap": 0.054,
+        "subject_regions": 50,
+        "background_regions": 16
+      },
+      "override_point": "hsu.subject_background_separation_score",
+      "source": "rule",
+      "alternatives": []
+    }
+  }
+}
