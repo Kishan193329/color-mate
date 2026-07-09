@@ -13,20 +13,27 @@ palette, no numbers, no reveal. The raster line art (`lineart.png`), `labels.npy
 (a raster/label property) cannot change and the completed reveal still equals the
 original by construction.
 
-Actions (geometry + stroke, reusing QF14's adaptive machinery so KEEP is byte-for-byte
-the QF14 baseline):
+Each action gets a distinct SEMANTIC STROKE (width + colour + opacity, see `STROKE_STYLE`)
+so the intent is legible in the rendered border itself — a thickened silhouette reads
+boldest, an emphasised focal feature solid-black, a softened organic edge gentle and light,
+a simplified background edge recessive, a thinned detail fine. Actions (geometry + stroke,
+reusing QF14's adaptive machinery so KEEP is byte-for-byte the QF14 baseline):
   REMOVE     drop the contour from the render (compact specks only — already gated by
              the intelligence engine to non-critical, non-focal micro-fragments)
-  SOFTEN     smoother Bézier (organic / fur / petal flow)
-  THICKEN    heavier stroke (outer silhouettes), geometry unchanged
-  THIN       lighter stroke (dense non-critical detail), geometry unchanged
-  EMPHASIZE  crisp high-precision geometry + bolder/darker stroke (eyes / petals / accents)
-  SIMPLIFY   coarser approximation (low-priority background)
+  SOFTEN     smoother Bézier + gentle light stroke (organic / fur / petal flow)
+  THICKEN    heaviest stroke (outer silhouettes), geometry unchanged
+  THIN       fine stroke (dense non-critical detail), geometry unchanged
+  EMPHASIZE  bold solid-black stroke on the exact QF14 geometry (eyes / petals / accents)
+  SIMPLIFY   coarser approximation + slightly recessive stroke (low-priority background)
   KEEP       QF14 policy unchanged
+
+A uniform pre-semantic render is always written to `outline_baseline.svg` beside the
+artistic `outline.svg`, giving a genuine before/after SVG pair per job.
 
 Safety gate (rule 6 — "if visual border quality gets worse, reject"): the artistic
 render is accepted only if it is no more jagged and no less shape-faithful than the QF14
-baseline (within tolerance). On rejection the QF14 output is left untouched.
+baseline (within tolerance). On rejection the QF14 output is left untouched. Stroke
+attributes never enter the gate — it scores geometry only.
 """
 from __future__ import annotations
 
@@ -45,8 +52,21 @@ from services.contour_character_engine import (
 
 STROKE_DARK = "#111111"
 STROKE_EMPH = "#000000"
-STROKE_W = {"KEEP": 2.0, "SOFTEN": 2.0, "SIMPLIFY": 2.0,
-            "THICKEN": 3.0, "EMPHASIZE": 2.6, "THIN": 1.2}
+# Semantic stroke model — each action renders with a distinct (width, colour, opacity) so
+# the illustrator intent is legible in the SVG itself: a THICKENed silhouette reads the
+# boldest, an EMPHASIZEd focal feature (eyes / lips / petal centre / accessory) reads
+# solid black, a SOFTENed organic edge (cheeks / petals / hair flow) reads gentle and
+# light, a SIMPLIFYed background/vein edge recedes, a THINned over-inked detail stays
+# crisp but fine. KEEP is the QF14 baseline exactly. These are stroke ATTRIBUTES only —
+# geometry (the path `d`) is decided separately — so the shape-fidelity gate is unaffected.
+STROKE_STYLE = {
+    "KEEP":      (2.0, STROKE_DARK, 1.00),
+    "THICKEN":   (3.2, STROKE_EMPH, 1.00),   # primary outer silhouette — heaviest line
+    "EMPHASIZE": (2.6, STROKE_EMPH, 1.00),   # focal feature — bold solid black
+    "THIN":      (1.2, STROKE_DARK, 1.00),   # delicate over-inked detail — kept fine
+    "SOFTEN":    (1.8, STROKE_DARK, 0.78),   # organic flow — gentle & light
+    "SIMPLIFY":  (1.9, STROKE_DARK, 0.92),   # reducible background/veins — slightly recessive
+}
 IOU_TOL = 0.010           # transformed-contour IoU may not fall below the baseline by more than this
 REMOVE_LEN_FRAC = 0.20    # removed specks may not exceed this fraction of total border length
 # Absolute cap on the simplification tolerance. eps grows with a contour's perimeter, so
@@ -82,9 +102,9 @@ def _policy_for(action: str, style: str) -> dict:
     return base
 
 
-def _stroke_for(action: str) -> tuple[float, str]:
-    return (STROKE_W.get(action, 2.0),
-            STROKE_EMPH if action == "EMPHASIZE" else STROKE_DARK)
+def _stroke_for(action: str) -> tuple[float, str, float]:
+    """(stroke-width, stroke-colour, stroke-opacity) for an action's semantic rendering."""
+    return STROKE_STYLE.get(action, STROKE_STYLE["KEEP"])
 
 
 def _adaptive(contour: np.ndarray, policy: dict, cap: float | None) -> str:
@@ -104,14 +124,25 @@ def _adaptive(contour: np.ndarray, policy: dict, cap: float | None) -> str:
     return _catmull_bezier(approx, corners)
 
 
+def _hex_bgr(color: str) -> tuple[int, int, int]:
+    c = color.lstrip("#")
+    r, g, b = int(c[0:2], 16), int(c[2:4], 16), int(c[4:6], 16)
+    return b, g, r
+
+
 def _panel(paths_w: list, h: int, w: int) -> np.ndarray:
-    """White canvas with each (d, stroke_width) drawn — a faithful raster of the
-    rendered border (stroke widths included, so THICKEN/THIN show)."""
+    """White canvas with each (d, width, colour, opacity) drawn — a faithful raster of the
+    rendered border: THICKEN/THIN show as width, EMPHASIZE as solid black, SOFTEN/SIMPLIFY
+    as a lighter line (stroke-opacity simulated on the white ground by lightening the ink)."""
     canvas = np.full((h, w, 3), 255, np.uint8)
-    for d, sw in paths_w:
+    for d, sw, color, opac in paths_w:
         t = max(1, int(round(sw)))
+        b, g, r = _hex_bgr(color)
+        col = (int(b * opac + 255 * (1 - opac)),
+               int(g * opac + 255 * (1 - opac)),
+               int(r * opac + 255 * (1 - opac)))
         for poly in _sample_d(d):
-            cv2.polylines(canvas, [np.round(poly).astype(np.int32)], False, (25, 25, 25), t, cv2.LINE_AA)
+            cv2.polylines(canvas, [np.round(poly).astype(np.int32)], False, col, t, cv2.LINE_AA)
     return canvas
 
 
@@ -138,9 +169,9 @@ def _svg(paths: list, w: int, h: int) -> str:
         f'<rect width="{w}" height="{h}" fill="#ffffff"/>',
         '<g fill="none" stroke-linejoin="round" stroke-linecap="round" fill-rule="evenodd">',
     ]
-    for d, sw, color, rid, action in paths:
+    for d, sw, color, opac, rid, action in paths:
         parts.append(f'<path d="{d}" stroke="{color}" stroke-width="{sw:g}" '
-                     f'data-region-id="{rid}" data-action="{action}"/>')
+                     f'stroke-opacity="{opac:g}" data-region-id="{rid}" data-action="{action}"/>')
     parts += ["</g>", "</svg>"]
     return "\n".join(parts)
 
@@ -186,7 +217,7 @@ def render(labels_path: Path, artistic_border_report_path: Path, contour_report_
             style = style_by.get(key, CLASS_STYLE.get("UNKNOWN", "HYBRID"))
             base_d = _adaptive(contour, STYLE_POLICY.get(style, STYLE_POLICY["HYBRID"]), None)
             baseline_all_ds.append(base_d)
-            before_w.append((base_d, 2.0))
+            before_w.append((base_d, 2.0, STROKE_DARK, 1.0))   # uniform pre-semantic render
             perim = float(cv2.arcLength(contour, True))
             total_len += perim
 
@@ -200,12 +231,12 @@ def render(labels_path: Path, artistic_border_report_path: Path, contour_report_
 
             cap = MAX_EPS_PX if action in ("SIMPLIFY", "SOFTEN") else None
             art_d = _adaptive(contour, _policy_for(action, style), cap)
-            sw, color = _stroke_for(action)
+            sw, color, opac = _stroke_for(action)
             baseline_kept_ds.append(base_d)
             artistic_ds.append(art_d)
-            after_w.append((art_d, sw))
+            after_w.append((art_d, sw, color, opac))
             region_art[lbl].append(art_d)
-            svg_paths.append((art_d, sw, color, num_by_label.get(lbl, lbl), action))
+            svg_paths.append((art_d, sw, color, opac, num_by_label.get(lbl, lbl), action))
             if action in ("SOFTEN", "SIMPLIFY"):            # complexity change of transformed geometry
                 verts_before += base_d.count(" L ") + base_d.count(" C ")
                 verts_after += art_d.count(" L ") + art_d.count(" C ")
@@ -243,6 +274,14 @@ def render(labels_path: Path, artistic_border_report_path: Path, contour_report_
         Path(outline_svg_path).write_text(_svg(svg_paths, w, h), encoding="utf-8")
         outputs_updated = True
 
+    # Before/after SVG pair: the uniform pre-semantic render (every kept contour at the
+    # KEEP stroke, no removals) is always written beside the artistic outline so the two
+    # SVGs can be opened side by side. This is a diagnostic artifact — it does not replace
+    # `outline.svg` and is not part of the export.
+    baseline_svg_paths = [(d, 2.0, STROKE_DARK, 1.0, "", "BASELINE") for d in baseline_all_ds]
+    baseline_svg_path = Path(outline_svg_path).with_name("outline_baseline.svg")
+    baseline_svg_path.write_text(_svg(baseline_svg_paths, w, h), encoding="utf-8")
+
     _overlay(before_w, after_w, removed_ds, h, w, overlay_path)
 
     if accepted:
@@ -264,7 +303,9 @@ def render(labels_path: Path, artistic_border_report_path: Path, contour_report_
         "rendered_count": len(artistic_ds),
         "removed_count": removed,
         "action_applied_distribution": dict(action_counts),
-        "stroke_settings": {k: STROKE_W[k] for k in STROKE_W},
+        "stroke_settings": {a: {"width": w_, "colour": c_, "opacity": o_}
+                            for a, (w_, c_, o_) in STROKE_STYLE.items()},
+        "baseline_svg": baseline_svg_path.name,
         "quality": {
             # fidelity of the kept/transformed contours (the gate) — REMOVE excluded both sides
             "shape_iou_before": iou_before,
