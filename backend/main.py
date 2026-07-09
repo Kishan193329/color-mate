@@ -51,6 +51,7 @@ from services import (
     ai_mode_router,
     experience_policy,
     experience_store,
+    game_package_builder,
     publishing,
     quality_analyzer,
     region_editor,
@@ -966,12 +967,49 @@ def set_publish_category(job_id: str, payload: dict = Body(...)) -> dict:
 @app.post("/api/job/{job_id}/publish/publish")
 def publish_job(job_id: str) -> dict:
     """approved -> published. Assembles + verifies the package; refuses if not approved
-    or the package is incomplete."""
+    or the package is incomplete. Also builds the Android game package."""
     _require_job(job_id)
+    folder = job_dir(job_id)
     try:
-        return publishing.publish(job_dir(job_id))
+        result = publishing.publish(folder)
     except ValueError as exc:
         raise HTTPException(status_code=409, detail=str(exc))
+    try:
+        result["game_package"] = {"complete": game_package_builder.build_game_package(folder)["complete"]}
+    except Exception:  # noqa: BLE001 - packaging is best-effort at publish time
+        pass
+    return result
+
+
+@app.post("/api/job/{job_id}/package")
+def build_package(job_id: str) -> dict:
+    """Build the Android game package (game_package.json + game_assets.zip). Only approved
+    (or published) images can be packaged."""
+    _require_job(job_id)
+    try:
+        return game_package_builder.build_game_package(job_dir(job_id))
+    except ValueError as exc:
+        raise HTTPException(status_code=409, detail=str(exc))
+
+
+@app.get("/api/job/{job_id}/package")
+def get_package(job_id: str) -> dict:
+    """The game_package.json manifest (must be built first)."""
+    _require_job(job_id)
+    pkg = game_package_builder.load_package(job_dir(job_id))
+    if pkg is None:
+        raise HTTPException(status_code=404, detail="Package not built")
+    return pkg
+
+
+@app.get("/api/job/{job_id}/package/download")
+def download_package(job_id: str) -> FileResponse:
+    """Download game_assets.zip."""
+    _require_job(job_id)
+    path = job_dir(job_id) / game_package_builder.PACKAGE_ZIP
+    if not path.exists():
+        raise HTTPException(status_code=404, detail="Package not built")
+    return FileResponse(path, media_type="application/zip", filename=f"{job_id}_game_assets.zip")
 
 
 @app.post("/api/job/{job_id}/publish/unpublish")
