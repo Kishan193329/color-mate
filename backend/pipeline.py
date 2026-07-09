@@ -73,6 +73,7 @@ from services import (
     region_detector,
     region_hierarchy,
     review_engine,
+    human_visual_intelligence,
     publishing,
     semantic_region_analyzer,
     svg_generator,
@@ -459,6 +460,19 @@ def _set_publish(job_id: str, status: str) -> None:
         pass
 
 
+def _apply_human_visual(job_id: str) -> None:
+    """Human Visual Intelligence — score every region on ten perceptual dimensions into
+    human_visual_report.json. Analysis only: reads the brain reports + review + experience
+    patterns; writes one report; no borders/rendering/reveal/SVG/regions. Best-effort."""
+    folder = job_dir(job_id)
+    if not (_p(folder, "game_config").exists() and _p(folder, "semantic_region_report").exists()):
+        return
+    try:
+        human_visual_intelligence.analyze(folder)
+    except Exception:  # noqa: BLE001 - analysis pass is best-effort, never blocks output
+        pass
+
+
 def _apply_artistic_decisions(folder: Path, profile: dict | None = None) -> None:
     """Quality Fix 13 — fuse the QF7/QF8/QF9 (+QF11/QF12/QF3 when present) reports
     into the per-region artistic decision record future engines obey. Reads reports
@@ -529,6 +543,7 @@ def run(job_id: str, profile_name: str = DEFAULT_PROFILE) -> None:
         _apply_artistic_border_render(job_id)          # Artistic Border Render Pass (SVG layer only, gated)
         finish_job(job_id)
         _apply_review(job_id)                          # Admin Review System (read-only assets + review.json)
+        _apply_human_visual(job_id)                    # Human Visual Intelligence (analysis only)
         _set_publish(job_id, "review")                 # Admin Publishing Flow: processing -> review
     except Exception as exc:  # noqa: BLE001
         fail_job(job_id, f"Processing failed: {exc}")
@@ -547,6 +562,7 @@ def reprocess(job_id: str, difficulty: str) -> None:
         write_progress(job_id, [])  # regions changed -> clear coloring
         finish_job(job_id)
         _apply_review(job_id)                          # Admin Review System refresh (read-only)
+        _apply_human_visual(job_id)                    # Human Visual Intelligence (analysis only)
         _set_publish(job_id, "review")                 # Admin Publishing Flow: processing -> review
     except Exception as exc:  # noqa: BLE001
         fail_job(job_id, f"Reprocessing failed: {exc}")

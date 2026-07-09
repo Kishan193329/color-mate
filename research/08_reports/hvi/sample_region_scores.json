@@ -1,0 +1,49 @@
+{
+  "label": 18,
+  "semantic_class": "FUR",
+  "artistic_role": "SUBJECT_CORE",
+  "area_pct": 0.916,
+  "scores": {
+    "visual_weight": 0.343,
+    "recognition_weight": 0.92,
+    "drawing_priority": 0.774,
+    "tracing_priority": 0.96,
+    "beauty_score": 0.671,
+    "fun_to_color_score": 0.35,
+    "visual_complexity": 0.85,
+    "viewer_attention": 0.635,
+    "memory_importance": 0.845,
+    "artistic_importance": 0.95
+  },
+  "decisions": [
+    {
+      "key": "hvi.visual_weight",
+      "value": 0.343,
+      "reason": "dominates when large, saturated and central",
+      "confidence": 0.5,
+      "evidence": {
+        "area_frac": 0.0092,
+        "pop": 0.717,
+        "centrality": 0.649
+      },
+      "override_point": "hvi.visual_weight",
+      "source": "rule",
+      "alternatives": []
+    },
+    {
+      "key": "hvi.recognition_weight",
+      "value": 0.92,
+      "reason": "identifies the subject: driven by artistic role, visual importance and focal/validation priority",
+      "confidence": 0.55,
+      "evidence": {
+        "role_base": 0.9,
+        "visual_importance": 0.9,
+        "validation_priority": "CRITICAL",
+        "is_focal": true
+      },
+      "override_point": "hvi.recognition_weight",
+      "source": "rule",
+      "alternatives": []
+    }
+  ]
+}
