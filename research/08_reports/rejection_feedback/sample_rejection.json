@@ -1,0 +1,189 @@
+{
+  "record_id": "rej_90bbf0c3c057",
+  "kind": "rejection",
+  "job_id": "cat_publish_test",
+  "image_id": "img_4cc3f68ee7f1",
+  "category": "too_many_tiny_regions",
+  "image_category": {
+    "name": "cats",
+    "title": "Curious Cat",
+    "tags": [
+      "animal",
+      "cat"
+    ]
+  },
+  "profile": "hard",
+  "reject_reason": "the tree canopy and hair fracture into 1-2px specks; tedious to fill",
+  "reject_notes": {
+    "what_is_wrong": "dozens of sub-pixel regions in foliage",
+    "why_not_useful": "not relaxing; a colourist can't see the numbers",
+    "which_area_failed": "tree canopy + hair bun",
+    "what_next_time": "merge tiny same-colour background regions more aggressively"
+  },
+  "uploaded_screenshot_path": "experience/rejections/rej_90bbf0c3c057_screenshot.png",
+  "affected_area_description": "tree canopy (top-right) and hair",
+  "metrics_at_rejection": {
+    "statistics": {
+      "region_count": 94,
+      "palette_count": 22,
+      "tiny_regions": 5,
+      "tiny_threshold_px": 629,
+      "largest_region": {
+        "area_px": 154237,
+        "area_pct": 9.81
+      },
+      "average_region_size": 14994,
+      "estimated_difficulty": "hard",
+      "estimated_play_time_min": 16,
+      "complexity_score": 58,
+      "border_quality_score": 79,
+      "artistic_score": 48
+    },
+    "decisions": [
+      {
+        "key": "review.estimated_play_time_min",
+        "value": 16,
+        "reason": "per-region model: find 5s + fill(area/3000, clamp 2-30s) over 94 regions",
+        "confidence": 0.45,
+        "evidence": {
+          "region_count": 94,
+          "find_sec": 5.0,
+          "fill_area_per_sec": 3000.0,
+          "fill_bounds_sec": [
+            2.0,
+            30.0
+          ]
+        },
+        "override_point": "review.estimated_play_time_min",
+        "source": "rule",
+        "alternatives": []
+      },
+      {
+        "key": "review.complexity_score",
+        "value": 58,
+        "reason": "0.5*regions + 0.35*border-density + 0.15*tiny-fraction (each capped)",
+        "confidence": 0.55,
+        "evidence": {
+          "region_count": 94,
+          "border_density": 0.1331,
+          "tiny_fraction": 0.0532,
+          "weights": {
+            "region": 0.5,
+            "density": 0.35,
+            "tiny": 0.15
+          },
+          "caps": {
+            "region": 220,
+            "density": 0.12,
+            "tiny": 0.4
+          }
+        },
+        "override_point": "review.complexity_score",
+        "source": "rule",
+        "alternatives": []
+      },
+      {
+        "key": "review.border_quality_score",
+        "value": 79,
+        "reason": "100 minus penalties for leaks, failed closure/shape passes, jaggedness, fragments",
+        "confidence": 0.7,
+        "evidence": {
+          "region_leak_count": 0,
+          "leak_pass": true,
+          "shape_pass": true,
+          "closure_pass": true,
+          "jaggedness_score_after": 0.1093,
+          "fragments_after": 18,
+          "penalties": {
+            "jaggedness": 17.49,
+            "fragments": 3.6
+          }
+        },
+        "override_point": "review.border_quality_score",
+        "source": "rule",
+        "alternatives": []
+      },
+      {
+        "key": "review.artistic_score",
+        "value": 48,
+        "reason": "mean of the artistic-border engine's per-segment visual/enjoyment/structural/artistic/playability scores",
+        "confidence": 0.5,
+        "evidence": {
+          "mean_scores": {
+            "visual_importance": 0.73,
+            "colouring_enjoyment": 0.262,
+            "structural_importance": 0.547,
+            "artistic_importance": 0.552,
+            "playability": 0.298
+          }
+        },
+        "override_point": "review.artistic_score",
+        "source": "rule",
+        "alternatives": []
+      }
+    ]
+  },
+  "reports_snapshot": [
+    {
+      "name": "game_config.json",
+      "reference": "storage/jobs/cat_publish_test/game_config.json",
+      "sha1": "1a175f0412cc0f55e5bc6d8065e997451023f001"
+    },
+    {
+      "name": "review.json",
+      "reference": "storage/jobs/cat_publish_test/review.json",
+      "sha1": "523a7f4c7c05c101a0982279994caa33402e96ae"
+    },
+    {
+      "name": "border_quality_report.json",
+      "reference": "storage/jobs/cat_publish_test/border_quality_report.json",
+      "sha1": "a15559563a61e8b53a9687d19638f1a6ad5ea0a7"
+    },
+    {
+      "name": "artistic_border_report.json",
+      "reference": "storage/jobs/cat_publish_test/artistic_border_report.json",
+      "sha1": "4d105a34e9787b13c66c03ab43662ac5c3d7ddfd"
+    },
+    {
+      "name": "artistic_border_render_report.json",
+      "reference": "storage/jobs/cat_publish_test/artistic_border_render_report.json",
+      "sha1": "2218f823bc23ea89b2d7d1acf5e244f159292518"
+    },
+    {
+      "name": "contour_character_report.json",
+      "reference": "storage/jobs/cat_publish_test/contour_character_report.json",
+      "sha1": "f245d25c8b53e839e2249d90eb6e455368ccd3e0"
+    },
+    {
+      "name": "semantic_region_report.json",
+      "reference": "storage/jobs/cat_publish_test/semantic_region_report.json",
+      "sha1": "6d2de04fe582332336b5d96fc5ebb0fc123dbc89"
+    },
+    {
+      "name": "material_behavior_report.json",
+      "reference": "storage/jobs/cat_publish_test/material_behavior_report.json",
+      "sha1": "6c4a9f6dc467345a3a4c40150a86eaf8e51212ba"
+    },
+    {
+      "name": "fragment_cleanup_report.json",
+      "reference": "storage/jobs/cat_publish_test/fragment_cleanup_report.json",
+      "sha1": "cf64a65436b82906469707f99aaa8a904c4954b0"
+    },
+    {
+      "name": "artistic_decision_report.json",
+      "reference": "storage/jobs/cat_publish_test/artistic_decision_report.json",
+      "sha1": "d5a7117273729f362d512619cb1e8b8c7d1822ac"
+    },
+    {
+      "name": "publish.json",
+      "reference": "storage/jobs/cat_publish_test/publish.json",
+      "sha1": "61bc1769279549317ec8aaf6aa71a0d416c7e16a"
+    },
+    {
+      "name": "publish_manifest.json",
+      "reference": "storage/jobs/cat_publish_test/publish_manifest.json",
+      "sha1": "fd2fe14116854c32c1b7205230554403c806bc4b"
+    }
+  ],
+  "created_at": "2026-07-09T03:38:27.780668+00:00"
+}

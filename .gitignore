@@ -17,6 +17,14 @@ storage/jobs/*
 # Runtime AI-mode override (written by the AI settings panel)
 storage/ai_settings.json
 
+# Experience Learning store — keep the structure, ignore the runtime feedback records
+experience/rejections/*
+!experience/rejections/.gitkeep
+experience/approved/*
+!experience/approved/.gitkeep
+experience/patterns/*
+!experience/patterns/.gitkeep
+
 # Env / OS
 .env
 .DS_Store

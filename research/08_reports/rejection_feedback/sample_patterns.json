@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "note": "Rolled-up admin feedback for future learning. Collection only \u2014 no engine reads this yet; a learning policy will consume it via core.decision.",
+  "generated_at": "2026-07-09T03:38:27.794558+00:00",
+  "totals": {
+    "rejections": 1,
+    "approvals": 1,
+    "reject_rate": 0.5
+  },
+  "by_reject_category": {
+    "too_many_tiny_regions": 1
+  },
+  "by_profile": {
+    "hard": 1
+  },
+  "by_image_category": {
+    "cats": 1
+  },
+  "metric_signals_by_reject_category": {
+    "too_many_tiny_regions": {
+      "region_count": 94.0,
+      "palette_count": 22.0,
+      "tiny_regions": 5.0,
+      "complexity_score": 58.0,
+      "border_quality_score": 79.0,
+      "artistic_score": 48.0,
+      "estimated_play_time_min": 16.0
+    }
+  }
+}

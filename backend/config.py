@@ -20,8 +20,19 @@ ROOT_DIR = Path(__file__).resolve().parent.parent
 STORAGE_DIR = ROOT_DIR / "storage"
 JOBS_DIR = STORAGE_DIR / "jobs"
 
-# Make sure storage exists on startup.
+# Experience Learning store — durable admin feedback the future learning policy will consume
+# (see core/decision.py). Lives at the repo root so it persists independently of a single
+# job's storage. The directory structure is version-controlled (.gitkeep); the accumulated
+# records are runtime data (gitignored). Collection only — no algorithm reads it yet.
+EXPERIENCE_DIR = ROOT_DIR / "experience"
+REJECTIONS_DIR = EXPERIENCE_DIR / "rejections"
+APPROVED_DIR = EXPERIENCE_DIR / "approved"
+PATTERNS_DIR = EXPERIENCE_DIR / "patterns"
+
+# Make sure storage + experience dirs exist on startup.
 JOBS_DIR.mkdir(parents=True, exist_ok=True)
+for _d in (REJECTIONS_DIR, APPROVED_DIR, PATTERNS_DIR):
+    _d.mkdir(parents=True, exist_ok=True)
 
 # Phase 8 — optional RunPod AI assist. "local" uses the on-box engine only;
 # "runpod" sends the image to a RunPod worker for enhancement / line art /

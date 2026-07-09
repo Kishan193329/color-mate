@@ -49,6 +49,7 @@ from job_store import (
 from services import (
     advanced_lineart_generator,
     ai_mode_router,
+    experience_store,
     publishing,
     quality_analyzer,
     region_editor,
@@ -673,7 +674,12 @@ def review_approve(job_id: str) -> dict:
     _require_job(job_id)
     # The review decision also advances the publishing lifecycle (review -> approved).
     publishing.set_status(job_dir(job_id), "approved", validate=False, actor="admin")
-    return review_engine.set_status(job_dir(job_id), "approved")
+    result = review_engine.set_status(job_dir(job_id), "approved")
+    try:
+        experience_store.record_approval(job_id, job_dir(job_id))  # positive experience signal
+    except Exception:  # noqa: BLE001 - experience capture is best-effort
+        pass
+    return result
 
 
 @app.post("/api/job/{job_id}/review/reject")
@@ -775,6 +781,8 @@ input{background:#10141a;border:1px solid var(--line);color:var(--fg);padding:8p
 .stats div{display:flex;justify-content:space-between;border-bottom:1px solid var(--line);padding:3px 0}
 .stats .k{color:var(--mut)}
 .pkg{margin-top:16px;font-size:13px}.pkg .c{color:var(--ok)}.pkg .x{color:var(--bad)}
+.ml{display:block;color:var(--mut);font-size:12px;margin:8px 0 3px}
+.mi{width:100%;background:#10141a;border:1px solid var(--line);color:var(--fg);padding:8px;border-radius:6px;font:inherit}
 h2{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--mut);margin:22px 0 6px}
 #toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--card);border:1px solid var(--acc);padding:12px 20px;border-radius:8px;opacity:0;transition:.3s}
 </style></head><body>
@@ -835,9 +843,41 @@ async function act(path){const r=await fetch(`/api/job/${cur}/${path}`,{method:"
   const d=await r.json().catch(()=>({}));
   if(!r.ok){toast("⚠ "+(d.detail||"failed"));return;}
   toast(path.split("/").pop()+" ✓");open_(cur);}
-async function rej(){const reason=prompt("Reject reason:")||"";
-  await fetch(`/api/job/${cur}/review/reject`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({reason})});
-  toast("rejected");open_(cur);}
+async function rej(){
+  const job=cur;
+  let cats=["bad_border","broken_shape","too_many_tiny_regions","important_detail_lost","ugly_lineart","wrong_numbering","bad_mask","not_fun_to_color","over_complicated","too_simple","wrong_category_profile","other"];
+  try{const j=await (await fetch("/api/admin/reject-categories")).json(); if(j.categories) cats=j.categories;}catch(e){}
+  const ov=document.createElement("div");
+  ov.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;z-index:50";
+  const opts=cats.map(c=>`<option value="${c}">${c.replace(/_/g,' ')}</option>`).join("");
+  const notes=[["nw","What is wrong"],["nu","Why it is not useful"],["na","Which area failed"],["nx","What should happen next time"]];
+  ov.innerHTML=`<div style="background:#181d24;border:1px solid #262d37;border-radius:12px;padding:20px;width:min(560px,92vw);max-height:90vh;overflow:auto">
+    <h2 style="margin:0 0 12px;color:#e6e9ef">Reject image — required feedback</h2>
+    <label class="ml">Reason category *</label><select id="rc" class="mi">${opts}</select>
+    <label class="ml">Reason *</label><textarea id="rr" class="mi" rows="2"></textarea>
+    ${notes.map(([id,l])=>`<label class="ml">${l}</label><textarea id="${id}" class="mi" rows="2"></textarea>`).join("")}
+    <label class="ml">Screenshot (optional)</label><input id="rs" type="file" accept="image/*" style="color:#9aa4b2"/>
+    <div style="display:flex;gap:10px;margin-top:16px;justify-content:flex-end">
+      <button id="rcancel">Cancel</button><button class="bad" id="rsub">Submit rejection</button></div></div>`;
+  document.body.appendChild(ov);
+  const close=()=>ov.remove();
+  ov.addEventListener("click",e=>{if(e.target===ov)close();});
+  ov.querySelector("#rcancel").onclick=close;
+  ov.querySelector("#rsub").onclick=async()=>{
+    const reason=ov.querySelector("#rr").value.trim();
+    if(!reason){toast("Reason is required");return;}
+    const fd=new FormData();
+    fd.append("category",ov.querySelector("#rc").value); fd.append("reason",reason);
+    fd.append("what_is_wrong",ov.querySelector("#nw").value);
+    fd.append("why_not_useful",ov.querySelector("#nu").value);
+    fd.append("which_area_failed",ov.querySelector("#na").value);
+    fd.append("what_next_time",ov.querySelector("#nx").value);
+    const f=ov.querySelector("#rs").files[0]; if(f) fd.append("screenshot",f);
+    const r=await fetch(`/api/admin/job/${job}/reject-feedback`,{method:"POST",body:fd});
+    if(!r.ok){const d=await r.json().catch(()=>({}));toast("⚠ "+(d.detail||"failed"));return;}
+    close();toast("rejected + feedback saved");open_(job);
+  };
+}
 async function saveCat(job){const name=document.getElementById("cn").value,title=document.getElementById("ct").value;
   await fetch(`/api/job/${job}/publish/category`,{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({name,title})});
   toast("category saved");open_(job);}
@@ -969,6 +1009,56 @@ def admin_publishing_page() -> HTMLResponse:
 @app.get("/api/catalog/page", response_class=HTMLResponse)
 def catalog_page() -> HTMLResponse:
     return HTMLResponse(_CATALOG_PAGE_HTML)
+
+
+# ---------------------------------------------------------------------------
+# Experience Learning — structured rejection feedback (data collection only)
+# ---------------------------------------------------------------------------
+
+
+@app.get("/api/admin/reject-categories")
+def reject_categories() -> dict:
+    """The required reject taxonomy for the admin reject form."""
+    return {"categories": experience_store.REJECT_CATEGORIES}
+
+
+@app.post("/api/admin/job/{job_id}/reject-feedback")
+async def reject_feedback(job_id: str,
+                          category: str = Form(...),
+                          reason: str = Form(...),
+                          what_is_wrong: str | None = Form(None),
+                          why_not_useful: str | None = Form(None),
+                          which_area_failed: str | None = Form(None),
+                          what_next_time: str | None = Form(None),
+                          affected_area: str | None = Form(None),
+                          screenshot: UploadFile | None = File(None)) -> dict:
+    """Record a structured rejection (required category + reason, optional notes + screenshot)
+    into the experience store, then advance the lifecycle to `rejected`. Collection only."""
+    _require_job(job_id)
+    folder = job_dir(job_id)
+    shot_bytes = shot_name = None
+    if screenshot is not None and getattr(screenshot, "filename", None):
+        shot_bytes = await screenshot.read()
+        shot_name = screenshot.filename
+    try:
+        record = experience_store.record_rejection(
+            job_id, folder, category=category, reason=reason,
+            notes={"what_is_wrong": what_is_wrong, "why_not_useful": why_not_useful,
+                   "which_area_failed": which_area_failed, "what_next_time": what_next_time},
+            affected_area_description=affected_area,
+            screenshot_bytes=shot_bytes, screenshot_name=shot_name)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    # Advance the lifecycle to rejected (publishing + review), same as /review/reject.
+    publishing.set_status(folder, "rejected", validate=False, reason=reason, actor="admin")
+    review_engine.set_status(folder, "rejected", reason)
+    return {"ok": True, "status": "rejected", "record": record}
+
+
+@app.get("/api/admin/experience")
+def admin_experience() -> dict:
+    """Experience-store summary — the reject taxonomy + the rolled-up feedback patterns."""
+    return experience_store.summary()
 
 
 @app.get("/api/download/{job_id}/{file_type}")
