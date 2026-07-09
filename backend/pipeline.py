@@ -72,6 +72,7 @@ from services import (
     region_cleanup,
     region_detector,
     region_hierarchy,
+    review_engine,
     semantic_region_analyzer,
     svg_generator,
     texture_preview_renderer,
@@ -434,6 +435,20 @@ def _apply_artistic_border_render(job_id: str) -> None:
         pass
 
 
+def _apply_review(job_id: str) -> None:
+    """Admin Review System — build the read-only review layer (eight previews, ten
+    statistics, four actions -> review.json) from the finished outputs. Reads only;
+    writes review_* assets + review.json. Never modifies rendering/regions/palette/
+    numbers/reveal. Best-effort; never blocks output."""
+    folder = job_dir(job_id)
+    if not (_p(folder, "game_config").exists() and (folder / "labels.npy").exists()):
+        return
+    try:
+        review_engine.build_review(folder, job_id)
+    except Exception:  # noqa: BLE001 - review is best-effort, never blocks output
+        pass
+
+
 def _apply_artistic_decisions(folder: Path, profile: dict | None = None) -> None:
     """Quality Fix 13 — fuse the QF7/QF8/QF9 (+QF11/QF12/QF3 when present) reports
     into the per-region artistic decision record future engines obey. Reads reports
@@ -502,6 +517,7 @@ def run(job_id: str, profile_name: str = DEFAULT_PROFILE) -> None:
         _apply_artistic_border(job_id)                 # Artistic Border Intelligence (analysis only)
         _apply_artistic_border_render(job_id)          # Artistic Border Render Pass (SVG layer only, gated)
         finish_job(job_id)
+        _apply_review(job_id)                          # Admin Review System (read-only assets + review.json)
     except Exception as exc:  # noqa: BLE001
         fail_job(job_id, f"Processing failed: {exc}")
 
@@ -517,6 +533,7 @@ def reprocess(job_id: str, difficulty: str) -> None:
         _process(job_id, DIFFICULTY_PROFILES[difficulty], difficulty, "preprocessed", use_ai=False)
         write_progress(job_id, [])  # regions changed -> clear coloring
         finish_job(job_id)
+        _apply_review(job_id)                          # Admin Review System refresh (read-only)
     except Exception as exc:  # noqa: BLE001
         fail_job(job_id, f"Reprocessing failed: {exc}")
 

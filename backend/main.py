@@ -18,9 +18,9 @@ import shutil
 import uuid
 from pathlib import Path
 
-from fastapi import BackgroundTasks, FastAPI, File, HTTPException, UploadFile
+from fastapi import BackgroundTasks, Body, FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, HTMLResponse
 
 import pipeline
 import quality_retry_engine
@@ -52,6 +52,7 @@ from services import (
     quality_analyzer,
     region_editor,
     region_hierarchy,
+    review_engine,
 )
 from schemas import (
     JobResponse,
@@ -519,6 +520,212 @@ def edit_redo(job_id: str) -> dict:
     if vid is None:
         raise HTTPException(status_code=409, detail="Nothing to redo")
     return {"ok": True, "version": vid, "versions": versions_state(job_id)}
+
+
+# ---------------------------------------------------------------------------
+# Admin Review System — read-only review layer + one-click approval actions
+# ---------------------------------------------------------------------------
+
+_REVIEW_PAGE_HTML = """<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>ColorForge — Admin Review</title>
+<style>
+:root{--bg:#0f1216;--card:#181d24;--line:#262d37;--fg:#e6e9ef;--mut:#9aa4b2;--acc:#4f8cff;
+--ok:#2ecc71;--warn:#f5a623;--bad:#ff5d5d;}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);
+font:14px/1.5 system-ui,Segoe UI,Roboto,sans-serif}
+header{display:flex;align-items:center;gap:14px;padding:16px 22px;border-bottom:1px solid var(--line);
+position:sticky;top:0;background:var(--bg);z-index:5}
+header h1{font-size:16px;margin:0;font-weight:600}
+#status{padding:3px 12px;border-radius:999px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.s-pending{background:#3a3410;color:var(--warn)}.s-approved{background:#123020;color:var(--ok)}
+.s-rejected{background:#3a1414;color:var(--bad)}.s-regenerating{background:#10233a;color:var(--acc)}
+main{padding:22px;max-width:1400px;margin:0 auto}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:22px}
+button{border:1px solid var(--line);background:var(--card);color:var(--fg);padding:10px 18px;border-radius:8px;
+font-weight:600;cursor:pointer;transition:.15s}button:hover{border-color:var(--acc)}
+button.approve:hover{border-color:var(--ok);color:var(--ok)}button.reject:hover{border-color:var(--bad);color:var(--bad)}
+h2{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--mut);margin:26px 0 12px}
+.stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px}
+.stat .k{color:var(--mut);font-size:11px;text-transform:uppercase;letter-spacing:.05em}
+.stat .v{font-size:22px;font-weight:700;margin-top:4px}
+.stat .sub{color:var(--mut);font-size:12px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.card .cap{padding:10px 14px;font-weight:600;border-bottom:1px solid var(--line);display:flex;justify-content:space-between}
+.card .cap span{color:var(--mut);font-weight:400}
+.card img{width:100%;display:block;background:#fff}
+.card .none{padding:40px;text-align:center;color:var(--mut)}
+#cmp{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px;margin-top:12px;display:none}
+table{border-collapse:collapse;width:100%}td,th{padding:6px 12px;text-align:right;border-bottom:1px solid var(--line)}
+th:first-child,td:first-child{text-align:left}.up{color:var(--ok)}.dn{color:var(--bad)}
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--card);
+border:1px solid var(--acc);padding:12px 20px;border-radius:8px;opacity:0;transition:.3s;pointer-events:none}
+</style></head><body>
+<header><h1>ColorForge · Admin Review</h1><span id="status" class="s-pending">…</span>
+<span style="color:var(--mut);font-size:12px">job __JOB_ID__</span></header>
+<main>
+<div class="actions">
+  <button class="approve" onclick="act('approve','POST')">✓ Approve</button>
+  <button class="reject" onclick="reject()">✕ Reject</button>
+  <button onclick="act('regenerate','POST')">↻ Regenerate</button>
+  <button onclick="compare()">⇄ Compare Previous Version</button>
+</div>
+<div id="cmp"></div>
+<h2>Statistics</h2><div class="stats" id="stats"></div>
+<h2>Previews</h2><div class="grid" id="grid"></div>
+</main><div id="toast"></div>
+<script>
+const JOB="__JOB_ID__";
+const A=n=>`/api/job/${JOB}/review/asset/${n}`;
+const PREV=[["original","Original Image"],["border_preview","Border Preview"],
+["number_preview","Number Preview"],["artistic_border_preview","Artistic Border Preview"],
+["reveal_preview","Reveal Preview"],["region_heatmap","Region Heatmap"],
+["tiny_region_overlay","Tiny Region Overlay"],["border_density_map","Border Density Map"]];
+const STAT=[["region_count","Region count",s=>s.region_count],
+["palette_count","Palette count",s=>s.palette_count],
+["tiny_regions","Tiny regions",s=>s.tiny_regions,s=>`< ${s.tiny_threshold_px}px`],
+["largest_region","Largest region",s=>s.largest_region.area_pct+"%",s=>s.largest_region.area_px.toLocaleString()+" px"],
+["average_region_size","Avg region size",s=>s.average_region_size.toLocaleString(),()=>"px"],
+["estimated_difficulty","Difficulty",s=>s.estimated_difficulty||"—"],
+["estimated_play_time_min","Play time",s=>s.estimated_play_time_min,()=>"min"],
+["complexity_score","Complexity",s=>s.complexity_score,()=>"/ 100"],
+["border_quality_score","Border quality",s=>s.border_quality_score??"—",()=>"/ 100"],
+["artistic_score","Artistic score",s=>s.artistic_score??"—",()=>"/ 100"]];
+function toast(m){const t=document.getElementById("toast");t.textContent=m;t.style.opacity=1;
+setTimeout(()=>t.style.opacity=0,2200);}
+function setStatus(s){const e=document.getElementById("status");e.textContent=s;e.className="s-"+s;}
+async function load(){
+  const r=await fetch(`/api/job/${JOB}/review`); if(!r.ok){toast("Review not available");return;}
+  const d=await r.json(); setStatus(d.status||"pending");
+  document.getElementById("stats").innerHTML=STAT.map(([k,lbl,v,sub])=>{
+    let val,s2=""; try{val=v(d.statistics);}catch(e){val="—";}
+    try{s2=sub?sub(d.statistics):"";}catch(e){}
+    return `<div class="stat"><div class="k">${lbl}</div><div class="v">${val}</div><div class="sub">${s2}</div></div>`;
+  }).join("");
+  document.getElementById("grid").innerHTML=PREV.map(([k,lbl])=>{
+    const f=d.assets[k];
+    const body=f?`<img loading="lazy" src="${A(f)}" alt="${lbl}"/>`:`<div class="none">not available</div>`;
+    return `<div class="card"><div class="cap">${lbl}<span>${f||""}</span></div>${body}</div>`;
+  }).join("");
+}
+async function act(name,method){
+  const r=await fetch(`/api/job/${JOB}/review/${name}`,{method});
+  const d=await r.json().catch(()=>({}));
+  if(name==="regenerate"){setStatus("regenerating");toast("Regenerating — review rebuilds when done");return;}
+  if(d.status)setStatus(d.status); toast(name+" ✓");
+}
+async function reject(){
+  const reason=prompt("Reject reason (optional):")||"";
+  const r=await fetch(`/api/job/${JOB}/review/reject`,{method:"POST",
+    headers:{"Content-Type":"application/json"},body:JSON.stringify({reason})});
+  const d=await r.json().catch(()=>({})); if(d.status)setStatus(d.status); toast("rejected ✕");
+}
+async function compare(){
+  const r=await fetch(`/api/job/${JOB}/review/compare`); const d=await r.json();
+  const box=document.getElementById("cmp"); box.style.display="block";
+  if(!d.available){box.innerHTML="<b>Compare Previous Version</b><br>"+(d.note||"No previous version.");return;}
+  const rows=Object.entries(d.deltas).map(([k,v])=>{
+    const cls=v.delta>0?"up":v.delta<0?"dn":""; const sign=v.delta>0?"+":"";
+    return `<tr><td>${k}</td><td>${v.previous}</td><td>${v.current}</td><td class="${cls}">${sign}${v.delta}</td></tr>`;
+  }).join("");
+  box.innerHTML=`<b>Compare Previous Version</b> (was: ${d.previous_status||"—"})
+    <table><tr><th>Metric</th><th>Previous</th><th>Current</th><th>Δ</th></tr>${rows}</table>`;
+}
+load();
+</script></body></html>"""
+
+
+def _require_job(job_id: str) -> None:
+    if get_job(job_id) is None:
+        raise HTTPException(status_code=404, detail="Job not found")
+
+
+@app.get("/api/job/{job_id}/review")
+def get_review(job_id: str) -> dict:
+    """The review layer (eight previews, ten statistics, four actions). Built on demand
+    from the finished outputs if not already present. Read-only."""
+    _require_job(job_id)
+    folder = job_dir(job_id)
+    if not (folder / "review.json").exists():
+        if not (folder / ARTIFACTS["game_config"]).exists():
+            raise HTTPException(status_code=409, detail="Job not processed yet")
+        review_engine.build_review(folder, job_id)
+    return json.loads((folder / "review.json").read_text(encoding="utf-8"))
+
+
+@app.post("/api/job/{job_id}/review/rebuild")
+def rebuild_review(job_id: str) -> dict:
+    """Force-regenerate the review assets + review.json from the current outputs."""
+    _require_job(job_id)
+    folder = job_dir(job_id)
+    if not (folder / ARTIFACTS["game_config"]).exists():
+        raise HTTPException(status_code=409, detail="Job not processed yet")
+    return review_engine.build_review(folder, job_id)
+
+
+@app.post("/api/job/{job_id}/review/approve")
+def review_approve(job_id: str) -> dict:
+    _require_job(job_id)
+    return review_engine.set_status(job_dir(job_id), "approved")
+
+
+@app.post("/api/job/{job_id}/review/reject")
+def review_reject(job_id: str, payload: dict | None = Body(default=None)) -> dict:
+    _require_job(job_id)
+    reason = (payload or {}).get("reason") if isinstance(payload, dict) else None
+    return review_engine.set_status(job_dir(job_id), "rejected", reason)
+
+
+@app.post("/api/job/{job_id}/review/regenerate")
+def review_regenerate(job_id: str, background: BackgroundTasks) -> dict:
+    """Snapshot the current review (for Compare Previous Version) then reprocess the
+    upload. The review layer rebuilds automatically when processing finishes."""
+    record = get_job(job_id)
+    if record is None:
+        raise HTTPException(status_code=404, detail="Job not found")
+    if record["status"] == "processing":
+        raise HTTPException(status_code=409, detail="Job already processing")
+    review_engine.archive_current(job_dir(job_id))
+    background.add_task(quality_retry_engine.process_upload, job_id)
+    record["status"] = "processing"
+    return {"ok": True, "status": "regenerating",
+            "note": "Reprocessing; the review layer rebuilds when it finishes."}
+
+
+@app.get("/api/job/{job_id}/review/compare")
+def review_compare(job_id: str) -> dict:
+    """Diff the current review statistics against the archived previous version."""
+    _require_job(job_id)
+    return review_engine.compare_previous(job_dir(job_id))
+
+
+@app.get("/api/job/{job_id}/review/asset/{name}")
+def review_asset(job_id: str, name: str) -> FileResponse:
+    """Serve a review preview. Whitelisted to the filenames declared in review.json's
+    asset set (prevents path traversal / arbitrary reads)."""
+    _require_job(job_id)
+    folder = job_dir(job_id)
+    if not (folder / "review.json").exists():
+        raise HTTPException(status_code=404, detail="Review not built")
+    review = json.loads((folder / "review.json").read_text(encoding="utf-8"))
+    allowed = {v for v in review.get("assets", {}).values() if v}
+    if name not in allowed:
+        raise HTTPException(status_code=404, detail="Not a review asset")
+    path = folder / name
+    if not path.exists():
+        raise HTTPException(status_code=404, detail="Asset not found")
+    return FileResponse(path)
+
+
+@app.get("/api/job/{job_id}/review/page", response_class=HTMLResponse)
+def review_page(job_id: str) -> HTMLResponse:
+    """A self-contained admin review page: the eight previews, ten statistics, and the
+    four one-click actions. No build step — vanilla HTML/JS that consumes the review API."""
+    _require_job(job_id)
+    return HTMLResponse(_REVIEW_PAGE_HTML.replace("__JOB_ID__", job_id))
 
 
 @app.get("/api/download/{job_id}/{file_type}")

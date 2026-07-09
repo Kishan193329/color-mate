@@ -1,0 +1,792 @@
+{
+  "images": 27,
+  "readonly_ok": 27,
+  "all_8_assets": 27,
+  "all_10_stats": 27,
+  "wired_ok": true,
+  "rows": [
+    {
+      "readonly_ok": true,
+      "assets_present": 8,
+      "missing": [],
+      "stats_ok": true,
+      "actions": [
+        "approve",
+        "reject",
+        "regenerate",
+        "compare_previous"
+      ],
+      "index": 1,
+      "stats": {
+        "region_count": 80,
+        "palette_count": 27,
+        "tiny_regions": 3,
+        "tiny_threshold_px": 629,
+        "largest_region": {
+          "area_px": 143242,
+          "area_pct": 9.11
+        },
+        "average_region_size": 12292,
+        "estimated_difficulty": "hard",
+        "estimated_play_time_min": 12,
+        "complexity_score": 55,
+        "border_quality_score": 69,
+        "artistic_score": 32
+      }
+    },
+    {
+      "readonly_ok": true,
+      "assets_present": 8,
+      "missing": [],
+      "stats_ok": true,
+      "actions": [
+        "approve",
+        "reject",
+        "regenerate",
+        "compare_previous"
+      ],
+      "index": 2,
+      "stats": {
+        "region_count": 105,
+        "palette_count": 32,
+        "tiny_regions": 13,
+        "tiny_threshold_px": 629,
+        "largest_region": {
+          "area_px": 233068,
+          "area_pct": 14.82
+        },
+        "average_region_size": 9041,
+        "estimated_difficulty": "hard",
+        "estimated_play_time_min": 15,
+        "complexity_score": 64,
+        "border_quality_score": 73,
+        "artistic_score": 33
+      }
+    },
+    {
+      "readonly_ok": true,
+      "assets_present": 8,
+      "missing": [],
+      "stats_ok": true,
+      "actions": [
+        "approve",
+        "reject",
+        "regenerate",
+        "compare_previous"
+      ],
+      "index": 3,
+      "stats": {
+        "region_count": 73,
+        "palette_count": 22,
+        "tiny_regions": 11,
+        "tiny_threshold_px": 629,
+        "largest_region": {
+          "area_px": 533246,
+          "area_pct": 33.91
+        },
+        "average_region_size": 9375,
+        "estimated_difficulty": "hard",
+        "estimated_play_time_min": 9,
+        "complexity_score": 57,
+        "border_quality_score": 75,
+        "artistic_score": 36
+      }
+    },
+    {
+      "readonly_ok": true,
+      "assets_present": 8,
+      "missing": [],
+      "stats_ok": true,
+      "actions": [
+        "approve",
+        "reject",
+        "regenerate",
+        "compare_previous"
+      ],
+      "index": 4,
+      "stats": {
+        "region_count": 46,
+        "palette_count": 28,
+        "tiny_regions": 5,
+        "tiny_threshold_px": 629,
+        "largest_region": {
+          "area_px": 850757,
+          "area_pct": 54.08
+        },
+        "average_region_size": 27779,
+        "estimated_difficulty": "hard",
+        "estimated_play_time_min": 6,
+        "complexity_score": 50,
+        "border_quality_score": 68,
+        "artistic_score": 25
+      }
+    },
+    {
+      "readonly_ok": true,
+      "assets_present": 8,
+      "missing": [],
+      "stats_ok": true,
+      "actions": [
+        "approve",
+        "reject",
+        "regenerate",
+        "compare_previous"
+      ],
+      "index": 5,
+      "stats": {
+        "region_count": 40,
+        "palette_count": 16,
+        "tiny_regions": 1,
+        "tiny_threshold_px": 629,
+        "largest_region": {
+          "area_px": 269711,
+          "area_pct": 17.15
+        },
+        "average_region_size": 24793,
+        "estimated_difficulty": "medium",
+        "estimated_play_time_min": 8,
+        "complexity_score": 45,
+        "border_quality_score": 69,
+        "artistic_score": 30
+      }
+    },
+    {
+      "readonly_ok": true,
+      "assets_present": 8,
+      "missing": [],
+      "stats_ok": true,
+      "actions": [
+        "approve",
+        "reject",
+        "regenerate",
+        "compare_previous"
+      ],
+      "index": 6,
+      "stats": {
+        "region_count": 28,
+        "palette_count": 10,
+        "tiny_regions": 2,
+        "tiny_threshold_px": 629,
+        "largest_region": {
+          "area_px": 938574,
+          "area_pct": 59.67
+        },
+        "average_region_size": 52373,
+        "estimated_difficulty": "medium",
+        "estimated_play_time_min": 4,
+        "complexity_score": 32,
+        "border_quality_score": 77,
+        "artistic_score": 39
+      }
+    },
+    {
+      "readonly_ok": true,
+      "assets_present": 8,
+      "missing": [],
+      "stats_ok": true,
+      "actions": [
+        "approve",
+        "reject",
+        "regenerate",
+        "compare_previous"
+      ],
+      "index": 7,
+      "stats": {
+        "region_count": 75,
+        "palette_count": 31,
+        "tiny_regions": 27,
+        "tiny_threshold_px": 629,
+        "largest_region": {
+          "area_px": 629220,
+          "area_pct": 40.0
+        },
+        "average_region_size": 17476,
+        "estimated_difficulty": "hard",
+        "estimated_play_time_min": 10,
+        "complexity_score": 66,
+        "border_quality_score": 68,
+        "artistic_score": 21
+      }
+    },
+    {
+      "readonly_ok": true,
+      "assets_present": 8,
+      "missing": [],
+      "stats_ok": true,
+      "actions": [
+        "approve",
+        "reject",
+        "regenerate",
+        "compare_previous"
+      ],
+      "index": 8,
+      "stats": {
+        "region_count": 6,
+        "palette_count": 6,
+        "tiny_regions": 2,
+        "tiny_threshold_px": 629,
+        "largest_region": {
+          "area_px": 623617,
+          "area_pct": 39.66
+        },
+        "average_region_size": 256986,
+        "estimated_difficulty": "easy",
+        "estimated_play_time_min": 2,
+        "complexity_score": 21,
+        "border_quality_score": 76,
+        "artistic_score": 16
+      }
+    },
+    {
+      "readonly_ok": true,
+      "assets_present": 8,
+      "missing": [],
+      "stats_ok": true,
+      "actions": [
+        "approve",
+        "reject",
+        "regenerate",
+        "compare_previous"
+      ],
+      "index": 9,
+      "stats": {
+        "region_count": 16,
+        "palette_count": 9,
+        "tiny_regions": 3,
+        "tiny_threshold_px": 629,
+        "largest_region": {
+          "area_px": 848241,
+          "area_pct": 53.94
+        },
+        "average_region_size": 93781,
+        "estimated_difficulty": "medium",
+        "estimated_play_time_min": 3,
+        "complexity_score": 28,
+        "border_quality_score": 72,
+        "artistic_score": 34
+      }
+    },
+    {
+      "readonly_ok": true,
+      "assets_present": 8,
+      "missing": [],
+      "stats_ok": true,
+      "actions": [
+        "approve",
+        "reject",
+        "regenerate",
+        "compare_previous"
+      ],
+      "index": 10,
+      "stats": {
+        "region_count": 30,
+        "palette_count": 12,
+        "tiny_regions": 10,
+        "tiny_threshold_px": 629,
+        "largest_region": {
+          "area_px": 680676,
+          "area_pct": 43.29
+        },
+        "average_region_size": 49618,
+        "estimated_difficulty": "medium",
+        "estimated_play_time_min": 5,
+        "complexity_score": 39,
+        "border_quality_score": 73,
+        "artistic_score": 26
+      }
+    },
+    {
+      "readonly_ok": true,
+      "assets_present": 8,
+      "missing": [],
+      "stats_ok": true,
+      "actions": [
+        "approve",
+        "reject",
+        "regenerate",
+        "compare_previous"
+      ],
+      "index": 11,
+      "stats": {
+        "region_count": 8,
+        "palette_count": 6,
+        "tiny_regions": 1,
+        "tiny_threshold_px": 629,
+        "largest_region": {
+          "area_px": 706542,
+          "area_pct": 44.93
+        },
+        "average_region_size": 189234,
+        "estimated_difficulty": "easy",
+        "estimated_play_time_min": 2,
+        "complexity_score": 20,
+        "border_quality_score": 75,
+        "artistic_score": 17
+      }
+    },
+    {
+      "readonly_ok": true,
+      "assets_present": 8,
+      "missing": [],
+      "stats_ok": true,
+      "actions": [
+        "approve",
+        "reject",
+        "regenerate",
+        "compare_previous"
+      ],
+      "index": 12,
+      "stats": {
+        "region_count": 6,
+        "palette_count": 6,
+        "tiny_regions": 2,
+        "tiny_threshold_px": 629,
+        "largest_region": {
+          "area_px": 588472,
+          "area_pct": 37.42
+        },
+        "average_region_size": 258461,
+        "estimated_difficulty": "easy",
+        "estimated_play_time_min": 2,
+        "complexity_score": 20,
+        "border_quality_score": 75,
+        "artistic_score": 31
+      }
+    },
+    {
+      "readonly_ok": true,
+      "assets_present": 8,
+      "missing": [],
+      "stats_ok": true,
+      "actions": [
+        "approve",
+        "reject",
+        "regenerate",
+        "compare_previous"
+      ],
+      "index": 13,
+      "stats": {
+        "region_count": 50,
+        "palette_count": 27,
+        "tiny_regions": 12,
+        "tiny_threshold_px": 629,
+        "largest_region": {
+          "area_px": 394635,
+          "area_pct": 25.1
+        },
+        "average_region_size": 29333,
+        "estimated_difficulty": "hard",
+        "estimated_play_time_min": 9,
+        "complexity_score": 47,
+        "border_quality_score": 78,
+        "artistic_score": 34
+      }
+    },
+    {
+      "readonly_ok": true,
+      "assets_present": 8,
+      "missing": [],
+      "stats_ok": true,
+      "actions": [
+        "approve",
+        "reject",
+        "regenerate",
+        "compare_previous"
+      ],
+      "index": 14,
+      "stats": {
+        "region_count": 153,
+        "palette_count": 37,
+        "tiny_regions": 26,
+        "tiny_threshold_px": 629,
+        "largest_region": {
+          "area_px": 337355,
+          "area_pct": 21.45
+        },
+        "average_region_size": 8288,
+        "estimated_difficulty": "hard",
+        "estimated_play_time_min": 21,
+        "complexity_score": 76,
+        "border_quality_score": 74,
+        "artistic_score": 34
+      }
+    },
+    {
+      "readonly_ok": true,
+      "assets_present": 8,
+      "missing": [],
+      "stats_ok": true,
+      "actions": [
+        "approve",
+        "reject",
+        "regenerate",
+        "compare_previous"
+      ],
+      "index": 15,
+      "stats": {
+        "region_count": 68,
+        "palette_count": 17,
+        "tiny_regions": 0,
+        "tiny_threshold_px": 629,
+        "largest_region": {
+          "area_px": 303748,
+          "area_pct": 19.32
+        },
+        "average_region_size": 16513,
+        "estimated_difficulty": "medium",
+        "estimated_play_time_min": 11,
+        "complexity_score": 50,
+        "border_quality_score": 75,
+        "artistic_score": 40
+      }
+    },
+    {
+      "readonly_ok": true,
+      "assets_present": 8,
+      "missing": [],
+      "stats_ok": true,
+      "actions": [
+        "approve",
+        "reject",
+        "regenerate",
+        "compare_previous"
+      ],
+      "index": 16,
+      "stats": {
+        "region_count": 86,
+        "palette_count": 30,
+        "tiny_regions": 9,
+        "tiny_threshold_px": 629,
+        "largest_region": {
+          "area_px": 512283,
+          "area_pct": 32.57
+        },
+        "average_region_size": 14327,
+        "estimated_difficulty": "hard",
+        "estimated_play_time_min": 12,
+        "complexity_score": 58,
+        "border_quality_score": 72,
+        "artistic_score": 36
+      }
+    },
+    {
+      "readonly_ok": true,
+      "assets_present": 8,
+      "missing": [],
+      "stats_ok": true,
+      "actions": [
+        "approve",
+        "reject",
+        "regenerate",
+        "compare_previous"
+      ],
+      "index": 17,
+      "stats": {
+        "region_count": 55,
+        "palette_count": 24,
+        "tiny_regions": 1,
+        "tiny_threshold_px": 629,
+        "largest_region": {
+          "area_px": 420244,
+          "area_pct": 26.72
+        },
+        "average_region_size": 17206,
+        "estimated_difficulty": "hard",
+        "estimated_play_time_min": 8,
+        "complexity_score": 48,
+        "border_quality_score": 72,
+        "artistic_score": 30
+      }
+    },
+    {
+      "readonly_ok": true,
+      "assets_present": 8,
+      "missing": [],
+      "stats_ok": true,
+      "actions": [
+        "approve",
+        "reject",
+        "regenerate",
+        "compare_previous"
+      ],
+      "index": 18,
+      "stats": {
+        "region_count": 44,
+        "palette_count": 15,
+        "tiny_regions": 0,
+        "tiny_threshold_px": 629,
+        "largest_region": {
+          "area_px": 315285,
+          "area_pct": 20.04
+        },
+        "average_region_size": 19026,
+        "estimated_difficulty": "medium",
+        "estimated_play_time_min": 7,
+        "complexity_score": 45,
+        "border_quality_score": 72,
+        "artistic_score": 25
+      }
+    },
+    {
+      "readonly_ok": true,
+      "assets_present": 8,
+      "missing": [],
+      "stats_ok": true,
+      "actions": [
+        "approve",
+        "reject",
+        "regenerate",
+        "compare_previous"
+      ],
+      "index": 19,
+      "stats": {
+        "region_count": 64,
+        "palette_count": 30,
+        "tiny_regions": 18,
+        "tiny_threshold_px": 629,
+        "largest_region": {
+          "area_px": 300944,
+          "area_pct": 19.14
+        },
+        "average_region_size": 21452,
+        "estimated_difficulty": "hard",
+        "estimated_play_time_min": 12,
+        "complexity_score": 60,
+        "border_quality_score": 71,
+        "artistic_score": 25
+      }
+    },
+    {
+      "readonly_ok": true,
+      "assets_present": 8,
+      "missing": [],
+      "stats_ok": true,
+      "actions": [
+        "approve",
+        "reject",
+        "regenerate",
+        "compare_previous"
+      ],
+      "index": 20,
+      "stats": {
+        "region_count": 68,
+        "palette_count": 16,
+        "tiny_regions": 2,
+        "tiny_threshold_px": 629,
+        "largest_region": {
+          "area_px": 363509,
+          "area_pct": 23.12
+        },
+        "average_region_size": 16702,
+        "estimated_difficulty": "medium",
+        "estimated_play_time_min": 9,
+        "complexity_score": 52,
+        "border_quality_score": 72,
+        "artistic_score": 33
+      }
+    },
+    {
+      "readonly_ok": true,
+      "assets_present": 8,
+      "missing": [],
+      "stats_ok": true,
+      "actions": [
+        "approve",
+        "reject",
+        "regenerate",
+        "compare_previous"
+      ],
+      "index": 21,
+      "stats": {
+        "region_count": 47,
+        "palette_count": 17,
+        "tiny_regions": 0,
+        "tiny_threshold_px": 629,
+        "largest_region": {
+          "area_px": 333673,
+          "area_pct": 21.22
+        },
+        "average_region_size": 19643,
+        "estimated_difficulty": "medium",
+        "estimated_play_time_min": 8,
+        "complexity_score": 46,
+        "border_quality_score": 75,
+        "artistic_score": 38
+      }
+    },
+    {
+      "readonly_ok": true,
+      "assets_present": 8,
+      "missing": [],
+      "stats_ok": true,
+      "actions": [
+        "approve",
+        "reject",
+        "regenerate",
+        "compare_previous"
+      ],
+      "index": 22,
+      "stats": {
+        "region_count": 18,
+        "palette_count": 10,
+        "tiny_regions": 7,
+        "tiny_threshold_px": 629,
+        "largest_region": {
+          "area_px": 640964,
+          "area_pct": 40.76
+        },
+        "average_region_size": 85030,
+        "estimated_difficulty": "medium",
+        "estimated_play_time_min": 4,
+        "complexity_score": 31,
+        "border_quality_score": 80,
+        "artistic_score": 16
+      }
+    },
+    {
+      "readonly_ok": true,
+      "assets_present": 8,
+      "missing": [],
+      "stats_ok": true,
+      "actions": [
+        "approve",
+        "reject",
+        "regenerate",
+        "compare_previous"
+      ],
+      "index": 23,
+      "stats": {
+        "region_count": 23,
+        "palette_count": 16,
+        "tiny_regions": 1,
+        "tiny_threshold_px": 629,
+        "largest_region": {
+          "area_px": 275581,
+          "area_pct": 17.52
+        },
+        "average_region_size": 64434,
+        "estimated_difficulty": "medium",
+        "estimated_play_time_min": 8,
+        "complexity_score": 42,
+        "border_quality_score": 83,
+        "artistic_score": 38
+      }
+    },
+    {
+      "readonly_ok": true,
+      "assets_present": 8,
+      "missing": [],
+      "stats_ok": true,
+      "actions": [
+        "approve",
+        "reject",
+        "regenerate",
+        "compare_previous"
+      ],
+      "index": 24,
+      "stats": {
+        "region_count": 18,
+        "palette_count": 14,
+        "tiny_regions": 3,
+        "tiny_threshold_px": 629,
+        "largest_region": {
+          "area_px": 271062,
+          "area_pct": 17.24
+        },
+        "average_region_size": 84184,
+        "estimated_difficulty": "medium",
+        "estimated_play_time_min": 7,
+        "complexity_score": 36,
+        "border_quality_score": 80,
+        "artistic_score": 40
+      }
+    },
+    {
+      "readonly_ok": true,
+      "assets_present": 8,
+      "missing": [],
+      "stats_ok": true,
+      "actions": [
+        "approve",
+        "reject",
+        "regenerate",
+        "compare_previous"
+      ],
+      "index": 25,
+      "stats": {
+        "region_count": 67,
+        "palette_count": 25,
+        "tiny_regions": 13,
+        "tiny_threshold_px": 629,
+        "largest_region": {
+          "area_px": 263650,
+          "area_pct": 16.77
+        },
+        "average_region_size": 22053,
+        "estimated_difficulty": "hard",
+        "estimated_play_time_min": 12,
+        "complexity_score": 48,
+        "border_quality_score": 78,
+        "artistic_score": 38
+      }
+    },
+    {
+      "readonly_ok": true,
+      "assets_present": 8,
+      "missing": [],
+      "stats_ok": true,
+      "actions": [
+        "approve",
+        "reject",
+        "regenerate",
+        "compare_previous"
+      ],
+      "index": 26,
+      "stats": {
+        "region_count": 82,
+        "palette_count": 35,
+        "tiny_regions": 13,
+        "tiny_threshold_px": 629,
+        "largest_region": {
+          "area_px": 252740,
+          "area_pct": 16.07
+        },
+        "average_region_size": 17538,
+        "estimated_difficulty": "hard",
+        "estimated_play_time_min": 14,
+        "complexity_score": 57,
+        "border_quality_score": 77,
+        "artistic_score": 35
+      }
+    },
+    {
+      "readonly_ok": true,
+      "assets_present": 8,
+      "missing": [],
+      "stats_ok": true,
+      "actions": [
+        "approve",
+        "reject",
+        "regenerate",
+        "compare_previous"
+      ],
+      "index": 27,
+      "stats": {
+        "region_count": 105,
+        "palette_count": 26,
+        "tiny_regions": 8,
+        "tiny_threshold_px": 629,
+        "largest_region": {
+          "area_px": 141601,
+          "area_pct": 9.0
+        },
+        "average_region_size": 13524,
+        "estimated_difficulty": "hard",
+        "estimated_play_time_min": 18,
+        "complexity_score": 62,
+        "border_quality_score": 79,
+        "artistic_score": 48
+      }
+    }
+  ]
+}
