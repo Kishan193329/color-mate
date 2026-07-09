@@ -164,8 +164,12 @@ CONF_COMPLEXITY = 0.55         # blended heuristic
 CONF_BORDER_QUALITY = 0.70     # grounded in concrete leak / pass / jaggedness signals
 CONF_ARTISTIC = 0.50           # soft scores averaged over many segments
 CONF_PLAY_TIME = 0.45          # coarse per-region time model, not yet calibrated to real play
+CONF_RECOMMENDATION = 0.40     # static heuristic; experience sharpens it
 
 
+# Raw rule values (no decision seam) — used both by the decision wrappers and to build the
+# metrics snapshot the recommendation matches on, so a policy override of one score never
+# feeds back into another decision's inputs.
 def _play_time_seconds(areas: list) -> float:
     total = 0.0
     for a in areas:
@@ -174,10 +178,28 @@ def _play_time_seconds(areas: list) -> float:
     return total
 
 
+def _play_time_minutes(areas: list) -> int:
+    return int(round(_play_time_seconds(areas) / 60.0))
+
+
+def _complexity_value(region_count: int, border_density: float, tiny_frac: float) -> int:
+    region_c = 100 * min(1.0, region_count / CX_REGION_CAP)
+    density_c = 100 * min(1.0, border_density / CX_DENSITY_CAP)
+    tiny_c = 100 * min(1.0, tiny_frac / CX_TINY_CAP)
+    return int(round(_clamp(0.5 * region_c + 0.35 * density_c + 0.15 * tiny_c)))
+
+
+def _artistic_value(abr: dict | None):
+    ms = (abr or {}).get("mean_scores") or {}
+    keys = ["visual_importance", "colouring_enjoyment", "structural_importance",
+            "artistic_importance", "playability"]
+    vals = {k: float(ms[k]) for k in keys if k in ms}
+    return (int(round(_clamp(100.0 * sum(vals.values()) / len(vals)))) if vals else None), vals
+
+
 def _play_time_decision(areas: list) -> Decision:
-    minutes = int(round(_play_time_seconds(areas) / 60.0))
     return decide(
-        "review.estimated_play_time_min", minutes,
+        "review.estimated_play_time_min", _play_time_minutes(areas),
         reason=f"per-region model: find {FIND_SEC:g}s + fill(area/{FILL_AREA_PER_SEC:g}, "
                f"clamp {FILL_MIN_SEC:g}-{FILL_MAX_SEC:g}s) over {len(areas)} regions",
         confidence=CONF_PLAY_TIME,
@@ -188,12 +210,8 @@ def _play_time_decision(areas: list) -> Decision:
 
 
 def _complexity_decision(region_count: int, border_density: float, tiny_frac: float) -> Decision:
-    region_c = 100 * min(1.0, region_count / CX_REGION_CAP)
-    density_c = 100 * min(1.0, border_density / CX_DENSITY_CAP)
-    tiny_c = 100 * min(1.0, tiny_frac / CX_TINY_CAP)
-    value = int(round(_clamp(0.5 * region_c + 0.35 * density_c + 0.15 * tiny_c)))
     return decide(
-        "review.complexity_score", value,
+        "review.complexity_score", _complexity_value(region_count, border_density, tiny_frac),
         reason="0.5*regions + 0.35*border-density + 0.15*tiny-fraction (each capped)",
         confidence=CONF_COMPLEXITY,
         evidence={"region_count": region_count, "border_density": round(border_density, 4),
@@ -233,17 +251,38 @@ def _border_quality_decision(bq: dict | None) -> Decision:
 
 
 def _artistic_decision(abr: dict | None) -> Decision:
-    ms = (abr or {}).get("mean_scores") or {}
-    keys = ["visual_importance", "colouring_enjoyment", "structural_importance",
-            "artistic_importance", "playability"]
-    vals = {k: float(ms[k]) for k in keys if k in ms}
-    value = int(round(_clamp(100.0 * sum(vals.values()) / len(vals)))) if vals else None
+    value, vals = _artistic_value(abr)
     reason = ("mean of the artistic-border engine's per-segment visual/enjoyment/structural/"
               "artistic/playability scores" if vals else "no artistic_border_report available")
     return decide(
         "review.artistic_score", value, reason=reason,
         confidence=CONF_ARTISTIC if vals else 0.0,
         evidence={"mean_scores": vals}, override_point="review.artistic_score")
+
+
+def _recommendation_value(m: dict) -> dict:
+    """A neutral static recommendation from a few concrete thresholds. Experience sharpens
+    this into a rejection-risk verdict when repeated rejection patterns match (see
+    experience_policy)."""
+    flags = []
+    bq, cx, art = m.get("border_quality_score"), m.get("complexity_score"), m.get("artistic_score")
+    if isinstance(bq, (int, float)) and bq < 55:
+        flags.append("low_border_quality")
+    if isinstance(cx, (int, float)) and cx >= 82:
+        flags.append("very_complex")
+    if isinstance(art, (int, float)) and art < 18:
+        flags.append("low_artistic")
+    return {"verdict": "needs_attention" if flags else "looks_ok", "flags": flags,
+            "matched_patterns": [], "basis": "static"}
+
+
+def _recommendation_decision(m: dict) -> Decision:
+    v = _recommendation_value(m)
+    return decide(
+        "review.recommendation", v,
+        reason=("static flags: " + ", ".join(v["flags"])) if v["flags"] else "no static concerns",
+        confidence=CONF_RECOMMENDATION,
+        evidence={"metrics": m}, override_point="review.recommendation")
 
 
 # --------------------------------------------------------------------------- #
@@ -326,13 +365,27 @@ def build_review(folder: Path, job_id: str | None = None) -> dict:
     bq = _load(folder / "border_quality_report.json")
     abr = _load(folder / "artistic_border_report.json")
 
-    # Heuristic scores as future-learning-compatible Decisions (rule value used today;
-    # a future experience policy can override via each decision's override_point).
+    # Heuristic scores as future-learning-compatible Decisions (rule value used today; an
+    # experience policy may override via each decision's override_point). Score decisions are
+    # built first; the recommendation matches on a RAW metrics snapshot (independent of any
+    # override) so one override never feeds another decision's inputs.
+    bq_d = _border_quality_decision(bq)
+    metrics = {
+        "region_count": len(regions),
+        "palette_count": len(palette),
+        "tiny_regions": len(tiny_labels),
+        "complexity_score": _complexity_value(len(regions), border_density, tiny_frac),
+        "artistic_score": _artistic_value(abr)[0],
+        "border_quality_score": bq_d.value,
+        "estimated_play_time_min": _play_time_minutes(areas),
+        "difficulty": gc.get("difficulty") or (gc.get("stats") or {}).get("difficulty"),
+    }
     decisions = [
         _play_time_decision(areas),
         _complexity_decision(len(regions), border_density, tiny_frac),
-        _border_quality_decision(bq),
+        bq_d,
         _artistic_decision(abr),
+        _recommendation_decision(metrics),
     ]
     by_key = {d.key: d for d in decisions}
 
@@ -362,9 +415,12 @@ def build_review(folder: Path, job_id: str | None = None) -> dict:
                 "no rendering, regions, palette, numbers or reveal are modified.",
         "assets": assets,
         "statistics": statistics,
+        # Recommendation verdict (static by default; sharpened by the experience policy when
+        # repeated rejection patterns match). See its Decision in `decisions`.
+        "recommendation": by_key["review.recommendation"].value,
         # Future-learning-compatible: each heuristic score exposes its reason, confidence,
-        # evidence and override_point (core.decision). An experience DB can later override
-        # any of these via set_policy_provider — no change here. Learning not implemented yet.
+        # evidence and override_point (core.decision). The experience policy overrides only
+        # the whitelisted review decisions via set_policy_provider — no change here.
         "decisions": [d.to_dict() for d in decisions],
         "actions": _actions(job_id),
         "comparison": _compare(statistics, prev),

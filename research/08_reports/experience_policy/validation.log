@@ -1,0 +1,25 @@
+BASELINE (policy deactivated)
+   scores: (76, 34, 21) | recommendation: looks_ok
+
+1) POLICY ACTIVE + NO DATA -> identical
+   identical stats: True | identical recommendation: True | all rule: True
+   processing outputs identical: True
+
+2) SEED repeated rejections near this image's metrics
+   sources: {'estimated_play_time_min': 'experience', 'complexity_score': 'experience', 'border_quality_score': 'rule', 'artistic_score': 'experience', 'recommendation': 'experience'}
+   scores rule -> experience: (76, 34, 21) -> (83, 29, 25)
+   recommendation: likely_reject | matched: ['over_complicated', 'too_many_tiny_regions', 'not_fun_to_color']
+   OVERRIDE REASONS:
+      review.estimated_play_time_min: experience: 3 images near this were rejected as 'over_complicated' (estimated_play_time_min≈21.0); raised by 4  (conf 0.74)
+      review.complexity_score: experience: 3 images near this were rejected as 'over_complicated' (complexity_score≈76.0); raised by 7  (conf 0.74)
+      review.artistic_score: experience: 2 images near this were rejected as 'not_fun_to_color' (artistic_score≈34.0); lowered by 5  (conf 0.66)
+      review.recommendation: experience: resembles 3 repeated rejection pattern(s); closest 'over_complicated' (3 rejections, complexity_score≈76.0 vs 76)  (conf 0.74)
+
+3) PROCESSING OUTPUTS unchanged by the override
+   game_config/labels/masks/reveal identical: True
+   border_quality (not whitelisted) still rule: True
+
+4) FAR-FROM-CENTROID data -> no override
+   sources: {'estimated_play_time_min': 'rule', 'complexity_score': 'rule', 'border_quality_score': 'rule', 'artistic_score': 'rule', 'recommendation': 'rule'} | scores: (76, 34, 21) (== baseline: True )
+
+DONE — experience store cleaned, rule-only review restored

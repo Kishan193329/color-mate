@@ -49,6 +49,7 @@ from job_store import (
 from services import (
     advanced_lineart_generator,
     ai_mode_router,
+    experience_policy,
     experience_store,
     publishing,
     quality_analyzer,
@@ -68,6 +69,11 @@ from schemas import (
 )
 
 app = FastAPI(title="ColorForge AI", version="0.1.0")
+
+# Experience Learning Policy v1 — register the safe policy provider on the decision seam so
+# the review layer's advisory scores reflect learned rejection patterns. Overrides ONLY the
+# four whitelisted review decisions; with no experience data it is a no-op (identical output).
+experience_policy.activate()
 
 app.add_middleware(
     CORSMiddleware,
@@ -1059,6 +1065,13 @@ async def reject_feedback(job_id: str,
 def admin_experience() -> dict:
     """Experience-store summary — the reject taxonomy + the rolled-up feedback patterns."""
     return experience_store.summary()
+
+
+@app.get("/api/admin/experience-policy")
+def admin_experience_policy() -> dict:
+    """Experience Learning Policy v1 status — whether it is active, which review decisions it
+    may override, and the patterns currently backing it."""
+    return experience_policy.status()
 
 
 @app.get("/api/download/{job_id}/{file_type}")
