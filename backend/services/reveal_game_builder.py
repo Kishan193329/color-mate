@@ -28,7 +28,7 @@ from pathlib import Path
 import cv2
 import numpy as np
 
-from services import ai_lineart_local
+from services import ai_lineart_local, lineart_region_builder
 
 FONT = cv2.FONT_HERSHEY_SIMPLEX
 BORDER_THICKNESS = 2
@@ -98,8 +98,13 @@ def id_map_bgra(fl: np.ndarray) -> np.ndarray:
     return out
 
 
-def _number_font(bb: list) -> float:
-    return float(np.clip(min(bb[2], bb[3]) * 0.02, 0.4, 1.4))
+def _fit_scale(text: str, r: float) -> float:
+    """Largest font scale whose text stays inside the cell's inscribed radius (no overlap)."""
+    for s in (1.3, 1.1, 0.9, 0.75, 0.6, 0.48, 0.38, 0.3):
+        (tw, th), _ = cv2.getTextSize(text, FONT, s, max(1, int(s * 2)))
+        if 0.5 * (tw ** 2 + th ** 2) ** 0.5 < r * 0.92:
+            return s
+    return 0.0
 
 
 def region_meta(fl: np.ndarray, game_config: dict) -> list:
@@ -125,8 +130,10 @@ def region_meta(fl: np.ndarray, game_config: dict) -> list:
     return meta
 
 
-def _put_number(canvas: np.ndarray, text: str, x: int, y: int, bb: list) -> None:
-    s = _number_font(bb)
+def _put_number(canvas: np.ndarray, text: str, x: int, y: int, r: float) -> None:
+    s = _fit_scale(text, r)
+    if s <= 0:
+        return
     th = max(1, int(round(s * 2)))
     (tw, tht), _ = cv2.getTextSize(text, FONT, s, th)
     org = (int(x - tw / 2), int(y + tht / 2))
@@ -149,7 +156,8 @@ def compose(fl: np.ndarray, master: np.ndarray, revealed_ids, border: np.ndarray
     if draw_numbers:
         for m in meta:
             if m["id"] not in revealed:
-                _put_number(display, str(m["n"]), m["x"], m["y"], m["bb"])
+                r = m.get("r") or 0.5 * min(m["bb"][2], m["bb"][3])
+                _put_number(display, str(m["n"]), m["x"], m["y"], r)
     return display, content
 
 
@@ -163,22 +171,52 @@ def _data_uri(b: bytes) -> str:
     return "data:image/png;base64," + base64.b64encode(b).decode("ascii")
 
 
+def _load_lineart(folder: Path, h: int, w: int):
+    """The clean AI line-art (grayscale) at canvas size, or None if unavailable."""
+    p = folder / "ai_lineart.png"
+    line = cv2.imread(str(p), cv2.IMREAD_GRAYSCALE) if p.exists() else None
+    if line is None:
+        line = ai_lineart_local.generate(folder / "original.png", p, darken=1.5)  # crisp -> closes cells
+    if line is None:
+        return None
+    if line.shape[:2] != (h, w):
+        line = cv2.resize(line, (w, h), interpolation=cv2.INTER_AREA)
+    return line
+
+
 def build(folder: Path) -> dict:
     """Build play_id_map.png, play_border.png and the self-contained play.html for a job.
-    Returns a small manifest. Read-only over labels/master/game_config."""
+
+    Number-by-Color from the clean AI line-art: playable regions are the line-art's own closed
+    shapes (built + numbered by `lineart_region_builder`), the border is that line-art, and the
+    reveal source is the immutable master (so reveal ΔE stays 0). Falls back to the colour-label
+    regions + region-boundary border if the line-art model is unavailable."""
     folder = Path(folder)
-    labels = np.load(folder / "labels.npy").astype(np.int32)
     master = cv2.imread(str(folder / "reveal_master.png"))
     if master is None:
         raise FileNotFoundError("reveal_master.png missing — run the reveal pass first")
-    gc = json.loads((folder / "game_config.json").read_text(encoding="utf-8"))
-    h, w = labels.shape
+    h, w = master.shape[:2]
+    job = folder.name
+    if (folder / "game_config.json").exists():
+        job = json.loads((folder / "game_config.json").read_text(encoding="utf-8")).get("job_id", job)
 
-    fl = fill_labels(labels)
+    line = _load_lineart(folder, h, w)
+    if line is not None:                                   # regions FROM the line-art shapes
+        fl = lineart_region_builder.build_regions(line)
+        numbers = lineart_region_builder.palette_numbers(master, fl)
+        meta = lineart_region_builder.region_meta(fl, numbers)
+        bdr = _ai_border_bgra(line)
+        border_source, region_source = "ai_lineart", "lineart_shapes"
+        palette_count = len(set(numbers.values()))
+    else:                                                  # fallback: colour-label regions
+        fl = fill_labels(np.load(folder / "labels.npy").astype(np.int32))
+        gc = json.loads((folder / "game_config.json").read_text(encoding="utf-8"))
+        meta = region_meta(fl, gc)
+        bdr = border_bgra(fl)
+        border_source, region_source = "region_boundary", "color_labels"
+        palette_count = len({m["n"] for m in meta})
+
     idm = id_map_bgra(fl)
-    bdr, border_source = _border(folder, fl, w, h)
-    meta = region_meta(fl, gc)
-
     cv2.imwrite(str(folder / "play_id_map.png"), idm)
     cv2.imwrite(str(folder / "play_border.png"), bdr)
 
@@ -186,19 +224,20 @@ def build(folder: Path) -> dict:
     idmap_uri = _data_uri(_png(idm))
     border_uri = _data_uri(_png(bdr))
     html = _PLAY_HTML.format(
-        job=gc.get("job_id", folder.name), w=w, h=h,
-        master=master_uri, idmap=idmap_uri, border=border_uri,
+        job=job, w=w, h=h, master=master_uri, idmap=idmap_uri, border=border_uri,
         meta=json.dumps(meta, separators=(",", ":")))
     (folder / "play.html").write_text(html, encoding="utf-8")
     return {
         "mode": "progressive_reveal",
         "regions": len(meta),
+        "palette_numbers": palette_count,
         "cells_tile_full_canvas": bool((fl > 0).all()),
-        "border_source": border_source,   # ai_lineart (clean coloring-book outline) | region_boundary
+        "region_source": region_source,   # lineart_shapes | color_labels
+        "border_source": border_source,    # ai_lineart | region_boundary
         "assets": {"id_map": "play_id_map.png", "border": "play_border.png", "page": "play.html"},
         "reveal_source": "reveal_master.png (immutable original master)",
-        "note": "tap a region -> reveal its original pixels; border overlay on top; revealing "
-                "every region reproduces the master pixel-for-pixel.",
+        "note": "tap the region matching a palette number -> reveal its original pixels; the AI "
+                "line-art stays on top; revealing every region reproduces the master exactly.",
     }
 
 
@@ -248,10 +287,13 @@ function repaint(){{ ctx.putImageData(display,0,0);
   ctx.drawImage(border,0,0);                                   // thin black border ON TOP
   ctx.textAlign='center'; ctx.textBaseline='middle';
   for(const m of META){{ if(revealed.has(m.id)) continue;      // numbers on unrevealed cells
-    const s=Math.max(11,Math.min(m.bb[2],m.bb[3])*0.4); s2=Math.min(s,40);
-    ctx.font='700 '+s2+'px system-ui,Arial'; ctx.lineWidth=Math.max(2,s2*0.18);
-    ctx.strokeStyle='#fff'; ctx.strokeText(m.n,m.x,m.y);
-    ctx.fillStyle='#141414'; ctx.fillText(m.n,m.x,m.y); }}
+    const t=''+m.n, rr=(m.r||0.5*Math.min(m.bb[2],m.bb[3]));   // fit the number inside its cell
+    let fp=Math.min(rr*1.6,46); ctx.font='700 '+fp+'px system-ui,Arial';
+    let hd=0.5*Math.hypot(ctx.measureText(t).width,fp);
+    while(hd>rr*0.9 && fp>9){{ fp-=1; ctx.font='700 '+fp+'px system-ui,Arial'; hd=0.5*Math.hypot(ctx.measureText(t).width,fp); }}
+    if(fp<9) continue;
+    ctx.lineWidth=Math.max(2,fp*0.16); ctx.strokeStyle='#fff'; ctx.strokeText(t,m.x,m.y);
+    ctx.fillStyle='#141414'; ctx.fillText(t,m.x,m.y); }}
   document.getElementById('prog').textContent=revealed.size+' / '+META.length+' regions'+
     (revealed.size===META.length?' — complete (canvas = original)':''); }}
 cv.addEventListener('click',e=>{{ const r=cv.getBoundingClientRect();

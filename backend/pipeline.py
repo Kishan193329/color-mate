@@ -463,7 +463,7 @@ def _apply_ai_lineart(job_id: str) -> None:
     if not original.exists() or (folder / "ai_lineart.png").exists():
         return
     try:
-        ai_lineart_local.generate(original, folder / "ai_lineart.png")
+        ai_lineart_local.generate(original, folder / "ai_lineart.png", darken=1.5)
     except Exception:  # noqa: BLE001 - best-effort, never blocks output
         pass
 
