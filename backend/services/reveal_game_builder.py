@@ -203,6 +203,11 @@ def build(folder: Path) -> dict:
     line = _load_lineart(folder, h, w)
     if line is not None:                                   # regions FROM the line-art shapes
         fl = lineart_region_builder.build_regions(line)
+        if (folder / "labels.npy").exists():               # split big cells by colour (distinct, harder)
+            color = fill_labels(np.load(folder / "labels.npy").astype(np.int32))
+            if color.shape != fl.shape:
+                color = cv2.resize(color, (fl.shape[1], fl.shape[0]), interpolation=cv2.INTER_NEAREST)
+            fl = lineart_region_builder.intersect_color(fl, color)
         numbers = lineart_region_builder.palette_numbers(master, fl)
         meta = lineart_region_builder.region_meta(fl, numbers)
         bdr = _ai_border_bgra(line)

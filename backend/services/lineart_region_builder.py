@@ -120,6 +120,37 @@ def build_regions(line_gray: np.ndarray, r_min: float = NUMBER_MIN_RADIUS,
     return _relabel(fl)
 
 
+def _premerge_specks(lab: np.ndarray, min_area: int) -> np.ndarray:
+    areas = np.bincount(lab.ravel())
+    for rid in np.where(areas < min_area)[0]:
+        if rid == 0:
+            continue
+        m = lab == rid
+        if not m.any():
+            continue
+        edge = cv2.dilate(m.astype(np.uint8), np.ones((3, 3), np.uint8)).astype(bool) & ~m
+        nb = lab[edge]
+        nb = nb[(nb != 0) & (nb != rid)]
+        if nb.size:
+            lab[m] = int(np.bincount(nb).argmax())
+    return lab
+
+
+def intersect_color(lineart_fl: np.ndarray, color_fl: np.ndarray, r_min: float = 11.0,
+                    min_speck_frac: float = 8e-5) -> np.ndarray:
+    """Split each line-art cell by the original image's colour regions so a single tap never
+    fills a big multi-colour area — every playable region is one colour inside one line-art shape
+    (harder, more distinct). Both inputs follow real structure (line-art + colour), so this is not
+    a polygon/Voronoi fallback. Re-merges tiny slivers and keeps masks tiling."""
+    color_fl = color_fl.astype(np.int64)
+    combo = lineart_fl.astype(np.int64) * (int(color_fl.max()) + 2) + color_fl
+    _, inv = np.unique(combo, return_inverse=True)
+    fl = (inv.reshape(lineart_fl.shape) + 1).astype(np.int32)
+    fl = _premerge_specks(fl, max(40, int(fl.size * min_speck_frac)))
+    fl = _merge_by_radius(fl, r_min)
+    return _relabel(fl)
+
+
 def palette_numbers(original: np.ndarray, fl: np.ndarray, n_colors: int = PALETTE_NUMBERS) -> dict:
     """Group regions' sampled original colours into palette numbers (matching colours share one)."""
     ids = [int(i) for i in np.unique(fl) if i != 0]

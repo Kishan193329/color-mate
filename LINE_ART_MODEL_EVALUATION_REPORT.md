@@ -115,12 +115,18 @@ The line-art→regions pipeline is now wired into the game:
   fit their cell (canvas measure-and-shrink, no overlap); reveal source stays the master.
 - **`backend/pipeline.py`** — the AI line-art is generated crisp (`darken=1.5`) so it closes cells.
 
+**Difficulty / distinct regions** — a single tap used to fill a big multi-colour cell (e.g. ~20%
+of the sky at once). Each line-art cell is now **split by the original image's colour regions**
+(`intersect_color`, using ColorForge's existing colour labels) so every playable region is *one
+colour inside one line-art shape*. Both inputs follow real structure (line-art + colour), so this
+is still not a polygon/Voronoi fallback. Result: more regions, one tap fills a small area.
+
 **Final integrated results** (`final_previews_br_03.png`, `final_previews_br_14.png`):
 
-| Image | regions (from line-art) | palette # | biggest region | tiles 100% | reveal == original |
-|-------|-------------------------|-----------|----------------|------------|--------------------|
-| br_03 mandala | 139 | 24 | 38% (white background) | ✅ | ✅ (0 diff) |
-| br_14 girl/house | 119 | 24 | 20% (sky, separate from houses) | ✅ | ✅ (0 diff) |
+| Image | regions | palette # | biggest region | tiles 100% | reveal == original |
+|-------|---------|-----------|----------------|------------|--------------------|
+| br_03 mandala | 240 | 24 | 38% (uniform **white** margin — fills invisibly; can't split without arbitrary cuts) | ✅ | ✅ (0 diff) |
+| br_14 girl/house | 174 | 24 | 12% (sky split by colour; one tap ≈ a small patch) | ✅ | ✅ (0 diff) |
 
 All hard rules hold: line-art shapes (no polygon/Voronoi), no shadows/texture as borders, masks
 tile the image, **reveal ΔE = 0**, numbers sized to their cell (no overlap), every region numbered.
