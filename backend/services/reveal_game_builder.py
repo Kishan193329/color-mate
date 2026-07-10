@@ -28,6 +28,8 @@ from pathlib import Path
 import cv2
 import numpy as np
 
+from services import ai_lineart_local
+
 FONT = cv2.FONT_HERSHEY_SIMPLEX
 BORDER_THICKNESS = 2
 
@@ -55,13 +57,35 @@ def _boundaries(fl: np.ndarray) -> np.ndarray:
 
 
 def border_bgra(fl: np.ndarray, thickness: int = BORDER_THICKNESS) -> np.ndarray:
-    """Thin black boundary lines on transparent — the clean coloring-page border (no fills)."""
+    """Region-boundary lines on transparent — the fallback border when no AI line-art exists."""
     e = (_boundaries(fl).astype(np.uint8)) * 255
     if thickness > 1:
         e = cv2.dilate(e, np.ones((thickness, thickness), np.uint8))
     out = np.zeros((*fl.shape, 4), np.uint8)      # RGB stays 0 (black); alpha = edge
     out[..., 3] = e
     return out
+
+
+def _ai_border_bgra(line: np.ndarray) -> np.ndarray:
+    """Turn a grayscale AI line-art (white paper, dark lines) into a black RGBA overlay whose
+    alpha is the line darkness — a real coloring-book outline, not region boundaries."""
+    out = np.zeros((*line.shape, 4), np.uint8)    # RGB = black
+    out[..., 3] = (255 - line).astype(np.uint8)   # alpha = how dark the line is
+    return out
+
+
+def _border(folder: Path, fl: np.ndarray, w: int, h: int):
+    """The coloring-page border: the local AI line-art (clean, subject-aware coloring-book
+    outline) when available, else the region-boundary lines. Returns (border_bgra, source)."""
+    ai_path = folder / "ai_lineart.png"
+    line = cv2.imread(str(ai_path), cv2.IMREAD_GRAYSCALE) if ai_path.exists() else None
+    if line is None:
+        line = ai_lineart_local.generate(folder / "original.png", ai_path)
+    if line is not None:
+        if line.shape[:2] != (h, w):
+            line = cv2.resize(line, (w, h), interpolation=cv2.INTER_AREA)
+        return _ai_border_bgra(line), "ai_lineart"
+    return border_bgra(fl), "region_boundary"
 
 
 def id_map_bgra(fl: np.ndarray) -> np.ndarray:
@@ -120,8 +144,8 @@ def compose(fl: np.ndarray, master: np.ndarray, revealed_ids, border: np.ndarray
     content = np.full_like(master, 255)
     if revealed:
         content[np.isin(fl, list(revealed))] = master[np.isin(fl, list(revealed))]
-    display = content.copy()
-    display[border[..., 3] > 0] = (0, 0, 0)       # thin black border, on top
+    a = border[..., 3:4].astype(np.float32) / 255.0   # alpha-composite the black line-art on top
+    display = (content.astype(np.float32) * (1.0 - a)).astype(np.uint8)
     if draw_numbers:
         for m in meta:
             if m["id"] not in revealed:
@@ -152,7 +176,7 @@ def build(folder: Path) -> dict:
 
     fl = fill_labels(labels)
     idm = id_map_bgra(fl)
-    bdr = border_bgra(fl)
+    bdr, border_source = _border(folder, fl, w, h)
     meta = region_meta(fl, gc)
 
     cv2.imwrite(str(folder / "play_id_map.png"), idm)
@@ -170,6 +194,7 @@ def build(folder: Path) -> dict:
         "mode": "progressive_reveal",
         "regions": len(meta),
         "cells_tile_full_canvas": bool((fl > 0).all()),
+        "border_source": border_source,   # ai_lineart (clean coloring-book outline) | region_boundary
         "assets": {"id_map": "play_id_map.png", "border": "play_border.png", "page": "play.html"},
         "reveal_source": "reveal_master.png (immutable original master)",
         "note": "tap a region -> reveal its original pixels; border overlay on top; revealing "

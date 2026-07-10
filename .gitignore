@@ -17,6 +17,9 @@ storage/jobs/*
 # Runtime AI-mode override (written by the AI settings panel)
 storage/ai_settings.json
 
+# Local AI line-art model weights (auto-downloaded on first use; too large for git)
+backend/models/
+
 # Experience Learning store — keep the structure, ignore the runtime feedback records
 experience/rejections/*
 !experience/rejections/.gitkeep

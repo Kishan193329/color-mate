@@ -44,6 +44,7 @@ from job_store import (
 )
 from services import (
     advanced_lineart_generator,
+    ai_lineart_local,
     ai_mode_router,
     artistic_border_engine,
     artistic_border_renderer,
@@ -452,6 +453,21 @@ def _apply_review(job_id: str) -> None:
         pass
 
 
+def _apply_ai_lineart(job_id: str) -> None:
+    """Local AI line-art — the clean, subject-aware coloring-book outline (ai_lineart.png)
+    used as the coloring-page border in the reveal game. DISPLAY ONLY: it does NOT touch the
+    classical lineart.png that region detection depends on, so regions/reveal are unchanged.
+    Best-effort; if torch/weights are unavailable the game falls back to region-boundary lines."""
+    folder = job_dir(job_id)
+    original = folder / "original.png"
+    if not original.exists() or (folder / "ai_lineart.png").exists():
+        return
+    try:
+        ai_lineart_local.generate(original, folder / "ai_lineart.png")
+    except Exception:  # noqa: BLE001 - best-effort, never blocks output
+        pass
+
+
 def _set_publish(job_id: str, status: str) -> None:
     """Advance the Admin Publishing Flow lifecycle (metadata only — no algorithm change).
     Force-set so a regenerate cleanly resets an already-approved image. Best-effort."""
@@ -560,6 +576,7 @@ def run(job_id: str, profile_name: str = DEFAULT_PROFILE) -> None:
         _apply_artistic_border_render(job_id)          # Artistic Border Render Pass (SVG layer only, HVI+HSU-guided, gated)
         finish_job(job_id)
         _apply_review(job_id)                          # Admin Review System (read-only assets + review.json)
+        _apply_ai_lineart(job_id)                      # Local AI clean coloring-book line-art (display only)
         _set_publish(job_id, "review")                 # Admin Publishing Flow: processing -> review
     except Exception as exc:  # noqa: BLE001
         fail_job(job_id, f"Processing failed: {exc}")
@@ -580,6 +597,7 @@ def reprocess(job_id: str, difficulty: str) -> None:
         _apply_review(job_id)                          # Admin Review System refresh (read-only)
         _apply_human_visual(job_id)                    # Human Visual Intelligence (analysis only)
         _apply_human_scene(job_id)                     # Human Scene Understanding (analysis only)
+        _apply_ai_lineart(job_id)                      # Local AI clean coloring-book line-art (display only)
         _set_publish(job_id, "review")                 # Admin Publishing Flow: processing -> review
     except Exception as exc:  # noqa: BLE001
         fail_job(job_id, f"Reprocessing failed: {exc}")
