@@ -56,6 +56,7 @@ from services import (
     quality_analyzer,
     region_editor,
     region_hierarchy,
+    reveal_game_builder,
     review_engine,
 )
 from schemas import (
@@ -1012,6 +1013,21 @@ def download_package(job_id: str) -> FileResponse:
     return FileResponse(path, media_type="application/zip", filename=f"{job_id}_game_assets.zip")
 
 
+@app.get("/api/job/{job_id}/play", response_class=HTMLResponse)
+def play_page(job_id: str, rebuild: bool = False) -> HTMLResponse:
+    """The reference-style progressive-reveal game: a clean black-border page where tapping a
+    numbered region reveals its original pixels, until the canvas becomes the original. Built
+    on demand from labels + reveal_master + game_config (read-only)."""
+    _require_job(job_id)
+    folder = job_dir(job_id)
+    page = folder / "play.html"
+    if rebuild or not page.exists():
+        if not (folder / "reveal_master.png").exists() or not (folder / ARTIFACTS["game_config"]).exists():
+            raise HTTPException(status_code=409, detail="Job needs reveal_master + game_config first")
+        reveal_game_builder.build(folder)
+    return HTMLResponse(page.read_text(encoding="utf-8"))
+
+
 @app.post("/api/job/{job_id}/publish/unpublish")
 def unpublish_job(job_id: str) -> dict:
     _require_job(job_id)
@@ -1181,6 +1197,7 @@ function card(i){
     <div class="acts"><button class="ok" onclick="approve('${i.job_id}')">✓ Approve</button>
       <button class="bad" onclick="reject('${i.job_id}')">✕ Reject</button>
       <span class="sp" style="flex:1"></span>
+      <a href="${i.play_url}" target="_blank">▶ play</a>
       <a href="${i.review_url}" target="_blank">full review ↗</a>
       <a href="${i.package_url}" target="_blank">package ↗</a></div></div>`;
 }
@@ -1257,6 +1274,7 @@ def admin_gallery(prefix: str = "br_") -> dict:
             "review_status": publishing.status(folder),
             "review_url": f"{base}/review/page",
             "package_url": f"{base}/package",
+            "play_url": f"{base}/play",
         })
     items.sort(key=lambda x: x["job_id"])
     return {"count": len(items), "prefix": prefix, "items": items}
