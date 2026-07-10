@@ -184,22 +184,18 @@ def _load_lineart(folder: Path, h: int, w: int):
     return line
 
 
-def build(folder: Path) -> dict:
-    """Build play_id_map.png, play_border.png and the self-contained play.html for a job.
-
-    Number-by-Color from the clean AI line-art: playable regions are the line-art's own closed
-    shapes (built + numbered by `lineart_region_builder`), the border is that line-art, and the
-    reveal source is the immutable master (so reveal ΔE stays 0). Falls back to the colour-label
-    regions + region-boundary border if the line-art model is unavailable."""
+def game_regions(folder: Path) -> dict:
+    """The Number-by-Color game data for a job. Playable regions are the clean AI line-art's own
+    closed shapes, split by the original colour regions so each region is one colour inside one
+    shape (same colour -> same palette number, even across different shapes). The visible border is
+    ONLY the clean line-art — the region-split boundaries are invisible (they live only in the
+    tap-map). Falls back to colour-label regions + a region-boundary border if the model is absent.
+    Returns {master, fl, meta, border, region_source, border_source, palette_count}."""
     folder = Path(folder)
     master = cv2.imread(str(folder / "reveal_master.png"))
     if master is None:
         raise FileNotFoundError("reveal_master.png missing — run the reveal pass first")
     h, w = master.shape[:2]
-    job = folder.name
-    if (folder / "game_config.json").exists():
-        job = json.loads((folder / "game_config.json").read_text(encoding="utf-8")).get("job_id", job)
-
     line = _load_lineart(folder, h, w)
     if line is not None:                                   # regions FROM the line-art shapes
         fl = lineart_region_builder.build_regions(line)
@@ -211,15 +207,27 @@ def build(folder: Path) -> dict:
         numbers = lineart_region_builder.palette_numbers(master, fl)
         meta = lineart_region_builder.region_meta(fl, numbers)
         bdr = _ai_border_bgra(line)
-        border_source, region_source = "ai_lineart", "lineart_shapes"
-        palette_count = len(set(numbers.values()))
-    else:                                                  # fallback: colour-label regions
-        fl = fill_labels(np.load(folder / "labels.npy").astype(np.int32))
-        gc = json.loads((folder / "game_config.json").read_text(encoding="utf-8"))
-        meta = region_meta(fl, gc)
-        bdr = border_bgra(fl)
-        border_source, region_source = "region_boundary", "color_labels"
-        palette_count = len({m["n"] for m in meta})
+        return {"master": master, "fl": fl, "meta": meta, "border": bdr,
+                "region_source": "lineart_shapes", "border_source": "ai_lineart",
+                "palette_count": len(set(numbers.values()))}
+    fl = fill_labels(np.load(folder / "labels.npy").astype(np.int32))
+    gc = json.loads((folder / "game_config.json").read_text(encoding="utf-8"))
+    meta = region_meta(fl, gc)
+    return {"master": master, "fl": fl, "meta": meta, "border": border_bgra(fl),
+            "region_source": "color_labels", "border_source": "region_boundary",
+            "palette_count": len({m["n"] for m in meta})}
+
+
+def build(folder: Path) -> dict:
+    """Build play_id_map.png, play_border.png and the self-contained play.html for a job."""
+    folder = Path(folder)
+    job = folder.name
+    if (folder / "game_config.json").exists():
+        job = json.loads((folder / "game_config.json").read_text(encoding="utf-8")).get("job_id", job)
+    g = game_regions(folder)
+    fl, meta, bdr = g["fl"], g["meta"], g["border"]
+    border_source, region_source, palette_count = g["border_source"], g["region_source"], g["palette_count"]
+    h, w = fl.shape
 
     idm = id_map_bgra(fl)
     cv2.imwrite(str(folder / "play_id_map.png"), idm)

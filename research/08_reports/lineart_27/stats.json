@@ -1,0 +1,191 @@
+[
+  {
+    "job": "br_01",
+    "regions": 235,
+    "palette_numbers": 24,
+    "avg_shapes_per_number": 9.8,
+    "tiles_and_dE0": true
+  },
+  {
+    "job": "br_02",
+    "regions": 259,
+    "palette_numbers": 24,
+    "avg_shapes_per_number": 10.8,
+    "tiles_and_dE0": true
+  },
+  {
+    "job": "br_03",
+    "regions": 240,
+    "palette_numbers": 24,
+    "avg_shapes_per_number": 10.0,
+    "tiles_and_dE0": true
+  },
+  {
+    "job": "br_04",
+    "regions": 149,
+    "palette_numbers": 24,
+    "avg_shapes_per_number": 6.2,
+    "tiles_and_dE0": true
+  },
+  {
+    "job": "br_05",
+    "regions": 253,
+    "palette_numbers": 24,
+    "avg_shapes_per_number": 10.5,
+    "tiles_and_dE0": true
+  },
+  {
+    "job": "br_06",
+    "regions": 47,
+    "palette_numbers": 24,
+    "avg_shapes_per_number": 2.0,
+    "tiles_and_dE0": true
+  },
+  {
+    "job": "br_07",
+    "regions": 120,
+    "palette_numbers": 24,
+    "avg_shapes_per_number": 5.0,
+    "tiles_and_dE0": true
+  },
+  {
+    "job": "br_08",
+    "regions": 15,
+    "palette_numbers": 15,
+    "avg_shapes_per_number": 1.0,
+    "tiles_and_dE0": true
+  },
+  {
+    "job": "br_09",
+    "regions": 24,
+    "palette_numbers": 24,
+    "avg_shapes_per_number": 1.0,
+    "tiles_and_dE0": true
+  },
+  {
+    "job": "br_10",
+    "regions": 26,
+    "palette_numbers": 24,
+    "avg_shapes_per_number": 1.1,
+    "tiles_and_dE0": true
+  },
+  {
+    "job": "br_11",
+    "regions": 20,
+    "palette_numbers": 20,
+    "avg_shapes_per_number": 1.0,
+    "tiles_and_dE0": true
+  },
+  {
+    "job": "br_12",
+    "regions": 11,
+    "palette_numbers": 11,
+    "avg_shapes_per_number": 1.0,
+    "tiles_and_dE0": true
+  },
+  {
+    "job": "br_13",
+    "regions": 39,
+    "palette_numbers": 24,
+    "avg_shapes_per_number": 1.6,
+    "tiles_and_dE0": true
+  },
+  {
+    "job": "br_14",
+    "regions": 174,
+    "palette_numbers": 24,
+    "avg_shapes_per_number": 7.2,
+    "tiles_and_dE0": true
+  },
+  {
+    "job": "br_15",
+    "regions": 175,
+    "palette_numbers": 24,
+    "avg_shapes_per_number": 7.3,
+    "tiles_and_dE0": true
+  },
+  {
+    "job": "br_16",
+    "regions": 159,
+    "palette_numbers": 24,
+    "avg_shapes_per_number": 6.6,
+    "tiles_and_dE0": true
+  },
+  {
+    "job": "br_17",
+    "regions": 259,
+    "palette_numbers": 24,
+    "avg_shapes_per_number": 10.8,
+    "tiles_and_dE0": true
+  },
+  {
+    "job": "br_18",
+    "regions": 305,
+    "palette_numbers": 24,
+    "avg_shapes_per_number": 12.7,
+    "tiles_and_dE0": true
+  },
+  {
+    "job": "br_19",
+    "regions": 78,
+    "palette_numbers": 24,
+    "avg_shapes_per_number": 3.2,
+    "tiles_and_dE0": true
+  },
+  {
+    "job": "br_20",
+    "regions": 160,
+    "palette_numbers": 24,
+    "avg_shapes_per_number": 6.7,
+    "tiles_and_dE0": true
+  },
+  {
+    "job": "br_21",
+    "regions": 215,
+    "palette_numbers": 24,
+    "avg_shapes_per_number": 9.0,
+    "tiles_and_dE0": true
+  },
+  {
+    "job": "br_22",
+    "regions": 44,
+    "palette_numbers": 24,
+    "avg_shapes_per_number": 1.8,
+    "tiles_and_dE0": true
+  },
+  {
+    "job": "br_23",
+    "regions": 41,
+    "palette_numbers": 24,
+    "avg_shapes_per_number": 1.7,
+    "tiles_and_dE0": true
+  },
+  {
+    "job": "br_24",
+    "regions": 27,
+    "palette_numbers": 24,
+    "avg_shapes_per_number": 1.1,
+    "tiles_and_dE0": true
+  },
+  {
+    "job": "br_25",
+    "regions": 80,
+    "palette_numbers": 24,
+    "avg_shapes_per_number": 3.3,
+    "tiles_and_dE0": true
+  },
+  {
+    "job": "br_26",
+    "regions": 143,
+    "palette_numbers": 24,
+    "avg_shapes_per_number": 6.0,
+    "tiles_and_dE0": true
+  },
+  {
+    "job": "br_27",
+    "regions": 116,
+    "palette_numbers": 24,
+    "avg_shapes_per_number": 4.8,
+    "tiles_and_dE0": true
+  }
+]
