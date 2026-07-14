@@ -1349,7 +1349,8 @@ function card(i){
     <div class="acts"><button class="ok" onclick="approve('${i.job_id}')">✓ Approve</button>
       <button class="bad" onclick="reject('${i.job_id}')">✕ Reject</button>
       <span class="sp" style="flex:1"></span>
-      <a href="${i.play_url}" target="_blank">▶ play</a>
+      <a href="${i.color_url}" target="_blank">🎨 colour fill</a>
+      <a href="${i.play_url}" target="_blank">▶ reveal</a>
       <a href="${i.review_url}" target="_blank">full review ↗</a>
       <a href="${i.package_url}" target="_blank">package ↗</a></div></div>`;
 }
@@ -1427,6 +1428,7 @@ def admin_gallery(prefix: str = "br_") -> dict:
             "review_url": f"{base}/review/page",
             "package_url": f"{base}/package",
             "play_url": f"{base}/play",
+            "color_url": f"{base}/color",
         })
     items.sort(key=lambda x: x["job_id"])
     return {"count": len(items), "prefix": prefix, "items": items}
