@@ -184,13 +184,14 @@ def _load_lineart(folder: Path, h: int, w: int):
     return line
 
 
-def game_regions(folder: Path) -> dict:
+def game_regions(folder: Path, r_min: float = 13.0, n_colors: int = 24) -> dict:
     """The Number-by-Color game data for a job. Playable regions are the clean AI line-art's own
     closed shapes, split by the original colour regions so each region is one colour inside one
     shape (same colour -> same palette number, even across different shapes). The visible border is
     ONLY the clean line-art — the region-split boundaries are invisible (they live only in the
     tap-map). Falls back to colour-label regions + a region-boundary border if the model is absent.
-    Returns {master, fl, meta, border, region_source, border_source, palette_count}."""
+    `r_min` sets region density (smaller -> more, smaller regions -> longer game); `n_colors` sets
+    the palette size. Returns {master, fl, meta, border, region_source, border_source, palette_count}."""
     folder = Path(folder)
     master = cv2.imread(str(folder / "reveal_master.png"))
     if master is None:
@@ -198,13 +199,13 @@ def game_regions(folder: Path) -> dict:
     h, w = master.shape[:2]
     line = _load_lineart(folder, h, w)
     if line is not None:                                   # regions FROM the line-art shapes
-        fl = lineart_region_builder.build_regions(line)
+        fl = lineart_region_builder.build_regions(line, r_min=r_min)
         if (folder / "labels.npy").exists():               # split big cells by colour (distinct, harder)
             color = fill_labels(np.load(folder / "labels.npy").astype(np.int32))
             if color.shape != fl.shape:
                 color = cv2.resize(color, (fl.shape[1], fl.shape[0]), interpolation=cv2.INTER_NEAREST)
-            fl = lineart_region_builder.intersect_color(fl, color)
-        numbers = lineart_region_builder.palette_numbers(master, fl)
+            fl = lineart_region_builder.intersect_color(fl, color, r_min=r_min)
+        numbers = lineart_region_builder.palette_numbers(master, fl, n_colors=n_colors)
         meta = lineart_region_builder.region_meta(fl, numbers)
         bdr = _ai_border_bgra(line)
         return {"master": master, "fl": fl, "meta": meta, "border": bdr,
@@ -254,6 +255,12 @@ def build(folder: Path) -> dict:
     }
 
 
+# Colour-fill game tuning: denser regions + a big palette so one image is a ~15-minute,
+# non-boring colour session (many taps, many colours to switch between).
+COLOR_R_MIN = 6.0        # ~400 regions on a typical image
+COLOR_PALETTE = 110      # 100+ palette colours
+
+
 def _palette_avg(master: np.ndarray, fl: np.ndarray, meta: list) -> dict:
     """One representative colour (R,G,B) per palette number = median original colour over that
     number's regions. Used as the palette swatch so it FEELS like choosing a paint colour."""
@@ -277,7 +284,8 @@ def build_color(folder: Path) -> dict:
     job = folder.name
     if (folder / "game_config.json").exists():
         job = json.loads((folder / "game_config.json").read_text(encoding="utf-8")).get("job_id", job)
-    g = game_regions(folder)
+    # denser regions + a big palette so one image is a long (~15 min), non-boring colour session
+    g = game_regions(folder, r_min=COLOR_R_MIN, n_colors=COLOR_PALETTE)
     fl, meta, bdr, master = g["fl"], g["meta"], g["border"], g["master"]
     h, w = fl.shape
     idm = id_map_bgra(fl)
