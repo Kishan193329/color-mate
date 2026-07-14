@@ -325,6 +325,110 @@ def build_color(folder: Path) -> dict:
             "assets": {"id_map": "play_id_map.png", "border": "play_border.png", "page": "play_color.html"}}
 
 
+_COLOR_BUNDLE_README = """# ColorForge — Colour-Fill bundle ({job})
+
+Data to rebuild the colour-fill game in an app (Flutter / Android). The game: a white coloring page
+with numbered regions + a palette; pick a colour, tap its numbered regions — each paints its flat
+colour then morphs (~0.3s) into the ORIGINAL photo pixels. Finishing paints the real photograph.
+
+Image size: {w} x {h} px. {nreg} regions, {ncol} palette colours. All coordinates below are in
+ORIGINAL image pixels.
+
+## Files
+- `original.png`  — the real photo. This is the fill/reveal source (what a filled region shows).
+- `id_map.png`    — region id per pixel, encoded **id = Red + Green*256** (Blue unused). Use it to
+                    (a) find which region a tap hit, (b) mask a region's pixels when filling.
+- `border.svg`    — one closed `<path>` per region (`data-region`, `data-number`, `data-color`).
+                    Crisp scalable coloring-page outlines; you can also hit-test taps against paths.
+- `border.png`    — same outlines as a transparent raster overlay (alternative to the SVG).
+- `regions.json`  — see below.
+- `swatches/<n>.png` — the palette swatch for colour `n`: a real crop of the photo (looks original,
+                    not a flat colour). Show these as the palette buttons.
+
+## regions.json
+```
+{{ "job", "w", "h",
+   "regions": [ {{ "id", "number", "cx", "cy", "r", "bbox":[x,y,w,h] }} ... ],   // cx,cy = number position
+   "palette": [ {{ "number", "color":"#rrggbb", "swatch":"swatches/5.png" }} ... ]
+}}
+```
+Same `number` = same colour. `color` is the flat paint colour (use for the paint-then-morph start).
+
+## Rebuild logic (per region)
+1. Draw the white page + `border` on top; draw each region's `number` at (cx, cy) if unfilled.
+2. Palette bar = the `swatches` (one button per number, showing the real texture).
+3. On tap at (x, y): read `id_map` pixel -> `id = R + G*256` -> look up its `number`.
+4. Fill: set the region's pixels (where id_map == id) to the flat `color`, then over ~300ms
+   cross-fade them to the matching pixels of `original.png` (ease). That's the "paint -> real" morph.
+5. Region is done when filled; a colour is done when all its regions are filled; finishing all =
+   `original.png` exactly.
+
+Flutter tips: decode `id_map.png` once to a pixel buffer for hit-testing/masking; use `ClipPath`
+with the SVG path (or the id-map mask) to draw a region's slice of `original.png`.
+"""
+
+
+def export_color_bundle(folder: Path, out_zip: Path | None = None) -> dict:
+    """Package everything an app needs to rebuild the colour-fill game, as a zip: original.png,
+    id_map.png (id=R+G*256), border.svg + border.png, regions.json (regions + palette), a real-photo
+    swatch per colour, and a README explaining the format + game logic."""
+    import base64
+    import shutil
+    import zipfile
+    folder = Path(folder)
+    job = folder.name
+    if (folder / "game_config.json").exists():
+        job = json.loads((folder / "game_config.json").read_text(encoding="utf-8")).get("job_id", job)
+    g = game_regions(folder, r_min=COLOR_R_MIN, n_colors=COLOR_PALETTE)
+    fl, meta, bdr, master = g["fl"], g["meta"], g["border"], g["master"]
+    h, w = fl.shape
+    colors = _palette_avg(master, fl, meta)
+    swatches = _palette_swatches(master, fl, meta, colors)
+
+    bdir = folder / "color_bundle"
+    if bdir.exists():
+        shutil.rmtree(bdir)
+    (bdir / "swatches").mkdir(parents=True)
+    shutil.copyfile(folder / "reveal_master.png", bdir / "original.png")
+    cv2.imwrite(str(bdir / "id_map.png"), id_map_bgra(fl))
+    cv2.imwrite(str(bdir / "border.png"), bdr)
+
+    svg = [f'<svg xmlns="http://www.w3.org/2000/svg" width="{w}" height="{h}" viewBox="0 0 {w} {h}">']
+    for m in meta:
+        cnts, _ = cv2.findContours((fl == m["id"]).astype(np.uint8), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        hexc = "#%02x%02x%02x" % tuple(colors.get(m["n"], [200, 200, 200]))
+        for c in cnts:
+            c = cv2.approxPolyDP(c, 1.2, True)
+            if len(c) < 3:
+                continue
+            d = "M " + " L ".join(f"{int(p[0][0])},{int(p[0][1])}" for p in c) + " Z"
+            svg.append(f'<path d="{d}" fill="none" stroke="#000" stroke-width="1" '
+                       f'data-region="{m["id"]}" data-number="{m["n"]}" data-color="{hexc}"/>')
+    svg.append("</svg>")
+    (bdir / "border.svg").write_text("\n".join(svg), encoding="utf-8")
+
+    palette = []
+    for n in sorted(swatches):
+        c = swatches[n]["c"]
+        (bdir / "swatches" / f"{n}.png").write_bytes(base64.b64decode(swatches[n]["img"].split(",")[1]))
+        palette.append({"number": n, "color": "#%02x%02x%02x" % (c[0], c[1], c[2]), "swatch": f"swatches/{n}.png"})
+    regions = [{"id": m["id"], "number": m["n"], "cx": m["x"], "cy": m["y"], "r": m.get("r"), "bbox": m["bb"]}
+               for m in meta]
+    (bdir / "regions.json").write_text(
+        json.dumps({"job": job, "w": w, "h": h, "regions": regions, "palette": palette},
+                   separators=(",", ":")), encoding="utf-8")
+    (bdir / "README.md").write_text(
+        _COLOR_BUNDLE_README.format(job=job, w=w, h=h, nreg=len(regions), ncol=len(palette)), encoding="utf-8")
+
+    out_zip = Path(out_zip) if out_zip else (folder / f"{job}_color_bundle.zip")
+    with zipfile.ZipFile(out_zip, "w", zipfile.ZIP_DEFLATED) as z:
+        for f in sorted(bdir.rglob("*")):
+            if f.is_file():
+                z.write(f, arcname=f.relative_to(bdir))
+    shutil.rmtree(bdir)
+    return {"zip": str(out_zip), "regions": len(regions), "colours": len(palette), "w": w, "h": h}
+
+
 _PLAY_HTML = r"""<!doctype html>
 <html lang="en"><head><meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>

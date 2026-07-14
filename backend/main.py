@@ -1044,6 +1044,18 @@ def color_page(job_id: str, rebuild: bool = False) -> HTMLResponse:
     return HTMLResponse(page.read_text(encoding="utf-8"))
 
 
+@app.get("/api/job/{job_id}/color/export")
+def color_export(job_id: str) -> FileResponse:
+    """Download the app bundle for the colour-fill game (Flutter/Android): original.png, id_map.png,
+    border.svg + border.png, regions.json, swatches/<n>.png, README.md — as a zip."""
+    _require_job(job_id)
+    folder = job_dir(job_id)
+    if not (folder / "reveal_master.png").exists() or not (folder / ARTIFACTS["game_config"]).exists():
+        raise HTTPException(status_code=409, detail="Job needs reveal_master + game_config first")
+    info = reveal_game_builder.export_color_bundle(folder)
+    return FileResponse(info["zip"], media_type="application/zip", filename=f"{job_id}_color_bundle.zip")
+
+
 # ── Colour-based paint-by-number (admin: upload → generate → review → approve → export) ─────── #
 _PAINT_ASSETS = {"paint_border.svg": "image/svg+xml", "paint_regions.json": "application/json",
                  "paint_preview.png": "image/png", "paint_id_map.png": "image/png",
