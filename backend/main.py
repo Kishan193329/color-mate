@@ -49,6 +49,7 @@ from job_store import (
 from services import (
     advanced_lineart_generator,
     ai_mode_router,
+    color_paint_builder,
     experience_policy,
     experience_store,
     game_package_builder,
@@ -1026,6 +1027,142 @@ def play_page(job_id: str, rebuild: bool = False) -> HTMLResponse:
             raise HTTPException(status_code=409, detail="Job needs reveal_master + game_config first")
         reveal_game_builder.build(folder)
     return HTMLResponse(page.read_text(encoding="utf-8"))
+
+
+# ── Colour-based paint-by-number (admin: upload → generate → review → approve → export) ─────── #
+_PAINT_ASSETS = {"paint_border.svg": "image/svg+xml", "paint_regions.json": "application/json",
+                 "paint_preview.png": "image/png", "paint_id_map.png": "image/png",
+                 "original.png": "image/png"}
+
+
+@app.post("/api/job/{job_id}/paint/generate")
+def paint_generate(job_id: str, target: int = 170) -> dict:
+    """Colour-based paint-by-number: segment the original by colour into closed regions that tile
+    the image (no border leak) and emit border SVG + regions JSON + preview + id-map. Read-once,
+    write to the job folder; safe to re-run with a different `target`."""
+    _require_job(job_id)
+    folder = job_dir(job_id)
+    original = folder / "original.png"
+    if not original.exists():
+        raise HTTPException(status_code=409, detail="Job has no original.png")
+    info = color_paint_builder.generate(original, folder, target=max(30, min(600, target)))
+    (folder / "paint_status.json").write_text(json.dumps({"approved": False, **info}), encoding="utf-8")
+    return info
+
+
+@app.get("/api/job/{job_id}/paint/asset/{name}")
+def paint_asset(job_id: str, name: str) -> FileResponse:
+    _require_job(job_id)
+    if name not in _PAINT_ASSETS:
+        raise HTTPException(status_code=404, detail="unknown paint asset")
+    path = job_dir(job_id) / name
+    if not path.exists():
+        raise HTTPException(status_code=404, detail="asset not generated yet")
+    return FileResponse(path, media_type=_PAINT_ASSETS[name])
+
+
+@app.post("/api/job/{job_id}/paint/approve")
+def paint_approve(job_id: str, approved: bool = True) -> dict:
+    """Mark a generated paint-by-number as approved (→ live in the app) or un-approve it."""
+    _require_job(job_id)
+    folder = job_dir(job_id)
+    sp = folder / "paint_status.json"
+    if not sp.exists():
+        raise HTTPException(status_code=409, detail="Generate the paint-by-number first")
+    st = json.loads(sp.read_text(encoding="utf-8"))
+    st["approved"] = bool(approved)
+    sp.write_text(json.dumps(st), encoding="utf-8")
+    return {"job_id": job_id, "approved": st["approved"]}
+
+
+@app.get("/api/job/{job_id}/paint/export")
+def paint_export(job_id: str) -> FileResponse:
+    """Download the app bundle: border SVG + regions JSON + original image, as a zip."""
+    _require_job(job_id)
+    folder = job_dir(job_id)
+    need = ["paint_border.svg", "paint_regions.json", "original.png"]
+    missing = [f for f in need if not (folder / f).exists()]
+    if missing:
+        raise HTTPException(status_code=409, detail=f"Generate first (missing {missing})")
+    import zipfile
+    zp = folder / "paint_bundle.zip"
+    with zipfile.ZipFile(zp, "w", zipfile.ZIP_DEFLATED) as z:
+        for f in need:
+            z.write(folder / f, arcname=f)
+    return FileResponse(zp, media_type="application/zip", filename=f"{job_id}_paint_by_number.zip")
+
+
+@app.get("/api/job/{job_id}/paint/review", response_class=HTMLResponse)
+def paint_review(job_id: str, target: int = 170, regenerate: bool = False) -> HTMLResponse:
+    """Admin review page: generates (if needed) and shows the preview + original with Approve /
+    Regenerate / Export controls."""
+    _require_job(job_id)
+    folder = job_dir(job_id)
+    sp = folder / "paint_status.json"
+    if regenerate or not sp.exists() or not (folder / "paint_preview.png").exists():
+        if not (folder / "original.png").exists():
+            raise HTTPException(status_code=409, detail="Job has no original.png")
+        info = color_paint_builder.generate(folder / "original.png", folder, target=max(30, min(600, target)))
+        st = {"approved": False, **info}
+        sp.write_text(json.dumps(st), encoding="utf-8")
+    else:
+        st = json.loads(sp.read_text(encoding="utf-8"))
+    return HTMLResponse(_PAINT_REVIEW_HTML.replace("__JOB__", job_id)
+                        .replace("__STAT__", json.dumps(st).replace("<", "\\u003c")))
+
+
+_PAINT_REVIEW_HTML = r"""<!doctype html><html lang="en"><head><meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Paint-by-Number Review — __JOB__</title>
+<style>
+:root{color-scheme:dark}*{box-sizing:border-box}
+body{margin:0;background:#0f1216;color:#e6e9ef;font:14px system-ui,Segoe UI,Roboto,sans-serif}
+header{display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:12px 18px;border-bottom:1px solid #262d37;
+position:sticky;top:0;background:#0f1216;z-index:2}
+h1{font-size:16px;margin:0}.sp{flex:1}
+button,a.btn{border:1px solid #2a323d;background:#161b22;color:#e6e9ef;padding:8px 14px;border-radius:8px;
+font-weight:600;cursor:pointer;text-decoration:none;font-size:13px}
+button:hover,a.btn:hover{border-color:#4f8cff;color:#4f8cff}
+button.go{background:#1f6f43;border-color:#2a8f57;color:#fff}button.go:hover{background:#248050}
+#badge{font-weight:700;padding:4px 10px;border-radius:20px;font-size:12px}
+.ok{background:#123d26;color:#5fd08a}.no{background:#3a2016;color:#e0965f}
+.stat{color:#9aa4b2;font-size:13px}
+main{padding:18px;display:grid;grid-template-columns:1fr;gap:16px;max-width:1500px;margin:0 auto}
+figure{margin:0}figcaption{color:#9aa4b2;font-size:12px;margin:6px 2px}
+img{max-width:100%;border-radius:10px;box-shadow:0 6px 24px #0007;display:block}
+input{width:64px;background:#161b22;border:1px solid #2a323d;color:#e6e9ef;border-radius:7px;padding:7px}
+</style></head><body>
+<header>
+<h1>🎨 Paint-by-Number · __JOB__</h1>
+<span id="badge">—</span><span id="stat" class="stat"></span>
+<span class="sp"></span>
+regions <input id="tgt" type="number" min="30" max="600" value="170"/>
+<button onclick="regen()">↻ Regenerate</button>
+<button id="apv" class="go" onclick="approve()">✓ Approve (go live)</button>
+<a class="btn" href="/api/job/__JOB__/paint/export">⬇ Export bundle (.zip)</a>
+</header>
+<main>
+<figure><img src="/api/job/__JOB__/paint/asset/paint_preview.png" alt="preview"/>
+<figcaption>numbered page · colour-wise reveal (partial) · complete (flat colours) — closed loops, no leak</figcaption></figure>
+<figure><img src="/api/job/__JOB__/paint/asset/original.png" alt="original"/><figcaption>original</figcaption></figure>
+</main>
+<script>
+const JOB="__JOB__"; let ST=__STAT__;
+function render(){
+  document.getElementById('tgt').value=ST.regions||170;
+  document.getElementById('stat').textContent=(ST.regions||0)+' regions · '+(ST.colours||0)+' colours · '+
+    (ST.svg_paths||0)+' SVG paths · '+(ST.coverage_pct||0)+'% coverage';
+  const b=document.getElementById('badge'), on=!!ST.approved;
+  b.textContent=on?'APPROVED · live':'not approved'; b.className=on?'ok':'no';
+  document.getElementById('apv').textContent=on?'✓ Approved — un-approve':'✓ Approve (go live)';
+}
+async function approve(){ const on=!ST.approved;
+  const r=await fetch('/api/job/'+JOB+'/paint/approve?approved='+on,{method:'POST'});
+  ST.approved=(await r.json()).approved; render(); }
+function regen(){ const t=document.getElementById('tgt').value;
+  location.href='/api/job/'+JOB+'/paint/review?regenerate=true&target='+t; }
+render();
+</script></body></html>"""
 
 
 @app.post("/api/job/{job_id}/publish/unpublish")
