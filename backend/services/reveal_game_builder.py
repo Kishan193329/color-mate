@@ -254,6 +254,47 @@ def build(folder: Path) -> dict:
     }
 
 
+def _palette_avg(master: np.ndarray, fl: np.ndarray, meta: list) -> dict:
+    """One representative colour (R,G,B) per palette number = median original colour over that
+    number's regions. Used as the palette swatch so it FEELS like choosing a paint colour."""
+    by_num: dict = {}
+    for m in meta:
+        by_num.setdefault(int(m["n"]), []).append(m["id"])
+    out = {}
+    for n, ids in by_num.items():
+        px = master[np.isin(fl, ids)].reshape(-1, 3)
+        if px.size:
+            b, g, r = np.median(px, axis=0)
+            out[n] = [int(r), int(g), int(b)]
+    return out
+
+
+def build_color(folder: Path) -> dict:
+    """Colour-FILL play page: same regions + reveal-the-original tech, but a paint-by-number FEEL —
+    a palette of the regions' own colours; pick a colour, tap its numbered regions, each paints its
+    flat colour and then morphs into the ORIGINAL photo pixels. Completing paints the real photo."""
+    folder = Path(folder)
+    job = folder.name
+    if (folder / "game_config.json").exists():
+        job = json.loads((folder / "game_config.json").read_text(encoding="utf-8")).get("job_id", job)
+    g = game_regions(folder)
+    fl, meta, bdr, master = g["fl"], g["meta"], g["border"], g["master"]
+    h, w = fl.shape
+    idm = id_map_bgra(fl)
+    cv2.imwrite(str(folder / "play_id_map.png"), idm)
+    cv2.imwrite(str(folder / "play_border.png"), bdr)
+    palette = _palette_avg(master, fl, meta)
+    html = _PLAY_COLOR_HTML.format(
+        job=job, w=w, h=h,
+        master=_data_uri((folder / "reveal_master.png").read_bytes()),
+        idmap=_data_uri(_png(idm)), border=_data_uri(_png(bdr)),
+        meta=json.dumps(meta, separators=(",", ":")),
+        palette=json.dumps(palette, separators=(",", ":")))
+    (folder / "play_color.html").write_text(html, encoding="utf-8")
+    return {"mode": "colour_fill_reveal", "regions": len(meta), "palette_numbers": len(palette),
+            "assets": {"id_map": "play_id_map.png", "border": "play_border.png", "page": "play_color.html"}}
+
+
 _PLAY_HTML = r"""<!doctype html>
 <html lang="en"><head><meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
@@ -315,4 +356,90 @@ cv.addEventListener('click',e=>{{ const r=cv.getBoundingClientRect();
 function revealAll(){{ const d=display.data,m=masterData.data;
   for(let i=0;i<d.length;i++) d[i]=m[i]; for(const mm of META) revealed.add(mm.id); repaint(); }}
 function reset(){{ display.data.fill(255); revealed.clear(); repaint(); }}
+</script></body></html>"""
+
+
+_PLAY_COLOR_HTML = r"""<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>ColorForge — Colour Fill ({job})</title>
+<style>
+:root{{color-scheme:dark}}*{{box-sizing:border-box}}
+body{{margin:0;background:#0f1216;color:#e6e9ef;font:14px system-ui,Segoe UI,Roboto,sans-serif;
+display:flex;flex-direction:column;align-items:center;height:100vh;overflow:hidden}}
+header{{width:100%;display:flex;gap:12px;align-items:center;padding:10px 16px;border-bottom:1px solid #262d37;background:#0f1216}}
+header b{{font-size:15px}} .sp{{flex:1}} #prog{{color:#9aa4b2}}
+button{{border:1px solid #2a323d;background:#161b22;color:#e6e9ef;padding:7px 14px;border-radius:7px;font-weight:600;cursor:pointer}}
+button:hover{{border-color:#4f8cff;color:#4f8cff}}
+#wrap{{flex:1;display:flex;align-items:center;justify-content:center;min-height:0;padding:12px;width:100%}}
+canvas{{background:#fff;max-width:100%;max-height:100%;height:auto;border-radius:8px;box-shadow:0 6px 24px #0008;cursor:crosshair;touch-action:none}}
+#palette{{width:100%;display:flex;gap:10px;overflow-x:auto;padding:12px 16px;background:#12161c;border-top:1px solid #262d37}}
+.sw{{flex:0 0 auto;width:52px;height:52px;border-radius:50%;border:3px solid transparent;display:flex;align-items:center;
+justify-content:center;font-weight:800;font-size:17px;cursor:pointer;position:relative}}
+.sw.on{{border-color:#fff;transform:scale(1.08)}} .sw.done{{opacity:.28}}
+.sw .ct{{position:absolute;bottom:-4px;right:-4px;background:#0f1216;color:#9aa4b2;font-size:10px;font-weight:700;border-radius:8px;padding:0 4px;border:1px solid #2a323d}}
+</style></head><body>
+<header><b>ColorForge · Colour Fill</b><span id="prog">loading…</span><span class="sp"></span>
+<button onclick="fillAll()">Fill all</button><button onclick="reset()">Reset</button></header>
+<div id="wrap"><canvas id="c" width="{w}" height="{h}"></canvas></div>
+<div id="palette"></div>
+<script>
+const W={w},H={h},META={meta},PALETTE={palette};
+const metaById={{}}, idsByNum={{}};
+for(const m of META){{ metaById[m.id]=m; (idsByNum[m.n]=idsByNum[m.n]||[]).push(m.id); }}
+const NUMS=Object.keys(PALETTE).map(Number).sort((a,b)=>a-b);
+const cv=document.getElementById('c'), ctx=cv.getContext('2d');
+const master=new Image(), idmap=new Image(), border=new Image();
+master.src="{master}"; idmap.src="{idmap}"; border.src="{border}";
+let masterData,idData,display,filled=new Set(),filledByNum={{}},sel=NUMS[0],ready=0,anim=new Map(),raf=0;
+const rgb=c=>'rgb('+c[0]+','+c[1]+','+c[2]+')';
+const dark=c=>0.299*c[0]+0.587*c[1]+0.114*c[2]>150;
+function boot(){{ if(++ready<3) return;
+  const o=document.createElement('canvas'); o.width=W; o.height=H; const oc=o.getContext('2d');
+  oc.drawImage(master,0,0); masterData=oc.getImageData(0,0,W,H).data;
+  oc.clearRect(0,0,W,H); oc.drawImage(idmap,0,0); idData=oc.getImageData(0,0,W,H).data;
+  display=ctx.createImageData(W,H); display.data.fill(255);
+  for(const n of NUMS) filledByNum[n]=0; buildPalette(); repaint(); }}
+master.onload=boot; idmap.onload=boot; border.onload=boot;
+function idAt(x,y){{ const i=(y*W+x)*4; return idData[i]+idData[i+1]*256; }}
+function fillRegion(id){{ if(id<=0||filled.has(id)) return false; const m=metaById[id]; if(!m) return false;
+  filled.add(id); filledByNum[m.n]++; const bb=m.bb, idx=[];
+  for(let y=bb[1];y<bb[1]+bb[3];y++) for(let x=bb[0];x<bb[0]+bb[2];x++){{
+    const i=(y*W+x)*4; if(idData[i]+idData[i+1]*256===id) idx.push(i); }}
+  anim.set(id,{{px:idx,t0:performance.now(),col:PALETTE[m.n]||[200,200,200]}});   // paint flat -> morph to photo
+  if(!raf) raf=requestAnimationFrame(step); return true; }}
+function step(now){{ let active=false; const d=display.data,mm=masterData;
+  for(const [id,a] of anim){{ let t=(now-a.t0)/300; if(t>=1) t=1; const e=t*t*(3-2*t), c=a.col;
+    for(const i of a.px){{ d[i]=c[0]+(mm[i]-c[0])*e; d[i+1]=c[1]+(mm[i+1]-c[1])*e; d[i+2]=c[2]+(mm[i+2]-c[2])*e; d[i+3]=255; }}
+    if(t>=1) anim.delete(id); else active=true; }}
+  repaint(); raf = active ? requestAnimationFrame(step) : 0; }}
+function buildPalette(){{ const bar=document.getElementById('palette'); bar.innerHTML='';
+  for(const n of NUMS){{ const c=PALETTE[n], b=document.createElement('button');
+    b.className='sw'+(n===sel?' on':''); b.style.background=rgb(c); b.style.color=dark(c)?'#111':'#fff';
+    b.textContent=n; b.dataset.n=n; const ct=document.createElement('span'); ct.className='ct'; ct.textContent=idsByNum[n].length; b.appendChild(ct);
+    b.onclick=()=>selectColor(n); bar.appendChild(b); }} }}
+function updatePalette(){{ for(const b of document.querySelectorAll('.sw')){{ const n=+b.dataset.n;
+    b.classList.toggle('on',n===sel); const done=filledByNum[n]>=idsByNum[n].length; b.classList.toggle('done',done);
+    b.querySelector('.ct').textContent=done?'✓':(idsByNum[n].length-filledByNum[n]); }} }}
+function selectColor(n){{ sel=n; updatePalette(); repaint(); }}
+function repaint(){{ ctx.putImageData(display,0,0); ctx.drawImage(border,0,0);
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  for(const m of META){{ if(filled.has(m.id)) continue; const t=''+m.n, rr=(m.r||0.5*Math.min(m.bb[2],m.bb[3]));
+    let fp=Math.min(rr*0.85,22); ctx.font='700 '+fp+'px system-ui,Arial';
+    let hd=0.5*Math.hypot(ctx.measureText(t).width,fp);
+    while(hd>rr*0.72 && fp>7){{ fp-=1; ctx.font='700 '+fp+'px system-ui,Arial'; hd=0.5*Math.hypot(ctx.measureText(t).width,fp); }}
+    if(m.n===sel){{ const c=PALETTE[m.n]; ctx.beginPath(); ctx.arc(m.x,m.y,Math.max(fp*0.95,6),0,7); ctx.fillStyle=rgb(c); ctx.fill();
+      if(fp>=7){{ ctx.font='700 '+fp+'px system-ui,Arial'; ctx.fillStyle=dark(c)?'#111':'#fff'; ctx.fillText(t,m.x,m.y); }} }}
+    else if(fp>=8){{ ctx.font='400 '+fp+'px system-ui,Arial';
+      ctx.lineWidth=Math.max(2,fp*0.14); ctx.strokeStyle='rgba(255,255,255,.9)'; ctx.strokeText(t,m.x,m.y);
+      ctx.fillStyle='#7a7a7a'; ctx.fillText(t,m.x,m.y); }} }}
+  document.getElementById('prog').textContent=filled.size+' / '+META.length+(filled.size===META.length?' — done! (real photo)':' coloured'); }}
+cv.addEventListener('pointerdown',e=>{{ const r=cv.getBoundingClientRect();
+  const x=Math.floor((e.clientX-r.left)*W/r.width), y=Math.floor((e.clientY-r.top)*H/r.height);
+  if(x<0||y<0||x>=W||y>=H) return; const id=idAt(x,y); const m=metaById[id]; if(!m) return;
+  if(m.n!==sel){{ sel=m.n; updatePalette(); }}
+  if(fillRegion(id)){{ updatePalette(); autoAdvance(); }} }});
+function autoAdvance(){{ if(filledByNum[sel]>=idsByNum[sel].length){{ const nx=NUMS.find(n=>filledByNum[n]<idsByNum[n].length); if(nx!=null){{ sel=nx; updatePalette(); }} }} }}
+function fillAll(){{ for(const m of META) if(!filled.has(m.id)) fillRegion(m.id); updatePalette(); }}
+function reset(){{ display.data.fill(255); filled.clear(); anim.clear(); for(const n of NUMS) filledByNum[n]=0; sel=NUMS[0]; updatePalette(); repaint(); }}
 </script></body></html>"""

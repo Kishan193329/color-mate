@@ -1029,6 +1029,21 @@ def play_page(job_id: str, rebuild: bool = False) -> HTMLResponse:
     return HTMLResponse(page.read_text(encoding="utf-8"))
 
 
+@app.get("/api/job/{job_id}/color", response_class=HTMLResponse)
+def color_page(job_id: str, rebuild: bool = False) -> HTMLResponse:
+    """Colour-FILL play: same regions + reveal-the-original tech, but a paint-by-number FEEL — pick a
+    palette colour, tap its numbered regions; each paints its flat colour then morphs into the real
+    photo pixels. Feels like colouring; the finished canvas is the original photograph."""
+    _require_job(job_id)
+    folder = job_dir(job_id)
+    page = folder / "play_color.html"
+    if rebuild or not page.exists():
+        if not (folder / "reveal_master.png").exists() or not (folder / ARTIFACTS["game_config"]).exists():
+            raise HTTPException(status_code=409, detail="Job needs reveal_master + game_config first")
+        reveal_game_builder.build_color(folder)
+    return HTMLResponse(page.read_text(encoding="utf-8"))
+
+
 # ── Colour-based paint-by-number (admin: upload → generate → review → approve → export) ─────── #
 _PAINT_ASSETS = {"paint_border.svg": "image/svg+xml", "paint_regions.json": "application/json",
                  "paint_preview.png": "image/png", "paint_id_map.png": "image/png",
