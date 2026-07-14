@@ -263,7 +263,7 @@ COLOR_PALETTE = 110      # 100+ palette colours
 
 def _palette_avg(master: np.ndarray, fl: np.ndarray, meta: list) -> dict:
     """One representative colour (R,G,B) per palette number = median original colour over that
-    number's regions. Used as the palette swatch so it FEELS like choosing a paint colour."""
+    number's regions. Used for the fill's flat-paint start + the on-canvas highlight."""
     by_num: dict = {}
     for m in meta:
         by_num.setdefault(int(m["n"]), []).append(m["id"])
@@ -273,6 +273,27 @@ def _palette_avg(master: np.ndarray, fl: np.ndarray, meta: list) -> dict:
         if px.size:
             b, g, r = np.median(px, axis=0)
             out[n] = [int(r), int(g), int(b)]
+    return out
+
+
+def _palette_swatches(master: np.ndarray, fl: np.ndarray, meta: list, colors: dict,
+                      size: int = 56) -> dict:
+    """Per palette number: {c:[R,G,B], img:<data-uri>} where `img` is a small crop of the ORIGINAL
+    photo at that number's biggest region (masked to its shape, rest filled with the avg colour), so
+    each palette swatch shows the REAL image texture — it looks original, not a flat colour."""
+    by_num: dict = {}
+    for m in meta:
+        by_num.setdefault(int(m["n"]), []).append(m)
+    out = {}
+    for n, ms in by_num.items():
+        c = colors.get(n, [200, 200, 200])
+        rep = max(ms, key=lambda m: m["bb"][2] * m["bb"][3])       # biggest region -> most texture
+        x, y, w, h = rep["bb"]
+        crop = master[y:y + h, x:x + w].copy()
+        mask = fl[y:y + h, x:x + w] == rep["id"]
+        crop[~mask] = (c[2], c[1], c[0])                           # non-region -> avg colour (BGR)
+        thumb = cv2.resize(crop, (size, size), interpolation=cv2.INTER_AREA)
+        out[n] = {"c": c, "img": _data_uri(_png(thumb))}
     return out
 
 
@@ -291,7 +312,8 @@ def build_color(folder: Path) -> dict:
     idm = id_map_bgra(fl)
     cv2.imwrite(str(folder / "play_id_map.png"), idm)
     cv2.imwrite(str(folder / "play_border.png"), bdr)
-    palette = _palette_avg(master, fl, meta)
+    colors = _palette_avg(master, fl, meta)
+    palette = _palette_swatches(master, fl, meta, colors)          # swatch = real photo texture
     html = _PLAY_COLOR_HTML.format(
         job=job, w=w, h=h,
         master=_data_uri((folder / "reveal_master.png").read_bytes()),
@@ -383,7 +405,8 @@ button:hover{{border-color:#4f8cff;color:#4f8cff}}
 canvas{{background:#fff;max-width:100%;max-height:100%;height:auto;border-radius:8px;box-shadow:0 6px 24px #0008;cursor:crosshair;touch-action:none}}
 #palette{{width:100%;display:flex;gap:10px;overflow-x:auto;padding:12px 16px;background:#12161c;border-top:1px solid #262d37}}
 .sw{{flex:0 0 auto;width:52px;height:52px;border-radius:50%;border:3px solid transparent;display:flex;align-items:center;
-justify-content:center;font-weight:800;font-size:17px;cursor:pointer;position:relative}}
+justify-content:center;font-weight:800;font-size:17px;cursor:pointer;position:relative;
+background-size:cover;background-position:center;color:#fff;text-shadow:0 1px 3px #000,0 0 3px #000}}
 .sw.on{{border-color:#fff;transform:scale(1.08)}} .sw.done{{opacity:.28}}
 .sw .ct{{position:absolute;bottom:-4px;right:-4px;background:#0f1216;color:#9aa4b2;font-size:10px;font-weight:700;border-radius:8px;padding:0 4px;border:1px solid #2a323d}}
 </style></head><body>
@@ -414,7 +437,7 @@ function fillRegion(id){{ if(id<=0||filled.has(id)) return false; const m=metaBy
   filled.add(id); filledByNum[m.n]++; const bb=m.bb, idx=[];
   for(let y=bb[1];y<bb[1]+bb[3];y++) for(let x=bb[0];x<bb[0]+bb[2];x++){{
     const i=(y*W+x)*4; if(idData[i]+idData[i+1]*256===id) idx.push(i); }}
-  anim.set(id,{{px:idx,t0:performance.now(),col:PALETTE[m.n]||[200,200,200]}});   // paint flat -> morph to photo
+  anim.set(id,{{px:idx,t0:performance.now(),col:(PALETTE[m.n]&&PALETTE[m.n].c)||[200,200,200]}});  // flat -> photo
   if(!raf) raf=requestAnimationFrame(step); return true; }}
 function step(now){{ let active=false; const d=display.data,mm=masterData;
   for(const [id,a] of anim){{ let t=(now-a.t0)/300; if(t>=1) t=1; const e=t*t*(3-2*t), c=a.col;
@@ -422,8 +445,8 @@ function step(now){{ let active=false; const d=display.data,mm=masterData;
     if(t>=1) anim.delete(id); else active=true; }}
   repaint(); raf = active ? requestAnimationFrame(step) : 0; }}
 function buildPalette(){{ const bar=document.getElementById('palette'); bar.innerHTML='';
-  for(const n of NUMS){{ const c=PALETTE[n], b=document.createElement('button');
-    b.className='sw'+(n===sel?' on':''); b.style.background=rgb(c); b.style.color=dark(c)?'#111':'#fff';
+  for(const n of NUMS){{ const p=PALETTE[n], b=document.createElement('button');
+    b.className='sw'+(n===sel?' on':''); b.style.backgroundImage='url('+p.img+')';   // real photo texture
     b.textContent=n; b.dataset.n=n; const ct=document.createElement('span'); ct.className='ct'; ct.textContent=idsByNum[n].length; b.appendChild(ct);
     b.onclick=()=>selectColor(n); bar.appendChild(b); }} }}
 function updatePalette(){{ for(const b of document.querySelectorAll('.sw')){{ const n=+b.dataset.n;
@@ -436,7 +459,7 @@ function repaint(){{ ctx.putImageData(display,0,0); ctx.drawImage(border,0,0);
     let fp=Math.min(rr*0.85,22); ctx.font='700 '+fp+'px system-ui,Arial';
     let hd=0.5*Math.hypot(ctx.measureText(t).width,fp);
     while(hd>rr*0.72 && fp>7){{ fp-=1; ctx.font='700 '+fp+'px system-ui,Arial'; hd=0.5*Math.hypot(ctx.measureText(t).width,fp); }}
-    if(m.n===sel){{ const c=PALETTE[m.n]; ctx.beginPath(); ctx.arc(m.x,m.y,Math.max(fp*0.95,6),0,7); ctx.fillStyle=rgb(c); ctx.fill();
+    if(m.n===sel){{ const c=PALETTE[m.n].c; ctx.beginPath(); ctx.arc(m.x,m.y,Math.max(fp*0.95,6),0,7); ctx.fillStyle=rgb(c); ctx.fill();
       if(fp>=7){{ ctx.font='700 '+fp+'px system-ui,Arial'; ctx.fillStyle=dark(c)?'#111':'#fff'; ctx.fillText(t,m.x,m.y); }} }}
     else if(fp>=8){{ ctx.font='400 '+fp+'px system-ui,Arial';
       ctx.lineWidth=Math.max(2,fp*0.14); ctx.strokeStyle='rgba(255,255,255,.9)'; ctx.strokeText(t,m.x,m.y);
