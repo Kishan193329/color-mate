@@ -1056,6 +1056,85 @@ def color_export(job_id: str) -> FileResponse:
     return FileResponse(info["zip"], media_type="application/zip", filename=f"{job_id}_color_bundle.zip")
 
 
+@app.get("/api/admin/studio", response_class=HTMLResponse)
+def color_studio() -> HTMLResponse:
+    """Admin drag-drop studio: drop an image -> upload + full pipeline -> playable colour-fill game
+    in an iframe + a download-bundle button. One screen, no manual steps."""
+    return HTMLResponse(_STUDIO_HTML)
+
+
+_STUDIO_HTML = r"""<!doctype html><html lang="en"><head><meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>ColorForge — Colour Studio</title>
+<style>
+:root{color-scheme:dark}*{box-sizing:border-box}
+body{margin:0;background:#0f1216;color:#e6e9ef;font:14px system-ui,Segoe UI,Roboto,sans-serif;display:flex;flex-direction:column;min-height:100vh}
+header{padding:14px 20px;border-bottom:1px solid #262d37;display:flex;gap:12px;align-items:center}
+h1{font-size:17px;margin:0}.sp{flex:1}.hint{color:#9aa4b2;font-size:13px}
+main{flex:1;display:flex;flex-direction:column;align-items:center;padding:24px;gap:18px;width:100%}
+#drop{width:100%;max-width:720px;min-height:240px;border:2px dashed #2a3a52;border-radius:16px;display:flex;flex-direction:column;
+align-items:center;justify-content:center;gap:10px;cursor:pointer;background:#12161c;transition:.15s;text-align:center;padding:24px}
+#drop.hot{border-color:#4f8cff;background:#141c28}#drop b{font-size:18px}
+#prog{max-width:720px;width:100%;display:none;flex-direction:column;gap:10px}
+.bar{height:8px;background:#1c2230;border-radius:6px;overflow:hidden}.bar i{display:block;height:100%;background:#4f8cff;width:10%;transition:.4s}
+#msg{color:#cdd6e4;font-size:15px}
+#stage{width:100%;max-width:920px;display:none;flex-direction:column;gap:12px;align-items:center}
+iframe{width:100%;height:72vh;border:1px solid #262d37;border-radius:12px;background:#fff}
+.acts{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+a.btn,button{border:1px solid #2a323d;background:#161b22;color:#e6e9ef;padding:10px 16px;border-radius:9px;font-weight:700;cursor:pointer;text-decoration:none;font-size:14px}
+a.btn:hover,button:hover{border-color:#4f8cff;color:#4f8cff}a.go{background:#1f6f43;border-color:#2a8f57;color:#fff}a.go:hover{background:#248050;color:#fff}
+.spin{width:18px;height:18px;border:3px solid #2a3a52;border-top-color:#4f8cff;border-radius:50%;display:inline-block;animation:s .8s linear infinite;vertical-align:middle;margin-right:6px}@keyframes s{to{transform:rotate(360deg)}}
+</style></head><body>
+<header><h1>🎨 ColorForge · Colour Studio</h1><span class="sp"></span>
+<span class="hint">upload → auto-generate → play + download the app bundle</span></header>
+<main>
+<div id="drop"><b>⬆ Drop an image here</b><span class="hint">or click to choose · PNG / JPG / WebP</span>
+<input id="file" type="file" accept="image/*" hidden/></div>
+<div id="prog"><div id="msg"></div><div class="bar"><i id="fill"></i></div></div>
+<div id="stage"><div class="hint" id="stat"></div>
+  <iframe id="game" title="colour fill"></iframe>
+  <div class="acts">
+    <a id="open" class="btn go" target="_blank">▶ Open colour fill</a>
+    <a id="dl" class="btn">⬇ Download app bundle (.zip)</a>
+    <button onclick="reset()">↺ Upload another</button>
+  </div>
+</div></main>
+<script>
+const drop=document.getElementById('drop'),file=document.getElementById('file'),prog=document.getElementById('prog'),
+msg=document.getElementById('msg'),fill=document.getElementById('fill'),stage=document.getElementById('stage'),game=document.getElementById('game');
+drop.onclick=()=>file.click();
+file.onchange=e=>{if(e.target.files[0])run(e.target.files[0]);};
+['dragover','dragenter'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add('hot');}));
+['dragleave'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove('hot');}));
+drop.addEventListener('drop',e=>{e.preventDefault();drop.classList.remove('hot');const f=e.dataTransfer.files[0];if(f)run(f);});
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+function status(t,pct){prog.style.display='flex';msg.innerHTML=t;if(pct!=null)fill.style.width=pct+'%';}
+async function run(f){
+  drop.style.display='none';stage.style.display='none';
+  try{
+    status('<span class="spin"></span> Uploading…',10);
+    const fd=new FormData();fd.append('file',f);
+    const up=await(await fetch('/api/upload',{method:'POST',body:fd})).json();
+    const job=up.job_id;
+    status('<span class="spin"></span> Processing — line-art → regions → colours…',30);
+    await fetch('/api/process',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({job_id:job})});
+    let st='processing',n=0;
+    while((st==='processing'||st==='created')&&n<160){await sleep(2500);n++;
+      const j=await(await fetch('/api/job/'+job)).json();st=j.status;
+      status('<span class="spin"></span> Processing — '+(j.current_step||'working')+'…',30+Math.min(45,n*3));}
+    if(st!=='done'&&st!=='completed'){status('⚠ Failed: '+st);return;}
+    status('<span class="spin"></span> Building the colour-fill game (≈30s)…',88);
+    game.onload=()=>{document.getElementById('open').href='/api/job/'+job+'/color';
+      document.getElementById('dl').href='/api/job/'+job+'/color/export';
+      document.getElementById('stat').textContent='job '+job+' — ready 🎉 pick a colour, tap regions';
+      prog.style.display='none';stage.style.display='flex';};
+    game.src='/api/job/'+job+'/color';
+  }catch(err){status('⚠ Error: '+err);}
+}
+function reset(){stage.style.display='none';prog.style.display='none';drop.style.display='flex';file.value='';game.removeAttribute('src');}
+</script></body></html>"""
+
+
 # ── Colour-based paint-by-number (admin: upload → generate → review → approve → export) ─────── #
 _PAINT_ASSETS = {"paint_border.svg": "image/svg+xml", "paint_regions.json": "application/json",
                  "paint_preview.png": "image/png", "paint_id_map.png": "image/png",
