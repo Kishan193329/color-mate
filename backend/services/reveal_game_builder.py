@@ -255,10 +255,11 @@ def build(folder: Path) -> dict:
     }
 
 
-# Colour-fill game tuning: denser regions + a big palette so one image is a ~15-minute,
-# non-boring colour session (many taps, many colours to switch between).
-COLOR_R_MIN = 6.0        # ~400 regions on a typical image
-COLOR_PALETTE = 110      # 100+ palette colours
+# Colour-fill game tuning. Regions are now COLOUR-based (see _color_regions): every region is one
+# colour and every palette number is one exact colour, so selecting a number highlights only
+# same-colour regions (no "why are different colours under one number?"), and no giant leaked region.
+COLOR_TARGET = 400       # ~region count -> long (~15 min), adaptive per image
+COLOR_K = 44             # colour-quantiser clusters (-> ~100+ distinct palette numbers)
 
 
 def _palette_avg(master: np.ndarray, fl: np.ndarray, meta: list) -> dict:
@@ -297,22 +298,118 @@ def _palette_swatches(master: np.ndarray, fl: np.ndarray, meta: list, colors: di
     return out
 
 
+def _subdivide_big(reg: np.ndarray, numbers: dict, cap: int):
+    """Split any region larger than ~1.5*cap into compact ~cap-px sub-cells that KEEP the region's
+    number (same colour). One tap then never fills a big uniform area (black hoodie, sky) while the
+    palette/colours stay identical. Returns (reg, numbers)."""
+    out = reg.copy()
+    nxt = int(reg.max()) + 1
+    newnums = dict(numbers)
+    counts = np.bincount(reg.ravel())
+    for rid in range(1, len(counts)):
+        if counts[rid] <= cap * 1.5:
+            continue
+        ys, xs = np.where(reg == rid)
+        if xs.size == 0:
+            continue
+        x0, y0, x1, y1 = int(xs.min()), int(ys.min()), int(xs.max()), int(ys.max())
+        crop = reg[y0:y1 + 1, x0:x1 + 1] == rid
+        step, lbl = max(int(cap ** 0.5), 5), None
+        while step >= 4:
+            seeds = np.ones(crop.shape, np.uint8); nseed = 0
+            for yy in range(step // 2, crop.shape[0], step):
+                row = crop[yy]
+                for xx in range(step // 2, crop.shape[1], step):
+                    if row[xx]:
+                        seeds[yy, xx] = 0; nseed += 1
+            if nseed >= 2:
+                _, lbl = cv2.distanceTransformWithLabels(seeds, cv2.DIST_L2, 3, labelType=cv2.DIST_LABEL_PIXEL)
+                break
+            step = int(step * 0.6)
+        if lbl is None:
+            continue
+        sub = lbl[crop]
+        uniq = np.unique(sub)
+        if uniq.size < 2:
+            continue
+        remap = {int(u): (rid if i == 0 else nxt + i - 1) for i, u in enumerate(uniq)}
+        for i, u in enumerate(uniq):
+            if i > 0:
+                newnums[nxt + i - 1] = numbers[rid]
+        nxt += uniq.size - 1
+        out[y0:y1 + 1, x0:x1 + 1][crop] = np.array([remap[int(v)] for v in sub], np.int32)
+    uni = [u for u in np.unique(out) if u > 0]
+    lut = np.zeros(int(out.max()) + 1, np.int32)
+    outnums = {}
+    for i, u in enumerate(uni, 1):
+        lut[u] = i
+        outnums[i] = newnums[u]
+    return lut[out], outnums
+
+
+def _color_regions(master: np.ndarray, target: int = COLOR_TARGET, k: int = COLOR_K):
+    """COLOUR-based regions for the colour-fill game: segment by colour so every region is ONE colour
+    and every palette number is ONE exact colour (a blue arm and a different-colour background can
+    never share a region/number), and no region leaks into a giant blob. Returns (fl, numbers,
+    colors, meta): fl=region id map (full res), numbers={id:number}, colors={number:[R,G,B]},
+    meta=[{id,n,x,y,r,bb}]."""
+    from services import color_paint_builder as C
+    fh, fw = master.shape[:2]
+    scale = C.WORK_MAX / max(fh, fw)
+    img = cv2.resize(master, (int(fw * scale), int(fh * scale)), interpolation=cv2.INTER_AREA) if scale < 1 else master.copy()
+    hh, ww = img.shape[:2]
+    cmap, centers = C._quantize(img, k)
+    reg = C._regions(cmap, int(cmap.max()) + 1)
+    min_area = max(20, int(hh * ww * 0.0006))
+    reg = C._merge_small(reg, min_area)
+    while len(np.unique(reg)) - 1 > target:
+        min_area = int(min_area * 1.4)
+        reg = C._merge_small(reg, min_area)
+    uni = [u for u in np.unique(reg) if u > 0]
+    lut = np.zeros(int(reg.max()) + 1, np.int32)
+    for i, u in enumerate(uni, 1):
+        lut[u] = i
+    reg = lut[reg]
+    R = len(uni)
+    numbers, colors = {}, {}
+    for i in range(1, R + 1):
+        ci = int(np.bincount(cmap[reg == i]).argmax())
+        numbers[i] = ci + 1
+        c = centers[ci]
+        colors[ci + 1] = [int(c[2]), int(c[1]), int(c[0])]        # BGR -> RGB
+    # cap one-tap fill: split big uniform regions into same-number (same-colour) sub-cells (~2%)
+    reg, numbers = _subdivide_big(reg, numbers, cap=max(400, int(hh * ww * 0.02)))
+    fl = cv2.resize(reg, (fw, fh), interpolation=cv2.INTER_NEAREST)   # region map at full res
+    R = int(fl.max())
+    meta = []
+    for i in range(1, R + 1):
+        ys, xs = np.where(fl == i)
+        x0, y0, x1, y1 = int(xs.min()), int(ys.min()), int(xs.max()), int(ys.max())
+        d = cv2.distanceTransform((fl[y0:y1 + 1, x0:x1 + 1] == i).astype(np.uint8), cv2.DIST_L2, 3)
+        _, r, _, loc = cv2.minMaxLoc(d)
+        meta.append({"id": i, "n": numbers[i], "x": int(loc[0]) + x0, "y": int(loc[1]) + y0,
+                     "r": round(float(r), 1), "bb": [x0, y0, x1 - x0 + 1, y1 - y0 + 1]})
+    return fl, numbers, colors, meta
+
+
 def build_color(folder: Path) -> dict:
-    """Colour-FILL play page: same regions + reveal-the-original tech, but a paint-by-number FEEL —
-    a palette of the regions' own colours; pick a colour, tap its numbered regions, each paints its
-    flat colour and then morphs into the ORIGINAL photo pixels. Completing paints the real photo."""
+    """Colour-FILL play page: COLOUR-based regions + reveal-the-original tech, paint-by-number FEEL —
+    a palette of the image's own colours; pick a colour, tap its numbered regions, each paints its
+    flat colour then morphs into the ORIGINAL photo pixels. Completing paints the real photo. Every
+    number is one exact colour, so selecting it highlights only same-colour regions."""
     folder = Path(folder)
     job = folder.name
     if (folder / "game_config.json").exists():
         job = json.loads((folder / "game_config.json").read_text(encoding="utf-8")).get("job_id", job)
-    # denser regions + a big palette so one image is a long (~15 min), non-boring colour session
-    g = game_regions(folder, r_min=COLOR_R_MIN, n_colors=COLOR_PALETTE)
-    fl, meta, bdr, master = g["fl"], g["meta"], g["border"], g["master"]
+    master = cv2.imread(str(folder / "reveal_master.png"))
+    if master is None:
+        raise FileNotFoundError("reveal_master.png missing — run the reveal pass first")
+    fl, numbers, colors, meta = _color_regions(master)             # colour-based, one colour per region
+    bdr = border_bgra(fl)                                          # borders match the colour regions
     h, w = fl.shape
     idm = id_map_bgra(fl)
     cv2.imwrite(str(folder / "play_id_map.png"), idm)
     cv2.imwrite(str(folder / "play_border.png"), bdr)
-    colors = _palette_avg(master, fl, meta)
     palette = _palette_swatches(master, fl, meta, colors)          # swatch = real photo texture
     html = _PLAY_COLOR_HTML.format(
         job=job, w=w, h=h,
@@ -379,10 +476,12 @@ def export_color_bundle(folder: Path, out_zip: Path | None = None) -> dict:
     job = folder.name
     if (folder / "game_config.json").exists():
         job = json.loads((folder / "game_config.json").read_text(encoding="utf-8")).get("job_id", job)
-    g = game_regions(folder, r_min=COLOR_R_MIN, n_colors=COLOR_PALETTE)
-    fl, meta, bdr, master = g["fl"], g["meta"], g["border"], g["master"]
+    master = cv2.imread(str(folder / "reveal_master.png"))
+    if master is None:
+        raise FileNotFoundError("reveal_master.png missing — run the reveal pass first")
+    fl, numbers, colors, meta = _color_regions(master)            # same colour-based regions as the game
+    bdr = border_bgra(fl)
     h, w = fl.shape
-    colors = _palette_avg(master, fl, meta)
     swatches = _palette_swatches(master, fl, meta, colors)
 
     bdir = folder / "color_bundle"
