@@ -279,22 +279,37 @@ def _palette_avg(master: np.ndarray, fl: np.ndarray, meta: list) -> dict:
 
 
 def _palette_swatches(master: np.ndarray, fl: np.ndarray, meta: list, colors: dict,
-                      size: int = 56) -> dict:
-    """Per palette number: {c:[R,G,B], img:<data-uri>} where `img` is a small crop of the ORIGINAL
-    photo at that number's biggest region (masked to its shape, rest filled with the avg colour), so
-    each palette swatch shows the REAL image texture — it looks original, not a flat colour."""
+                      size: int = 64) -> dict:
+    """Per palette number: {c:[R,G,B], img:<data-uri>}. `img` is a real crop of the ORIGINAL photo at
+    that number's most-textured region (masked to its shape), finished with a glossy top-left
+    highlight + soft edge vignette so each swatch looks like a shiny gem of the real image — rich,
+    not a flat plain colour."""
+    yy, xx = np.mgrid[0:size, 0:size].astype(np.float32)
+    gloss = np.clip(1 - np.sqrt((xx - size * 0.34) ** 2 + (yy - size * 0.30) ** 2) / (size * 0.85), 0, 1) ** 2.2
+    vig = np.clip(np.sqrt((xx - size / 2) ** 2 + (yy - size / 2) ** 2) / (size * 0.72), 0, 1)
+    gloss, vig = gloss[..., None], vig[..., None]
+
+    def _texture(m):
+        x, y, w, h = m["bb"]
+        sub = master[y:y + h, x:x + w][fl[y:y + h, x:x + w] == m["id"]]
+        return float(sub.std()) if sub.size else 0.0
+
     by_num: dict = {}
     for m in meta:
         by_num.setdefault(int(m["n"]), []).append(m)
     out = {}
     for n, ms in by_num.items():
         c = colors.get(n, [200, 200, 200])
-        rep = max(ms, key=lambda m: m["bb"][2] * m["bb"][3])       # biggest region -> most texture
+        cand = sorted(ms, key=lambda m: m["bb"][2] * m["bb"][3], reverse=True)[:6]  # bigger regions
+        rep = max(cand, key=_texture) if cand else ms[0]         # ...pick the most-textured one
         x, y, w, h = rep["bb"]
         crop = master[y:y + h, x:x + w].copy()
         mask = fl[y:y + h, x:x + w] == rep["id"]
-        crop[~mask] = (c[2], c[1], c[0])                           # non-region -> avg colour (BGR)
-        thumb = cv2.resize(crop, (size, size), interpolation=cv2.INTER_AREA)
+        crop[~mask] = (c[2], c[1], c[0])                          # non-region -> avg colour (BGR)
+        thumb = cv2.resize(crop, (size, size), interpolation=cv2.INTER_AREA).astype(np.float32)
+        thumb = thumb * (1 - 0.30 * vig)                         # darken the rim
+        thumb = thumb + (255.0 - thumb) * (0.55 * gloss)         # shiny top-left highlight
+        thumb = np.clip(thumb, 0, 255).astype(np.uint8)
         out[n] = {"c": c, "img": _data_uri(_png(thumb))}
     return out
 
