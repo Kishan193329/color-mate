@@ -258,8 +258,9 @@ def build(folder: Path) -> dict:
 # Colour-fill game tuning. Regions are now COLOUR-based (see _color_regions): every region is one
 # colour and every palette number is one exact colour, so selecting a number highlights only
 # same-colour regions (no "why are different colours under one number?"), and no giant leaked region.
-COLOR_TARGET = 400       # ~region count -> long (~15 min), adaptive per image
-COLOR_K = 44             # colour-quantiser clusters (-> ~100+ distinct palette numbers)
+COLOR_TARGET = 400       # ~region count for the pure-colour fallback (no line-art model)
+COLOR_K = 100            # colour-quantiser clusters -> ~100 distinct palette numbers
+COLOR_LINE_RMIN = 9.0    # line-art cell density before the colour split
 
 
 def _palette_avg(master: np.ndarray, fl: np.ndarray, meta: list) -> dict:
@@ -392,20 +393,62 @@ def _color_regions(master: np.ndarray, target: int = COLOR_TARGET, k: int = COLO
     return fl, numbers, colors, meta
 
 
+def _fine_color(master: np.ndarray, k: int = COLOR_K):
+    """Full-res k-means colour-index map (0..k-1) of the image + centres (BGR)."""
+    fh, fw = master.shape[:2]
+    scale = 720.0 / max(fh, fw)
+    small = cv2.resize(master, (int(fw * scale), int(fh * scale)), interpolation=cv2.INTER_AREA) if scale < 1 else master.copy()
+    sm = cv2.pyrMeanShiftFiltering(small, 13, 30)
+    z = sm.reshape(-1, 3).astype(np.float32)
+    _, lab, centers = cv2.kmeans(z, k, None, (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 14, 1.0),
+                                 2, cv2.KMEANS_PP_CENTERS)
+    idx = lab.reshape(small.shape[:2]).astype(np.int32)
+    if scale < 1:
+        idx = cv2.resize(idx, (fw, fh), interpolation=cv2.INTER_NEAREST)
+    return idx, centers.astype(np.uint8)
+
+
+def _game_data_color(folder: Path):
+    """Regions + palette + CLEAN line-art border for the colour-fill game. Regions are the line-art's
+    OWN closed cells split by fine colour: the visible border stays the clean line-art, yet every
+    region is one colour and every number one exact colour (a blue arm never shares a region/number
+    with a different-colour background). Big regions are area-capped. Returns
+    (master, fl, numbers, colors, meta, border)."""
+    folder = Path(folder)
+    master = cv2.imread(str(folder / "reveal_master.png"))
+    if master is None:
+        raise FileNotFoundError("reveal_master.png missing — run the reveal pass first")
+    h, w = master.shape[:2]
+    line = _load_lineart(folder, h, w)
+    if line is None:                                               # no model -> pure-colour fallback
+        fl, numbers, colors, meta = _color_regions(master)
+        return master, fl, numbers, colors, meta, border_bgra(fl)
+    color_idx, centers = _fine_color(master, COLOR_K)
+    fl = lineart_region_builder.build_regions(line, r_min=COLOR_LINE_RMIN)       # clean line-art cells
+    fl = lineart_region_builder.intersect_color(fl, color_idx, r_min=COLOR_LINE_RMIN)  # split by colour
+    rmax = int(fl.max()) + 1
+    key = (fl.astype(np.int64) * COLOR_K + color_idx).ravel()      # dominant colour per region (vectorised)
+    dom = np.bincount(key, minlength=rmax * COLOR_K).reshape(rmax, COLOR_K).argmax(1)
+    numbers, colors = {}, {}
+    for rid in (int(u) for u in np.unique(fl) if u > 0):
+        ci = int(dom[rid])
+        numbers[rid] = ci + 1
+        c = centers[ci]; colors[ci + 1] = [int(c[2]), int(c[1]), int(c[0])]
+    fl, numbers = _subdivide_big(fl, numbers, cap=max(400, int(h * w * 0.02)))   # cap one-tap fill
+    meta = lineart_region_builder.region_meta(fl, numbers)
+    return master, fl, numbers, colors, meta, _ai_border_bgra(line)  # CLEAN line-art border
+
+
 def build_color(folder: Path) -> dict:
-    """Colour-FILL play page: COLOUR-based regions + reveal-the-original tech, paint-by-number FEEL —
-    a palette of the image's own colours; pick a colour, tap its numbered regions, each paints its
-    flat colour then morphs into the ORIGINAL photo pixels. Completing paints the real photo. Every
-    number is one exact colour, so selecting it highlights only same-colour regions."""
+    """Colour-FILL play page: line-art cells split by colour (clean line-art border, one colour per
+    region/number) + reveal-the-original tech + paint-by-number FEEL. Pick a colour, tap its numbered
+    regions; each paints its flat colour then morphs into the ORIGINAL photo pixels. Completing paints
+    the real photo. Selecting a number highlights only same-colour regions; no giant one-tap fills."""
     folder = Path(folder)
     job = folder.name
     if (folder / "game_config.json").exists():
         job = json.loads((folder / "game_config.json").read_text(encoding="utf-8")).get("job_id", job)
-    master = cv2.imread(str(folder / "reveal_master.png"))
-    if master is None:
-        raise FileNotFoundError("reveal_master.png missing — run the reveal pass first")
-    fl, numbers, colors, meta = _color_regions(master)             # colour-based, one colour per region
-    bdr = border_bgra(fl)                                          # borders match the colour regions
+    master, fl, numbers, colors, meta, bdr = _game_data_color(folder)
     h, w = fl.shape
     idm = id_map_bgra(fl)
     cv2.imwrite(str(folder / "play_id_map.png"), idm)
@@ -476,11 +519,7 @@ def export_color_bundle(folder: Path, out_zip: Path | None = None) -> dict:
     job = folder.name
     if (folder / "game_config.json").exists():
         job = json.loads((folder / "game_config.json").read_text(encoding="utf-8")).get("job_id", job)
-    master = cv2.imread(str(folder / "reveal_master.png"))
-    if master is None:
-        raise FileNotFoundError("reveal_master.png missing — run the reveal pass first")
-    fl, numbers, colors, meta = _color_regions(master)            # same colour-based regions as the game
-    bdr = border_bgra(fl)
+    master, fl, numbers, colors, meta, bdr = _game_data_color(folder)   # same regions as the game
     h, w = fl.shape
     swatches = _palette_swatches(master, fl, meta, colors)
 
