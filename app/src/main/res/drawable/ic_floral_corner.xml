@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="120dp"
+    android:height="120dp"
+    android:viewportWidth="120"
+    android:viewportHeight="120">
+
+    <!-- Main flower petals -->
+    <path
+        android:pathData="M10,60 C10,30 30,10 60,10 C40,20 25,35 20,55 C18,45 12,50 10,60Z"
+        android:fillColor="#18C4A87C" />
+    <path
+        android:pathData="M60,10 C80,10 95,20 105,40 C90,25 70,18 55,20 C65,15 60,10 60,10Z"
+        android:fillColor="#12C4A87C" />
+    <path
+        android:pathData="M5,80 C5,65 15,50 30,45 C20,55 15,68 12,80 C10,75 7,78 5,80Z"
+        android:fillColor="#10C4A87C" />
+
+    <!-- Leaf/vine curves -->
+    <path
+        android:pathData="M15,15 Q35,25 45,50 Q30,35 15,15Z"
+        android:fillColor="#15C4A87C" />
+    <path
+        android:pathData="M50,5 Q65,15 70,35 Q55,20 50,5Z"
+        android:fillColor="#12C4A87C" />
+    <path
+        android:pathData="M5,50 Q15,55 25,75 Q12,62 5,50Z"
+        android:fillColor="#10C4A87C" />
+
+    <!-- Small decorative dots/buds -->
+    <path
+        android:pathData="M30,15 A3,3 0 1,1 36,15 A3,3 0 1,1 30,15Z"
+        android:fillColor="#15C4A87C" />
+    <path
+        android:pathData="M15,35 A2.5,2.5 0 1,1 20,35 A2.5,2.5 0 1,1 15,35Z"
+        android:fillColor="#12C4A87C" />
+    <path
+        android:pathData="M70,8 A2,2 0 1,1 74,8 A2,2 0 1,1 70,8Z"
+        android:fillColor="#10C4A87C" />
+
+    <!-- Thin stem lines -->
+    <path
+        android:pathData="M20,20 Q40,30 35,55"
+        android:strokeColor="#10C4A87C"
+        android:strokeWidth="1"
+        android:fillColor="#00000000" />
+    <path
+        android:pathData="M55,8 Q60,25 50,45"
+        android:strokeColor="#0EC4A87C"
+        android:strokeWidth="0.8"
+        android:fillColor="#00000000" />
+
+    <!-- Outer petal shapes -->
+    <path
+        android:pathData="M0,30 C8,22 22,8 30,0 C22,12 12,22 0,30Z"
+        android:fillColor="#18C4A87C" />
+    <path
+        android:pathData="M0,0 C15,5 30,15 40,30 C25,20 12,8 0,0Z"
+        android:fillColor="#14C4A87C" />
+</vector>

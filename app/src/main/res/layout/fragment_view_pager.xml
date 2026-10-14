@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_marginTop="@dimen/activity_vertical_margin"
+    android:layout_marginBottom="@dimen/activity_vertical_margin">
+
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/srl_reload"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <!-- The tiles carry their own 6dp margin, so this page padding is what stops the outer
+             column touching the screen edge. clipToPadding=false keeps the scroll running under
+             it rather than cutting rows off at the top and bottom. -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center_horizontal"
+            android:clipToPadding="false"
+            android:paddingStart="@dimen/cm_space_2"
+            android:paddingEnd="@dimen/cm_space_2"
+            android:paddingBottom="@dimen/cm_space_5"
+            android:nestedScrollingEnabled="true" />
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+
+    <ProgressBar
+        android:id="@+id/loading_view_progressbar"
+        android:layout_width="@dimen/tab_loading_size"
+        android:layout_height="@dimen/tab_loading_size"
+        android:layout_gravity="center"
+        android:indeterminate="true"
+        android:indeterminateTint="@color/hint_text_color"
+        android:indeterminateTintMode="src_in" />
+
+
+    <LinearLayout
+        android:id="@+id/ll_msg_refresh"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:layout_gravity="center"
+        android:orientation="vertical">
+
+        <ImageView
+            android:layout_width="@dimen/no_data_icon_size"
+            android:layout_height="@dimen/no_data_icon_size"
+            android:src="@drawable/ic_no_data" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="@dimen/tab_no_data_margin_top"
+            android:fontFamily="@font/quicksand_bold"
+            android:includeFontPadding="false"
+            android:text="No Data Found"
+            android:textColor="@color/medium_gray"
+            android:textSize="@dimen/tab_no_data_text_size" />
+    </LinearLayout>
+
+</FrameLayout>

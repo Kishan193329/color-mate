@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  One day in the calendar (redesigned 2026-10-14). The number sits in the CENTRE like a real
+  calendar; the frame's fill carries the state — today solid violet, finished a violet wash with
+  a tick, a past day white, a future day a faint ghost. cell_image/cell_tint are kept (gone) only
+  because the adapter still references them.
+-->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/cell_root"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="3dp">
+
+    <FrameLayout
+        android:id="@+id/cell_frame"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/cm_cal_cell"
+        android:clipToOutline="true">
+
+        <ImageView
+            android:id="@+id/cell_image"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:contentDescription="@null"
+            android:scaleType="centerCrop"
+            android:visibility="gone" />
+
+        <View
+            android:id="@+id/cell_tint"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/cell_day"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fontFamily="@font/quicksand_bold"
+            android:fontFeatureSettings="tnum"
+            android:gravity="center"
+            android:includeFontPadding="false"
+            android:textColor="@color/cm_ink"
+            android:textSize="14sp" />
+
+        <ImageView
+            android:id="@+id/cell_done"
+            android:layout_width="14dp"
+            android:layout_height="14dp"
+            android:layout_gravity="bottom|end"
+            android:layout_margin="3dp"
+            android:background="@drawable/cm_cal_done_bg"
+            android:contentDescription="@null"
+            android:padding="3dp"
+            android:src="@drawable/ic_cm_check"
+            android:visibility="gone" />
+    </FrameLayout>
+</FrameLayout>

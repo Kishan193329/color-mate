@@ -1,0 +1,37 @@
+{
+    "filter": "gradients",
+    "bg_color" : "0x80000081",
+    "colors" :
+    [
+     {"color" : "0x80000077"},
+     {"color" : "0x80000078"},
+     {"color" : "0x80000079"},
+     {"color" : "0x8000007a"},
+     {"color" : "0x8000007b"},
+     
+     {"color" : "0x8000007c"},
+     {"color" : "0x8000007d"},
+     {"color" : "0x8000007e"},
+     {"color" : "0x8000007f"},
+     {"color" : "0x80000080"},
+     {"color" : "0x80000081"}
+     ],
+    "colors_ipad" :
+    [
+     {"color" : "0x80000077"},
+     {"color" : "0x80000078"},
+     {"color" : "0x80000079"},
+     {"color" : "0x8000007a"},
+     {"color" : "0x8000007b"},
+     
+     {"color" : "0x8000007c"},
+     {"color" : "0x8000007d"},
+     {"color" : "0x8000007e"},
+     {"color" : "0x8000007f"},
+     {"color" : "0x80000080"},
+     {"color" : "0x80000081"}
+
+     ],
+    "name" : "Selection",
+    "premium" : false
+}

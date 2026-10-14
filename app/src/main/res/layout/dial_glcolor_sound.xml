@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_gravity="center"
+    android:background="@color/white"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:orientation="vertical">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="?actionBarSize">
+
+            <LinearLayout
+                android:id="@+id/toolbar"
+                android:layout_width="match_parent"
+                android:layout_height="?actionBarSize"
+                android:paddingHorizontal="@dimen/toolbar_padding_horizontal">
+
+                <RelativeLayout
+                    android:layout_width="@dimen/toolbar_back_btn_size"
+                    android:layout_height="@dimen/toolbar_back_btn_size"
+                    android:layout_gravity="center_vertical"
+                    android:background="@drawable/round_background">
+
+                    <ImageView
+                        android:id="@+id/ivClose"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerInParent="true"
+                        android:contentDescription="@string/todo"
+                        android:src="@drawable/round_arrow_back_24" />
+
+                </RelativeLayout>
+
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginStart="@dimen/dialog_sound_toolbar_text_margin"
+                    android:fontFamily="@font/quicksand_semibold"
+                    android:includeFontPadding="false"
+                    android:text="Music List"
+                    android:textColor="#191919"
+                    android:textSize="@dimen/dialog_sound_toolbar_text_size" />
+
+            </LinearLayout>
+
+            <RelativeLayout
+                android:layout_width="@dimen/dialog_sound_btn_size"
+                android:layout_height="@dimen/dialog_sound_btn_size"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:layout_gravity="center_vertical"
+                android:layout_marginHorizontal="@dimen/dialog_sound_btn_margin_h"
+                android:background="@drawable/round_background">
+
+                <ImageView
+                    android:id="@+id/tvSoundGL"
+                    android:layout_width="@dimen/dialog_sound_icon_size"
+                    android:layout_height="@dimen/dialog_sound_icon_size"
+                    android:layout_centerInParent="true"
+                    android:contentDescription="@string/todo"
+                    android:src="@drawable/music_off" />
+
+            </RelativeLayout>
+
+
+        </RelativeLayout>
+
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginBottom="@dimen/dialog_sound_list_margin_bottom"
+            android:layout_weight="1">
+
+            <ProgressBar
+                android:id="@+id/ivProgressGL"
+                android:layout_width="@dimen/dialog_sound_progress_size"
+                android:layout_height="@dimen/dialog_sound_progress_size"
+                android:layout_centerInParent="true"
+                android:indeterminate="true"
+                android:indeterminateTint="@color/hint_text_color"
+                android:indeterminateTintMode="src_in" />
+
+
+            <LinearLayout
+                android:layout_marginHorizontal="@dimen/dialog_sound_lib_margin_h"
+                android:id="@+id/llMusiclibGL"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:layout_width="@dimen/dialog_sound_lib_icon_size"
+                    android:layout_height="@dimen/dialog_sound_lib_icon_size"
+                    android:padding="@dimen/dialog_sound_lib_icon_padding"
+                    android:layout_margin="@dimen/dialog_sound_lib_icon_margin"
+                    android:src="@drawable/ic_music" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginStart="@dimen/dialog_sound_lib_text_margin_start"
+                    android:fontFamily="@font/quicksand_semibold"
+                    android:includeFontPadding="false"
+                    android:text="Select Device Music"
+                    android:textColor="@color/charcoal_gray"
+                    android:textSize="@dimen/dialog_sound_lib_text_size" />
+
+            </LinearLayout>
+
+
+            <ListView
+                android:id="@+id/listSoundGL"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/llMusiclibGL"
+                android:layout_marginTop="@dimen/dialog_sound_list_margin_top"
+                android:scrollbars="none" />
+        </RelativeLayout>
+
+    </LinearLayout>
+</LinearLayout>

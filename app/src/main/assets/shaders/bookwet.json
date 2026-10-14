@@ -1,0 +1,28 @@
+{
+	"shader": "shaders/bookwatercol1.fsh",
+	"autoblurmaps": true,
+    
+    "inputs": {
+        "hatch": {
+        	"path": ["assets/aquablue2.jpg", "assets/aquablue3.jpg"],
+			"mipmaps": true,
+			"repeat": true
+		},
+        "papertex": {
+            "path": "assets/booksheet_art4.jpg",
+            "mipmaps": true,
+            "repeat": true
+        },
+        "lut": {
+            "global_lut": true
+        }
+    },
+        
+    "uvmatrix": {
+    	"type": "randomfree",
+    	"allowxflip": true,
+    	"allowyflip": true, 
+    	"scale": 1.0,
+    	"scale_random": 0.0
+    }
+}

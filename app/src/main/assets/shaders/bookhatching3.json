@@ -1,0 +1,24 @@
+{
+    "name": "hatching",
+    "shader": "shaders/bookhatching3.fsh",
+    "autoblurmaps": true,
+    
+    "inputs": {
+        "patterns": {
+            "path": "assets/bookhatchings.png",
+            "mipmaps": false,
+            "repeat": true
+        },
+        "lut": {
+            "global_lut": true
+        }
+    },
+    
+    "uvmatrix": {
+        "type": "randomfree",
+        "allowxflip": true,
+        "allowyflip": true,
+        "scale": 2.75,
+        "scale_random": 0.5
+    }
+}

@@ -1,0 +1,23 @@
+{
+	"name": "fairy", 
+	"shader": "shaders/export_bloom.fsh",
+	"autoblurmaps": true, 
+    
+    "inputs": {
+        "overlay": {
+        	"path": "assets/fairydust.jpg",
+			"mipmaps": true,
+			"repeat": true
+		}
+	},
+    
+    "uvmatrix": {
+    	"type": "random",
+    	"allowxflip": true,
+    	"allowyflip": false, 
+    	"allowxrandom": false, 
+    	"allowyrandom": true,
+    	"scale": 1.0,
+    	"scale_random": 0.0
+    }
+}

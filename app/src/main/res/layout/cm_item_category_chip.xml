@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  A category pill: soft-3D icon ball + name. Used as a TabLayout custom view, so all of the
+  existing tab selection logic keeps working — only the look changes.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/cm_chip_root"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:background="@drawable/cm_cat_chip_bg"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:paddingStart="5dp"
+    android:paddingEnd="14dp"
+    android:paddingVertical="5dp">
+
+    <FrameLayout
+        android:id="@+id/cm_chip_ball"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:background="@drawable/cm_ball_mandala">
+
+        <ImageView
+            android:id="@+id/cm_chip_glyph"
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            android:layout_gravity="center"
+            android:contentDescription="@string/todo"
+            android:src="@drawable/cm_glyph_mandala" />
+    </FrameLayout>
+
+    <TextView
+        android:id="@+id/cm_chip_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:fontFamily="@font/quicksand_bold"
+        android:includeFontPadding="false"
+        android:maxLines="1"
+        android:text="Animals"
+        android:textColor="@color/cm_ink_2"
+        android:textSize="13sp" />
+</LinearLayout>

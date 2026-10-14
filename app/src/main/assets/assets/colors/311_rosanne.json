@@ -1,0 +1,38 @@
+{
+  "sprite" : "repal11.png",
+    "filter": "recolorpalettes",
+  "bg_color" : "ffd3215e",
+  "colors" :
+    [
+     {"color" : "0xe05e21d3"},
+     {"color" : "0xe07a74e3"},
+     {"color" : "0xe0d1d8fc"},
+     {"color" : "0xe0e4f1ff"},
+     {"color" : "0xe09ee0fd"},
+     
+     {"color" : "0xe0432f00"}
+     {"color" : "0xe0b0a910"},
+     {"color" : "0xe0c1bda5"},
+
+     {"color" : "0xe0bbe6d0"},
+     {"color" : "0xe08bcd95"},
+     {"color" : "0xe093acca"}
+  ],
+    "colors_ipad" :
+    [
+     {"color" : "0xe05e21d3"},
+     {"color" : "0xe07a74e3"},
+     {"color" : "0xe0d1d8fc"},
+     {"color" : "0xe0e4f1ff"},
+     {"color" : "0xe09ee0fd"},
+     {"color" : "0xe0bbe6d0"},
+     {"color" : "0xe08bcd95"},
+
+     {"color" : "0xe093acca"},
+     {"color" : "0xe0c1bda5"},
+     {"color" : "0xe0b0a910"},
+     {"color" : "0xe0432f00"}
+     ],
+  "name" : "Rosanne",
+  "premium" : false
+}

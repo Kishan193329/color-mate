@@ -1,0 +1,34 @@
+{
+	"shader": "shaders/bookexport_mandala.fsh",
+	"autoblurmaps": true, 
+    
+    "inputs": {
+    	"normalShadow": {
+    		"shader": "shaders/bookshadowmap.fsh",
+    		"runonce": true
+    	},
+        "sand": {
+        	"path": "assets/sand2.jpg",
+			"mipmaps": false,
+			"repeat": true
+		},
+		"sandshine": {
+        	"path": "assets/sand1.jpg",
+			"mipmaps": false,
+			"repeat": true
+		},
+        "lut": {
+            "global_lut": true
+        }
+	},
+    
+    "uvmatrix": {
+    	"type": "straight",
+    	"allowxflip": true,
+    	"allowyflip": false, 
+    	"allowxrandom": true, 
+    	"allowyrandom": true,
+    	"scale":2.0,
+    	"scale_random": 0.1
+    }
+}

@@ -1,0 +1,38 @@
+{
+    "sprite" : "repal22.png",
+    "filter" : "brushes",
+    "brush" : "true",
+    "premium": "true",
+    "bg_color" : "ff8a5523",
+    "colors" :
+    [
+     {"color" : "0xe02f3847"},
+     {"color" : "0xe0112a57"},
+     {"color" : "0xe023558a"},
+     {"color" : "0xe04881bf"},
+     {"color" : "0xe07cb7f6"},
+     {"color" : "0xe070819f"},
+     {"color" : "0xe0939baf"},
+     {"color" : "0xe091b0c4"},
+     {"color" : "0xe08cb4d2"},
+     {"color" : "0xe084cbef"},
+     {"color" : "0xe0dcebf4"}
+     ],
+    "colors_ipad" :
+    [
+     {"color" : "0xe02f3847"},
+     {"color" : "0xe0112a57"},
+     {"color" : "0xe023558a"},
+     {"color" : "0xe04881bf"},
+     {"color" : "0xe07cb7f6"},
+     
+     {"color" : "0xe0dcebf4"}
+     {"color" : "0xe084cbef"},
+     {"color" : "0xe08cb4d2"},
+     {"color" : "0xe091b0c4"},
+     {"color" : "0xe0939baf"},
+     {"color" : "0xe070819f"},
+     ],
+    "name" : "Browns",
+    "premium" : false
+}

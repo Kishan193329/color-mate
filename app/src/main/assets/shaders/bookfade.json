@@ -1,0 +1,10 @@
+{
+	"shader": "shaders/bookfade.fsh",
+	"autoblurmaps": false,
+    
+    "inputs": {
+        "lut": {
+            "global_lut": true
+        }
+    }
+}

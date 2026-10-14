@@ -1,0 +1,768 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/cm_surface_dim">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/ll_ads">
+
+        <com.colourmate.paintbynumber.model.game.GameView
+            android:id="@+id/gameView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <FrameLayout
+            android:id="@+id/colorrr"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:clipChildren="false"
+            android:clipToPadding="false">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:clipChildren="false"
+                android:clipToPadding="false"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:id="@+id/ic_game_tool"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="end"
+                    android:layout_marginEnd="@dimen/game_btn_margin"
+                    android:layout_marginBottom="4dp"
+                    android:background="@drawable/cm_glass_panel"
+                    android:gravity="center_vertical"
+                    android:orientation="vertical"
+                    android:padding="@dimen/game_btn_icon_padding_inner">
+
+                    <!-- Turbo Brush -->
+                    <LinearLayout
+                        android:id="@+id/btn_tool_brush"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:background="@drawable/cm_tool_bg"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:padding="8dp"
+                        android:visibility="gone">
+
+                        <ImageView
+                            android:layout_width="18dp"
+                            android:layout_height="18dp"
+                            android:contentDescription="Turbo Brush"
+                            android:duplicateParentState="true"
+                            android:src="@drawable/ic_paint_brush_24"
+                            app:tint="@color/selector_tool_content" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:duplicateParentState="true"
+                            android:fontFamily="@font/quicksand_semibold"
+                            android:includeFontPadding="false"
+                            android:text="Brush"
+                            android:textColor="@color/selector_tool_content"
+                            android:textSize="9sp" />
+                    </LinearLayout>
+
+                    <!-- Color Bomb -->
+                    <LinearLayout
+                        android:id="@+id/btn_tool_bomb"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:background="@drawable/cm_tool_bg"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:padding="8dp"
+                        android:visibility="gone">
+
+                        <ImageView
+                            android:layout_width="18dp"
+                            android:layout_height="18dp"
+                            android:contentDescription="Color Bomb"
+                            android:duplicateParentState="true"
+                            android:src="@drawable/ic_bomb_24"
+                            app:tint="@color/selector_tool_content" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:duplicateParentState="true"
+                            android:fontFamily="@font/quicksand_semibold"
+                            android:includeFontPadding="false"
+                            android:text="Bomb"
+                            android:textColor="@color/selector_tool_content"
+                            android:textSize="9sp" />
+                    </LinearLayout>
+
+                    <!-- Paint Bucket -->
+                    <LinearLayout
+                        android:id="@+id/btn_tool_bucket"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:background="@drawable/cm_tool_bg"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:padding="8dp">
+
+                        <ImageView
+                            android:layout_width="18dp"
+                            android:layout_height="18dp"
+                            android:contentDescription="Paint Bucket"
+                            android:duplicateParentState="true"
+                            android:src="@drawable/ic_paint_bucket_24"
+                            app:tint="@color/selector_tool_content" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:duplicateParentState="true"
+                            android:fontFamily="@font/quicksand_semibold"
+                            android:includeFontPadding="false"
+                            android:text="Bucket"
+                            android:textColor="@color/selector_tool_content"
+                            android:textSize="9sp" />
+                    </LinearLayout>
+
+                    <!-- Magnifier -->
+                    <LinearLayout
+                        android:id="@+id/btn_tool_loupe"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:background="@drawable/cm_tool_bg"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:padding="8dp"
+                        android:visibility="gone">
+
+                        <ImageView
+                            android:layout_width="18dp"
+                            android:layout_height="18dp"
+                            android:contentDescription="Magnifier"
+                            android:duplicateParentState="true"
+                            android:src="@drawable/ic_magnifier_24"
+                            app:tint="@color/selector_tool_content" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:duplicateParentState="true"
+                            android:fontFamily="@font/quicksand_semibold"
+                            android:includeFontPadding="false"
+                            android:text="Loupe"
+                            android:textColor="@color/selector_tool_content"
+                            android:textSize="9sp" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_marginVertical="5dp"
+                        android:gravity="center"
+                        android:visibility="gone">
+
+                        <ImageView
+                            android:layout_width="15dp"
+                            android:layout_height="1.5dp"
+                            android:background="@drawable/bg_bottom_sheet_handle"
+                            android:backgroundTint="@color/hint_text_color" />
+
+                    </LinearLayout>
+
+                    <!-- Radar Scanner -->
+                    <LinearLayout
+                        android:id="@+id/btn_tool_radar"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:background="@drawable/cm_tool_bg"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:padding="8dp"
+                        android:visibility="gone">
+
+                        <ImageView
+                            android:layout_width="18dp"
+                            android:layout_height="18dp"
+                            android:contentDescription="Radar"
+                            android:duplicateParentState="true"
+                            android:src="@drawable/ic_radar_24"
+                            app:tint="@color/selector_tool_content" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:duplicateParentState="true"
+                            android:fontFamily="@font/quicksand_semibold"
+                            android:includeFontPadding="false"
+                            android:text="Radar"
+                            android:textColor="@color/selector_tool_content"
+                            android:textSize="9sp" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="1.5dp"
+                        android:layout_gravity="center"
+                        android:layout_marginVertical="5dp"
+                        android:gravity="center">
+
+                        <ImageView
+                            android:layout_width="15dp"
+                            android:layout_height="1.5dp"
+                            android:background="@drawable/bg_bottom_sheet_handle"
+                            android:backgroundTint="@color/hint_text_color" />
+
+                    </LinearLayout>
+
+                    <!-- Chroma Surge -->
+                    <LinearLayout
+                        android:id="@+id/btn_tool_surge"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:background="@drawable/cm_tool_bg"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:padding="8dp">
+
+                        <ImageView
+                            android:layout_width="18dp"
+                            android:layout_height="18dp"
+                            android:contentDescription="Chroma Surge"
+                            android:duplicateParentState="true"
+                            android:src="@drawable/ic_surge_24"
+                            app:tint="@color/selector_tool_content" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:duplicateParentState="true"
+                            android:fontFamily="@font/quicksand_semibold"
+                            android:includeFontPadding="false"
+                            android:text="Surge"
+                            android:textColor="@color/selector_tool_content"
+                            android:textSize="9sp" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_marginVertical="5dp"
+                        android:gravity="center">
+
+                        <ImageView
+                            android:layout_width="15dp"
+                            android:layout_height="1.5dp"
+                            android:background="@drawable/bg_bottom_sheet_handle"
+                            android:backgroundTint="@color/hint_text_color" />
+
+                    </LinearLayout>
+
+                    <!-- Magic Wand -->
+                    <LinearLayout
+                        android:id="@+id/btn_tool_wand"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:background="@drawable/cm_tool_bg"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:padding="8dp">
+
+                        <ImageView
+                            android:layout_width="18dp"
+                            android:layout_height="18dp"
+                            android:contentDescription="Magic Wand"
+                            android:duplicateParentState="true"
+                            android:src="@drawable/ic_magic_wand"
+                            app:tint="@color/selector_tool_content" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:duplicateParentState="true"
+                            android:fontFamily="@font/quicksand_semibold"
+                            android:includeFontPadding="false"
+                            android:text="Wand"
+                            android:textColor="@color/selector_tool_content"
+                            android:textSize="9sp" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_marginVertical="5dp"
+                        android:gravity="center">
+
+                        <ImageView
+                            android:layout_width="15dp"
+                            android:layout_height="1.5dp"
+                            android:background="@drawable/bg_bottom_sheet_handle"
+                            android:backgroundTint="@color/hint_text_color" />
+
+                    </LinearLayout>
+
+                    <!-- Smart Magnet -->
+                    <LinearLayout
+                        android:id="@+id/btn_tool_magnet"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:background="@drawable/cm_tool_bg"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:padding="8dp">
+
+                        <ImageView
+                            android:layout_width="18dp"
+                            android:layout_height="18dp"
+                            android:contentDescription="Smart Magnet"
+                            android:duplicateParentState="true"
+                            android:src="@drawable/ic_magnet"
+                            app:tint="@color/selector_tool_content" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:duplicateParentState="true"
+                            android:fontFamily="@font/quicksand_semibold"
+                            android:includeFontPadding="false"
+                            android:text="Magnet"
+                            android:textColor="@color/selector_tool_content"
+                            android:textSize="9sp" />
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <ImageView
+                    android:layout_width="@dimen/game_action_btn_size"
+                    android:layout_height="@dimen/game_action_btn_size"
+                    android:layout_gravity="end"
+                    android:layout_marginBottom="10dp"
+                    android:layout_marginEnd="@dimen/game_btn_margin"
+                    android:background="@drawable/cm_glass_panel"
+                    android:contentDescription="@null"
+                    android:id="@+id/IVTools"
+                    android:padding="@dimen/game_timer_radius"
+                    android:src="@drawable/ic_tool_icon" />
+
+
+                <ImageView
+                    android:layout_width="@dimen/game_action_btn_size"
+                    android:layout_height="@dimen/game_action_btn_size"
+                    android:layout_gravity="end"
+                    android:layout_marginEnd="@dimen/game_btn_margin"
+                    android:background="@drawable/cm_glass_panel"
+                    android:contentDescription="@null"
+                    android:onClick="onZoomOut"
+                    android:padding="@dimen/game_timer_radius"
+                    android:src="@drawable/ic_zoom_in" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="16dp"
+                    android:layout_marginVertical="6dp"
+                    android:background="@drawable/cm_glass_panel"
+                    android:clipChildren="false"
+                    android:clipToPadding="false"
+                    android:paddingHorizontal="12dp"
+                    android:paddingVertical="8dp">
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/recyclerView"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="horizontal"
+                        android:paddingVertical="4dp"
+                        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                        tools:listitem="@layout/color_item" />
+                </LinearLayout>
+
+            </LinearLayout>
+        </FrameLayout>
+
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_below="@+id/rl_hint"
+            android:layout_marginTop="@dimen/cm_space_2"
+            android:layout_marginEnd="@dimen/game_btn_margin"
+            android:background="@drawable/cm_glass_panel"
+            android:orientation="vertical"
+            android:padding="@dimen/tab_content_padding">
+
+            <!-- Zen Mode Toggle -->
+            <ImageView
+                android:id="@+id/btn_zen_mode"
+                android:layout_width="@dimen/game_action_btn_size"
+                android:layout_height="@dimen/game_action_btn_size"
+                android:contentDescription="@string/todo"
+                android:padding="@dimen/game_btn_elevation"
+                android:background="@drawable/cm_tool_disc_violet"
+                android:src="@drawable/ic_zoom_icon"
+                app:tint="@color/cm_tool_tint_violet" />
+
+            <!-- Background Theme Toggle -->
+            <ImageView
+                android:id="@+id/btn_bg_theme"
+                android:layout_width="@dimen/game_action_btn_size"
+                android:layout_height="@dimen/game_action_btn_size"
+                android:layout_marginTop="8dp"
+                android:contentDescription="@string/todo"
+                android:padding="@dimen/game_btn_elevation"
+                android:background="@drawable/cm_tool_disc_sky"
+                android:src="@drawable/ic_background_icon"
+                app:tint="@color/cm_tool_tint_sky" />
+
+            <!-- Auto-Fill Toggle -->
+            <ImageView
+                android:id="@+id/btn_auto_fill"
+                android:layout_width="@dimen/game_action_btn_size"
+                android:layout_height="@dimen/game_action_btn_size"
+                android:layout_marginTop="8dp"
+                android:contentDescription="@string/todo"
+                android:padding="@dimen/game_btn_elevation"
+                android:background="@drawable/cm_tool_disc_turquoise"
+                android:src="@drawable/ic_autofill_icon"
+                app:tint="@color/cm_tool_tint_turquoise" />
+
+        </LinearLayout>
+
+        <RelativeLayout
+            android:id="@+id/rl_hint"
+            android:layout_width="@dimen/game_action_btn_size"
+            android:layout_height="@dimen/game_action_btn_size"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true"
+            android:layout_centerInParent="true"
+            android:layout_margin="@dimen/game_btn_margin"
+            android:background="@drawable/cm_glass_panel"
+            android:gravity="center">
+
+            <ImageButton
+                android:id="@+id/use_hint_btn"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_centerInParent="true"
+                android:background="@null"
+                android:contentDescription="@null"
+                android:foreground="?attr/selectableItemBackgroundBorderless"
+                android:onClick="onUseHint"
+                android:scaleType="fitCenter" />
+
+            <TextView
+                android:id="@+id/hint_counter"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_centerInParent="true"
+                android:background="@null"
+                android:fontFamily="@font/quicksand_semibold"
+                android:gravity="center"
+                android:includeFontPadding="false"
+                android:text="3"
+                android:textColor="@color/hint_text_color"
+                android:textSize="22sp"
+                android:textStyle="normal" />
+        </RelativeLayout>
+
+
+        <!-- Artwork Loading Overlay -->
+        <RelativeLayout
+            android:id="@+id/progressBar"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/bg_loading_screen"
+            >
+
+            <!-- Floral corner decorations -->
+            <ImageView
+                android:layout_width="120dp"
+                android:layout_height="120dp"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentTop="true"
+                android:contentDescription="@null"
+                android:scaleType="fitXY"
+                android:src="@drawable/ic_floral_corner" />
+
+            <ImageView
+                android:layout_width="120dp"
+                android:layout_height="120dp"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentEnd="true"
+                android:contentDescription="@null"
+                android:rotationY="180"
+                android:scaleType="fitXY"
+                android:src="@drawable/ic_floral_corner" />
+
+            <ImageView
+                android:layout_width="120dp"
+                android:layout_height="120dp"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentBottom="true"
+                android:contentDescription="@null"
+                android:rotationX="180"
+                android:scaleType="fitXY"
+                android:src="@drawable/ic_floral_corner" />
+
+            <ImageView
+                android:layout_width="120dp"
+                android:layout_height="120dp"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentBottom="true"
+                android:contentDescription="@null"
+                android:rotation="180"
+                android:scaleType="fitXY"
+                android:src="@drawable/ic_floral_corner" />
+
+            <!-- Center content -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:gravity="center_horizontal"
+                android:orientation="vertical"
+                android:padding="32dp">
+
+                <!-- Image preview card -->
+                <androidx.cardview.widget.CardView
+                    android:layout_width="200dp"
+                    android:layout_height="200dp"
+                    app:cardBackgroundColor="#FFFFFFFF"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="6dp">
+
+                    <ImageView
+                        android:id="@+id/iv_loading_preview"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:contentDescription="@null"
+                        android:scaleType="centerCrop" />
+
+                    <ProgressBar
+                        android:id="@+id/bookloading"
+                        android:layout_width="@dimen/editor_progress_size"
+                        android:layout_height="@dimen/editor_progress_size"
+                        android:layout_gravity="center"
+                        android:indeterminate="true"
+                        android:indeterminateTint="@color/cm_violet"
+                        android:indeterminateTintMode="src_in" />
+                </androidx.cardview.widget.CardView>
+
+                <TextView
+                    android:id="@+id/tv_loading_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="28dp"
+                    android:fontFamily="@font/quicksand_semibold"
+                    android:includeFontPadding="false"
+                    android:text="@string/artwork_coming_alive"
+                    android:textColor="#FF3E3232"
+                    android:textSize="20sp" />
+
+                <ProgressBar
+                    android:id="@+id/pb_loading_horizontal"
+                    style="@android:style/Widget.ProgressBar.Horizontal"
+                    android:layout_width="220dp"
+                    android:layout_height="10dp"
+                    android:layout_marginTop="16dp"
+                    android:max="100"
+                    android:progress="0"
+                    android:progressDrawable="@drawable/bg_loading_progress" />
+
+                <TextView
+                    android:id="@+id/tv_progressBar"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:fontFamily="@font/quicksand_semibold"
+                    android:includeFontPadding="false"
+                    android:text=""
+                    android:textColor="#80000000"
+                    android:textSize="14sp" />
+            </LinearLayout>
+
+            <!-- Slow network / error overlay -->
+            <LinearLayout
+                android:id="@+id/tv_slow_net"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_centerHorizontal="true"
+                android:layout_marginBottom="80dp"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/quicksand_semibold"
+                    android:includeFontPadding="false"
+                    android:text=" Network Error."
+                    android:textColor="@color/cm_ink_2"
+                    android:textSize="@dimen/game_error_text_size" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/game_error_btn_margin_top"
+                    android:background="@drawable/round_button"
+                    android:fontFamily="@font/quicksand_semibold"
+                    android:includeFontPadding="false"
+                    android:onClick="onClickRetry"
+                    android:paddingHorizontal="@dimen/game_error_btn_padding_h"
+                    android:paddingVertical="@dimen/game_error_btn_padding_v"
+                    android:text="Back"
+                    android:textColor="@color/white"
+                    android:textSize="@dimen/game_error_text_size" />
+            </LinearLayout>
+        </RelativeLayout>
+
+        <LinearLayout
+            android:id="@+id/llMemoryError"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:layout_gravity="center"
+            android:layout_marginTop="@dimen/game_error_margin_top"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:fontFamily="@font/quicksand_semibold"
+                android:gravity="center"
+                android:includeFontPadding="false"
+                android:text="Insufficient Memory."
+                android:textColor="@color/cm_ink_2"
+                android:textSize="@dimen/game_error_text_size" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="@dimen/game_error_btn_margin_top"
+                android:background="@drawable/round_button"
+                android:fontFamily="@font/quicksand_semibold"
+                android:gravity="center"
+                android:includeFontPadding="false"
+                android:onClick="onClickOOM"
+                android:paddingHorizontal="@dimen/game_error_btn_padding_h"
+                android:paddingVertical="@dimen/game_error_btn_padding_v"
+                android:text="Back"
+                android:textColor="@color/white"
+                android:textSize="@dimen/game_error_text_size" />
+        </LinearLayout>
+
+
+        <RelativeLayout
+            android:id="@+id/backButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/game_btn_margin"
+            android:background="@drawable/cm_glass_panel"
+            android:padding="@dimen/tab_content_padding"
+            android:layout_gravity="center_vertical"
+            android:layout_margin="@dimen/game_btn_margin"
+            android:onClick="onBackImage"
+            >
+
+            <ImageView
+                android:padding="@dimen/game_btn_elevation"
+                android:layout_width="@dimen/game_action_btn_size"
+                android:layout_height="@dimen/game_action_btn_size"
+                android:layout_centerInParent="true"
+                android:contentDescription="@string/todo"
+                android:src="@drawable/round_arrow_back_24" />
+
+        </RelativeLayout>
+
+    </RelativeLayout>
+
+
+    <RelativeLayout
+        android:id="@+id/rl_timerView"
+        android:layout_width="@dimen/game_timer_size"
+        android:layout_height="@dimen/game_timer_size"
+        android:layout_centerVertical="true"
+        android:layout_marginStart="@dimen/game_timer_margin_start"
+        android:background="@drawable/shape_oval_white"
+        android:visibility="gone">
+
+        <ImageButton
+            android:layout_width="@dimen/game_timer_inner_size"
+            android:layout_height="@dimen/game_timer_inner_size"
+            android:layout_centerInParent="true"
+            android:background="@null"
+            android:contentDescription="@null"
+            android:foreground="?attr/selectableItemBackgroundBorderless"
+            android:onClick="onTimerHint"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_hint_plase_2" />
+
+        <io.github.krtkush.lineartimer.LinearTimerView
+            android:id="@+id/linearTimer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:background="@null"
+            app:initialColor="@color/hint_text_color"
+            app:progressColor="@color/hint_inner_highlight"
+            app:radius="@dimen/game_timer_radius"
+            app:startingPoint="270"
+            app:strokeWidth="@dimen/game_timer_stroke_width" />
+    </RelativeLayout>
+
+    <LinearLayout
+        android:id="@+id/ll_ads"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_marginTop="@dimen/game_ads_margin_top"
+        android:layout_marginBottom="@dimen/game_ads_margin_bottom">
+
+        <include
+            android:id="@+id/container_banner"
+            layout="@layout/ads_banner_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+
+</RelativeLayout>

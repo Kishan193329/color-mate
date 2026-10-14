@@ -1,0 +1,20 @@
+{
+  "bg_color" : "0xc30002a9",
+  "filter": "livecolors",
+  "colors" : [
+    {"color" : "0xc30002a7"},
+    {"color" : "0xc30002a8"},
+    {"color" : "0xc30002a9"},
+    {"color" : "0xc30002a6"},
+    {"color" : "0xc30002a5"},
+              
+    {"color" : "0xc30002aa"},
+    {"color" : "0xc30002ab"},
+    {"color" : "0xc30002ac"},
+    {"color" : "0xc30002ad"},
+    {"color" : "0xc30002ae"},
+    {"color" : "0xc30002af"}
+  ],
+  "name" : "Silvers",
+  "premium" : true
+}

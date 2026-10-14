@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Workspace tool button, sky.
+
+  The three tools used to be bare glyphs in one flat violet, and a toggled tool looked exactly
+  like an idle one. Each now sits on its own paint from the design system — the same one-paint-
+  per-thing language the bottom nav uses — and fills solid when the tool is on.
+-->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_selected="true">
+        <shape android:shape="oval">
+            <solid android:color="@color/cm_sky" />
+        </shape>
+    </item>
+    <item>
+        <shape android:shape="oval">
+            <solid android:color="@color/cm_sky_wash" />
+        </shape>
+    </item>
+</selector>

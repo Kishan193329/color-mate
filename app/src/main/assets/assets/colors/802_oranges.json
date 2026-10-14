@@ -1,0 +1,39 @@
+{
+    "sprite" : "repal21.png",
+    "filter" : "brushes",
+    "brush" : "true",
+    "premium": "true",
+    "bg_color" : "fff58320",
+    "colors" :
+    [
+     {"color" : "0xe0225af1"},
+     {"color" : "0xe0256bed"},
+     {"color" : "0xe0208ff7"},
+     {"color" : "0xe0729bf7"},
+     {"color" : "0xe0b2cefb"},
+     
+     {"color" : "0xe02739d7"},
+     {"color" : "0xe0285ed0"},
+     {"color" : "0xe02083f5"},
+     {"color" : "0xe04f87f5"},
+     {"color" : "0xe08197f6"},
+     {"color" : "0xe0b4e5ff"}
+
+     ],
+    "colors_ipad" :
+    [
+     {"color" : "0xe02739d7"},
+     {"color" : "0xe0285ed0"},
+     {"color" : "0xe0225af1"},
+     {"color" : "0xe0256bed"},
+     {"color" : "0xe02083f5"},
+     {"color" : "0xe0208ff7"},
+     {"color" : "0xe04f87f5"},
+     {"color" : "0xe0729bf7"},
+     {"color" : "0xe08197f6"},
+     {"color" : "0xe0b2cefb"},
+     {"color" : "0xe0b4e5ff"}
+     ],
+    "name" : "Oranges",
+    "premium" : false
+}

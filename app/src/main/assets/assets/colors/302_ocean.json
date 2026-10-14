@@ -1,0 +1,39 @@
+{
+    "sprite" : "repal2.png",
+    "filter": "recolorpalettes",
+    "bg_color" : "ff007f82",
+    "colors" :
+    [
+     {"color" : "0xe0532D14"},
+     {"color" : "0xe08F6100"},
+     {"color" : "0xe0735900"},
+     {"color" : "0xe0bea01c"},
+     {"color" : "0xe0e4d8a3"},
+     
+     {"color" : "0xe0827f00"},
+     {"color" : "0xe0cfcb72"},
+     {"color" : "0xe0e9ecd0"},
+     
+     {"color" : "0xe0a1ddf8"},
+     {"color" : "0xe081b4e2"},
+     {"color" : "0xe04579a9"}
+     ],
+    "colors_ipad" :
+    [
+     
+     {"color" : "0xe0827f00"},
+     {"color" : "0xe0cfcb72"},
+     {"color" : "0xe0e9ecd0"},
+     {"color" : "0xe0e4d8a3"},
+     {"color" : "0xe0bea01c"},
+     {"color" : "0xe0735900"},
+     {"color" : "0xe0532D14"},
+     {"color" : "0xe08F6100"},
+
+     {"color" : "0xe04579a9"},
+     {"color" : "0xe081b4e2"},
+     {"color" : "0xe0a1ddf8"}
+     ],
+    "name" : "Ocean",
+    "premium" : false
+}

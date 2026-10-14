@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- White on the filled disc when the tool is on; its own paint when it is off. -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:color="@color/cm_surface" android:state_selected="true" />
+    <item android:color="@color/cm_turquoise" />
+</selector>

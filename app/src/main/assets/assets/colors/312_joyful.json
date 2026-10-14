@@ -1,0 +1,37 @@
+{
+    "sprite" : "repal12.png",
+    "filter": "recolorpalettes",
+    "bg_color" : "ffef442a",
+    "colors" :
+    [
+     {"color" : "0xe09465ED"},
+     {"color" : "0xe090a0f7"},
+     {"color" : "0xe07fdbff"},
+     {"color" : "0xe0e4c58e"},
+     {"color" : "0xe0c69a9f"},
+     
+     {"color" : "0xe0551d9e"},
+     {"color" : "0xe02a44ef"},
+     {"color" : "0xe011befe"},
+     {"color" : "0xe045BD6A"},
+     {"color" : "0xe0ac7d23"},
+     {"color" : "0xe0883943"}
+     ],
+    "colors_ipad" :
+    [
+     {"color" : "0xe0551d9e"},
+     {"color" : "0xe02a44ef"},
+     {"color" : "0xe011befe"},
+     {"color" : "0xe045BD6A"},
+     {"color" : "0xe0ac7d23"},
+     {"color" : "0xe0883943"},
+
+     {"color" : "0xe0c69a9f"},
+     {"color" : "0xe0e4c58e"},
+     {"color" : "0xe07fdbff"},
+     {"color" : "0xe090a0f7"},
+     {"color" : "0xe09465ED"}
+     ],
+    "name" : "Joyful",
+    "premium" : false
+}

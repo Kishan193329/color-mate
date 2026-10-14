@@ -1,0 +1,19 @@
+{
+	"name": "carving", 
+	"shader": "shaders/export_carving.fsh",
+	"autoblurmaps": true, 
+    "inputs": {
+        "basetex": {
+        	"path": ["assets/soft_wooden1.jpg","assets/soft_wooden2.jpg","assets/soft_wooden3.jpg"],
+			"mipmaps": true,
+			"repeat": true
+		}
+	},
+    "uvmatrix": {
+    	"type": "diagonal",
+    	"allowxflip": true,
+    	"allowyflip": true, 
+    	"allowxrandom": true, 
+    	"allowyrandom": true
+    }
+}

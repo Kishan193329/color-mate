@@ -1,0 +1,327 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFFFFF"
+    android:fitsSystemWindows="true"
+    android:orientation="vertical">
+
+    <!-- Top AppBar -->
+    <RelativeLayout
+        android:id="@+id/topBarCard"
+        android:layout_width="match_parent"
+        android:layout_height="?actionBarSize"
+        android:background="#FFFFFF"
+        android:gravity="center_vertical"
+        android:paddingStart="@dimen/toolbar_padding_horizontal"
+        android:paddingEnd="@dimen/toolbar_padding_horizontal">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:id="@+id/iv_back"
+                android:layout_width="@dimen/toolbar_back_btn_size"
+                android:layout_height="@dimen/toolbar_back_btn_size"
+                android:background="@drawable/bg_circle_chip"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackgroundBorderless"
+                android:gravity="center"
+                android:padding="@dimen/share_back_btn_padding">
+
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:contentDescription="@string/todo"
+                    android:src="@drawable/round_arrow_back_24"
+                    app:tint="#111111" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/tv_share_tiitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/toolbar_title_margin_start"
+                android:fontFamily="@font/quicksand_semibold"
+                android:includeFontPadding="false"
+                android:text="@string/share_title"
+                android:textColor="#191919"
+                android:textSize="@dimen/toolbar_title_size" />
+        </LinearLayout>
+
+
+
+        <TextView
+            android:id="@+id/tv_done"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/share_done_btn_height"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:background="@drawable/bg_done_chip"
+            android:clickable="true"
+            android:focusable="true"
+            android:fontFamily="@font/quicksand_bold"
+            android:foreground="?attr/selectableItemBackground"
+            android:gravity="center"
+            android:includeFontPadding="false"
+            android:paddingStart="@dimen/share_done_btn_padding_h"
+            android:paddingEnd="@dimen/share_done_btn_padding_h"
+            android:text="@string/share_done"
+            android:textColor="#111111"
+            android:textSize="@dimen/share_done_btn_text_size" />
+    </RelativeLayout>
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/bottomSheet"
+        android:layout_below="@+id/topBarCard"
+        android:layout_marginHorizontal="@dimen/share_content_margin_h"
+        app:cardBackgroundColor="@color/background"
+        android:background="@drawable/bg_preview_card"
+        app:cardCornerRadius="@dimen/share_card_corner_radius"
+        app:cardElevation="@dimen/share_card_elevation">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:padding="@dimen/share_card_inner_padding">
+
+            <ImageView
+                android:id="@+id/iv_share_image"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:contentDescription="@null"
+                android:scaleType="fitCenter" />
+
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/bottomSheet"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/icBanner"
+        android:layout_marginHorizontal="@dimen/share_content_margin_h"
+        android:backgroundTint="@color/white"
+        app:cardBackgroundColor="@color/background"
+        app:cardCornerRadius="@dimen/share_card_corner_radius"
+        app:cardElevation="@dimen/share_card_elevation"
+        app:cardUseCompatPadding="false">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:padding="@dimen/share_card_inner_padding">
+
+            <View
+                android:layout_width="@dimen/share_handle_width"
+                android:layout_height="@dimen/share_handle_height"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginBottom="@dimen/share_handle_margin_bottom"
+                android:background="@drawable/bg_bottom_sheet_handle" />
+
+
+            <!-- Description -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/quicksand_medium"
+                android:gravity="center"
+                android:includeFontPadding="false"
+                android:text="@string/share_desc"
+                android:textColor="#6B7280"
+                android:textSize="@dimen/share_desc_text_size" />
+
+            <!-- Share Buttons Card -->
+            <LinearLayout
+                android:id="@+id/share_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/share_btn_container_margin_top"
+                android:background="@drawable/bg_share_card"
+                android:gravity="center"
+                android:orientation="horizontal"
+                android:padding="@dimen/share_btn_container_padding">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?attr/selectableItemBackgroundBorderless"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <ImageView
+                        android:id="@+id/ib_fb_messenger"
+                        android:layout_width="@dimen/share_icon_size_small"
+                        android:layout_height="@dimen/share_icon_size_small"
+                        android:background="@drawable/bg_icon_chip"
+                        android:contentDescription="@null"
+                        android:padding="@dimen/share_btn_icon_padding"
+                        android:src="@drawable/ic_messenger" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/share_btn_label_margin_top"
+                        android:fontFamily="@font/quicksand_semibold"
+                        android:includeFontPadding="false"
+                        android:text="Messenger"
+                        android:textColor="#111111"
+                        android:textSize="@dimen/share_btn_label_text_size" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?attr/selectableItemBackgroundBorderless"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <ImageView
+                        android:id="@+id/ib_sms"
+                        android:layout_width="@dimen/share_icon_size_small"
+                        android:layout_height="@dimen/share_icon_size_small"
+                        android:background="@drawable/bg_icon_chip"
+                        android:contentDescription="@null"
+                        android:padding="@dimen/share_btn_icon_padding"
+                        android:src="@drawable/ic_message" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/share_btn_label_margin_top"
+                        android:fontFamily="@font/quicksand_semibold"
+                        android:includeFontPadding="false"
+                        android:text="SMS"
+                        android:textColor="#111111"
+                        android:textSize="@dimen/share_btn_label_text_size" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?attr/selectableItemBackgroundBorderless"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <ImageView
+                        android:id="@+id/ib_whatsapp"
+                        android:layout_width="@dimen/share_icon_size_small"
+                        android:layout_height="@dimen/share_icon_size_small"
+                        android:background="@drawable/bg_icon_chip"
+                        android:contentDescription="@null"
+                        android:padding="@dimen/share_btn_icon_padding"
+                        android:src="@drawable/ic_whatsapp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/share_btn_label_margin_top"
+                        android:fontFamily="@font/quicksand_semibold"
+                        android:includeFontPadding="false"
+                        android:text="WhatsApp"
+                        android:textColor="#111111"
+                        android:textSize="@dimen/share_btn_label_text_size" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?attr/selectableItemBackgroundBorderless"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <ImageView
+                        android:id="@+id/ib_instagram"
+                        android:layout_width="@dimen/share_icon_size_small"
+                        android:layout_height="@dimen/share_icon_size_small"
+                        android:background="@drawable/bg_icon_chip"
+                        android:contentDescription="@null"
+                        android:padding="@dimen/share_btn_icon_padding"
+                        android:src="@drawable/ic_instagram" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/share_btn_label_margin_top"
+                        android:fontFamily="@font/quicksand_semibold"
+                        android:includeFontPadding="false"
+                        android:text="Instagram"
+                        android:textColor="#111111"
+                        android:textSize="@dimen/share_btn_label_text_size" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?attr/selectableItemBackgroundBorderless"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <ImageView
+                        android:id="@+id/ib_openin"
+                        android:layout_width="@dimen/share_icon_size_small"
+                        android:layout_height="@dimen/share_icon_size_small"
+                        android:background="@drawable/bg_icon_chip"
+                        android:contentDescription="@null"
+                        android:padding="@dimen/share_btn_icon_padding"
+                        android:src="@drawable/ic_share" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/share_btn_label_margin_top"
+                        android:fontFamily="@font/quicksand_semibold"
+                        android:includeFontPadding="false"
+                        android:text="More"
+                        android:textColor="#111111"
+                        android:textSize="@dimen/share_btn_label_text_size" />
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+
+    </androidx.cardview.widget.CardView>
+
+    <!-- Ad -->
+    <LinearLayout
+        android:id="@+id/icBanner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true">
+
+        <include
+            android:id="@+id/container_native_item"
+            layout="@layout/ads_native_container_item"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/share_ad_margin_top" />
+    </LinearLayout>
+
+</RelativeLayout>

@@ -1,0 +1,37 @@
+{
+    "filter": "gradients",
+    "bg_color" : "0x80000030",
+    "colors" :
+    [
+     {"color" : "0x8000002e"},
+     {"color" : "0x80000030"},
+     {"color" : "0x80000067"},
+     {"color" : "0x80000032"},
+     {"color" : "0x80000034"},
+     
+     {"color" : "0x8000002d"},
+     {"color" : "0x8000002f"},
+     {"color" : "0x80000031"},
+     {"color" : "0x80000033"},
+     {"color" : "0x80000035"},
+     {"color" : "0x80000066"}
+     ],
+    "colors_ipad" :
+    [
+     {"color" : "0x8000002e"},
+     {"color" : "0x80000030"},
+     {"color" : "0x80000067"},
+     {"color" : "0x80000032"},
+     
+     {"color" : "0x80000033"},
+     {"color" : "0x80000031"},
+     {"color" : "0x8000002f"},
+     {"color" : "0x8000002d"},
+     
+     {"color" : "0x80000066"},
+     {"color" : "0x80000035"},
+     {"color" : "0x80000034"}
+     ],
+    "name" : "Purples",
+    "premium" : false
+}

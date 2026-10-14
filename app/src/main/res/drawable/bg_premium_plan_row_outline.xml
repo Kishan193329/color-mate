@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- UNSELECTED plan card: present but quiet, so the chosen one is unmistakable. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <corners android:radius="@dimen/cm_radius_lg" />
+    <solid android:color="@color/cm_surface" />
+    <stroke android:width="1dp" android:color="@color/cm_line" />
+</shape>

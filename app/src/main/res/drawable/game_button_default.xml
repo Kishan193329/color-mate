@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Shadow / Bottom Edge (3D depth effect) -->
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@color/hint_text_color_" />
+            <corners android:radius="14dp" />
+        </shape>
+    </item>
+
+    <!-- Main Background (Raised by bottom offset) -->
+    <item android:bottom="4dp">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/hint_text_color" />
+            <corners android:radius="14dp" />
+        </shape>
+    </item>
+
+    <!-- Inner Highlight Border (Glow Effect) -->
+    <item
+        android:bottom="3.2dp"
+        android:left="1.5dp"
+        android:right="1.5dp"
+        android:top="1.5dp">
+        <shape android:shape="rectangle">
+            <stroke
+                android:width="1dp"
+                android:color="@color/hint_text_color" />
+            <corners android:radius="12dp" />
+        </shape>
+    </item>
+
+    <!-- Top Shine / Gloss Effect -->
+    <item
+        android:bottom="3dp"
+        android:left="3dp"
+        android:right="3dp"
+        android:top="2dp">
+        <shape android:shape="rectangle">
+            <gradient
+                android:angle="270"
+                android:endColor="#00FFFFFF"
+                android:startColor="#33FFFFFF"
+                android:type="linear" />
+            <corners android:radius="11dp" />
+        </shape>
+    </item>
+
+</layer-list>

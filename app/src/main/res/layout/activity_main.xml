@@ -1,0 +1,541 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/main_content"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:clipChildren="false"
+    android:clipToPadding="false">
+
+    <!-- App ground: lilac paper with two faint paint blooms (design system §Colour) -->
+    <ImageView
+        android:id="@+id/ivBackgroundStatic"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:alpha="1"
+        android:scaleType="fitXY"
+        android:src="@drawable/cm_bg_paper"
+        android:visibility="visible" />
+
+    <!-- Old animated GIF background — disabled for the clean modern look -->
+    <ImageView
+        android:id="@+id/ivBackgroundGif"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:alpha="0"
+        android:scaleType="centerCrop"
+        android:visibility="gone" />
+
+
+    <!-- ============ TOP BAR ============ -->
+    <RelativeLayout
+        android:id="@+id/top_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/main_top_bar_margin_top"
+        android:clipChildren="false"
+        android:clipToPadding="false"
+        android:paddingStart="@dimen/main_content_padding_h"
+        android:paddingEnd="@dimen/main_content_padding_h"
+        android:paddingBottom="@dimen/main_top_bar_padding_bottom">
+
+        <!--
+          Greeting, not a wordmark. A returning player already knows the app's name; what they
+          want to see is that it knows them. Avatar + time-of-day greeting + the name.
+        -->
+        <LinearLayout
+            android:id="@+id/ll_brand"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"
+            android:layout_toStartOf="@+id/ll_top_actions"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/tv_greeting"
+                    style="@style/CmText.Caption"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/quicksand_semibold"
+                    android:text="Welcome back"
+                    android:textColor="@color/cm_ink_2" />
+
+                <!-- tv_title keeps its id: MainActivity springs it in on open -->
+                <TextView
+                    android:id="@+id/tv_title"
+                    style="@style/CmText.Section"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:text="Colour Mate" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Circular action buttons -->
+        <LinearLayout
+            android:id="@+id/ll_top_actions"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:orientation="horizontal">
+
+            <!--
+              Coins live in the header so their purpose is visible before the shop is. Gold is
+              reserved for the economy — it appears nowhere else in the chrome.
+            -->
+            <LinearLayout
+                android:id="@+id/cm_coins_chip"
+                android:layout_width="wrap_content"
+                android:layout_height="30dp"
+                android:layout_gravity="center_vertical"
+                android:background="@drawable/cm_chip_gold"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingHorizontal="9dp">
+
+                <ImageView
+                    android:id="@+id/iv_removeAds"
+                    android:layout_width="15dp"
+                    android:layout_height="15dp"
+                    android:contentDescription="@string/todo"
+                    android:src="@drawable/cm_ic_coin" />
+
+                <TextView
+                    android:id="@+id/tv_coins"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="5dp"
+                    android:fontFamily="@font/quicksand_bold"
+                    android:fontFeatureSettings="tnum"
+                    android:includeFontPadding="false"
+                    android:text="Purchase"
+                    android:textColor="#FF9A6A0C"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+            <!-- Saved moved back to the bottom bar on the owner's instruction (2026-10-14).
+                 Kept (gone) because MainActivity binds iv_saved_top; nav_item_saved below is
+                 the live entry point now. -->
+            <FrameLayout
+                android:layout_width="@dimen/cm_icon_btn"
+                android:layout_height="@dimen/cm_icon_btn"
+                android:layout_gravity="center_vertical"
+                android:layout_marginStart="@dimen/cm_space_2"
+                android:background="@drawable/cm_icon_btn"
+                android:elevation="2dp"
+                android:visibility="gone">
+
+                <ImageView
+                    android:id="@+id/iv_saved_top"
+                    android:layout_width="@dimen/cm_icon"
+                    android:layout_height="@dimen/cm_icon"
+                    android:layout_gravity="center"
+                    android:contentDescription="@string/todo"
+                    android:src="@drawable/ic_saved_select"
+                    app:tint="@color/cm_ink" />
+            </FrameLayout>
+
+            <FrameLayout
+                android:layout_width="@dimen/cm_icon_btn"
+                android:layout_height="@dimen/cm_icon_btn"
+                android:layout_gravity="center_vertical"
+                android:layout_marginStart="6dp"
+                android:background="@drawable/cm_icon_btn"
+                android:elevation="2dp">
+
+                <ImageView
+                    android:id="@+id/iv_setting"
+                    android:layout_width="@dimen/cm_icon"
+                    android:layout_height="@dimen/cm_icon"
+                    android:layout_gravity="center"
+                    android:contentDescription="@string/todo"
+                    android:src="@drawable/ic_setting_icon"
+                    app:tint="@color/cm_ink" />
+            </FrameLayout>
+        </LinearLayout>
+
+    </RelativeLayout>
+
+
+    <FrameLayout
+        android:id="@+id/fragment_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/bottom_nav_wrapper"
+        android:layout_below="@+id/top_bar" />
+
+    <!-- ============ FLOATING CUSTOM BOTTOM NAVIGATION ============ -->
+    <FrameLayout
+        android:id="@+id/bottom_nav_wrapper"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_marginHorizontal="12dp"
+        android:layout_marginBottom="16dp"
+        android:clipChildren="false"
+        android:clipToPadding="false">
+
+        <eightbitlab.com.blurview.BlurView
+            android:id="@+id/bottom_nav_blur_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/bg_nav_bar"
+            android:clipToOutline="true"
+            app:blurOverlayColor="#B3FFFFFF" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_nav_bar"
+                android:elevation="10dp"
+                android:gravity="center"
+                android:orientation="horizontal"
+                android:paddingHorizontal="@dimen/main_nav_bar_padding_h"
+                android:paddingVertical="@dimen/main_bottom_nav_padding_v">
+
+                <LinearLayout
+                    android:id="@+id/nav_item_number"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <!-- The pill hugs icon + label (reference bar, 2026-10-14); it IS the indicator. -->
+                    <LinearLayout
+                        android:id="@+id/nav_indicator_number"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:paddingHorizontal="@dimen/main_nav_pill_padding_h"
+                        android:paddingVertical="@dimen/main_nav_pill_padding_v">
+
+                        <ImageView
+                            android:id="@+id/iv_nav_number"
+                            android:layout_width="@dimen/main_nav_icon_size"
+                            android:layout_height="@dimen/main_nav_icon_size"
+                            android:layout_gravity="center"
+                            android:contentDescription="@string/todo"
+                            android:src="@drawable/ic_home_unselect" />
+
+                        <TextView
+                            android:id="@+id/nav_label_number"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/main_nav_label_margin_top"
+                            android:fontFamily="@font/quicksand_semibold"
+                            android:gravity="center"
+                            android:maxLines="1"
+                            android:text="Number"
+                            android:textColor="@color/unselect_nav_color"
+                            android:textSize="@dimen/main_nav_label_text_size"
+                            app:autoSizeMaxTextSize="@dimen/main_nav_label_text_size"
+                            app:autoSizeMinTextSize="7sp"
+                            app:autoSizeTextType="uniform" />
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <!-- New 2026 + Diamond: HIDDEN on the owner's instruction (2026-10-14), not removed —
+                     same treatment as Daily below. The bar is weighted, so "gone" gives the three
+                     remaining tabs their width back. To bring them back: drop the two visibility
+                     lines and flip colorForgeTabsEnabled in MainActivity. -->
+                <LinearLayout
+                    android:id="@+id/nav_item_new"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <!-- The pill hugs icon + label (reference bar, 2026-10-14); it IS the indicator. -->
+                    <LinearLayout
+                        android:id="@+id/nav_indicator_new"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:paddingHorizontal="@dimen/main_nav_pill_padding_h"
+                        android:paddingVertical="@dimen/main_nav_pill_padding_v">
+
+                        <ImageView
+                            android:id="@+id/iv_nav_new"
+                            android:layout_width="@dimen/main_nav_icon_size"
+                            android:layout_height="@dimen/main_nav_icon_size"
+                            android:layout_gravity="center"
+                            android:contentDescription="@string/todo"
+                            android:src="@drawable/ic_new_select" />
+
+                        <TextView
+                            android:id="@+id/nav_label_new"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/main_nav_label_margin_top"
+                            android:fontFamily="@font/quicksand_semibold"
+                            android:gravity="center"
+                            android:maxLines="1"
+                            android:text="New"
+                            android:textColor="@color/unselect_nav_color"
+                            android:textSize="@dimen/main_nav_label_text_size"
+                            app:autoSizeMaxTextSize="@dimen/main_nav_label_text_size"
+                            app:autoSizeMinTextSize="7sp"
+                            app:autoSizeTextType="uniform" />
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/nav_item_diamond"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <!-- The pill hugs icon + label (reference bar, 2026-10-14); it IS the indicator. -->
+                    <LinearLayout
+                        android:id="@+id/nav_indicator_diamond"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:paddingHorizontal="@dimen/main_nav_pill_padding_h"
+                        android:paddingVertical="@dimen/main_nav_pill_padding_v">
+
+                        <ImageView
+                            android:id="@+id/iv_nav_diamond"
+                            android:layout_width="@dimen/main_nav_icon_size"
+                            android:layout_height="@dimen/main_nav_icon_size"
+                            android:layout_gravity="center"
+                            android:contentDescription="@string/todo"
+                            android:src="@drawable/ic_diamond_unselect" />
+
+                        <TextView
+                            android:id="@+id/nav_label_diamond"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/main_nav_label_margin_top"
+                            android:fontFamily="@font/quicksand_semibold"
+                            android:gravity="center"
+                            android:maxLines="1"
+                            android:text="Diamond"
+                            android:textColor="@color/unselect_nav_color"
+                            android:textSize="@dimen/main_nav_label_text_size"
+                            app:autoSizeMaxTextSize="@dimen/main_nav_label_text_size"
+                            app:autoSizeMinTextSize="7sp"
+                            app:autoSizeTextType="uniform" />
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <!-- Daily: HIDDEN on the owner's instruction (2026-08-20), not removed. The bar
+                     is weighted, so "gone" also gives the remaining five tabs their width back.
+                     To bring it back: drop this visibility line and the guard in MainActivity. -->
+                <LinearLayout
+                    android:id="@+id/nav_item_calendar"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <!-- The pill hugs icon + label (reference bar, 2026-10-14); it IS the indicator. -->
+                    <LinearLayout
+                        android:id="@+id/nav_indicator_calendar"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:paddingHorizontal="@dimen/main_nav_pill_padding_h"
+                        android:paddingVertical="@dimen/main_nav_pill_padding_v">
+
+                        <ImageView
+                            android:id="@+id/iv_nav_calendar"
+                            android:layout_width="@dimen/main_nav_icon_size"
+                            android:layout_height="@dimen/main_nav_icon_size"
+                            android:layout_gravity="center"
+                            android:contentDescription="@string/todo"
+                            android:src="@drawable/ic_calendar_unselect" />
+
+                        <TextView
+                            android:id="@+id/nav_label_calendar"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/main_nav_label_margin_top"
+                            android:fontFamily="@font/quicksand_semibold"
+                            android:gravity="center"
+                            android:maxLines="1"
+                            android:text="@string/nav_daily"
+                            android:textColor="@color/unselect_nav_color"
+                            android:textSize="@dimen/main_nav_label_text_size"
+                            app:autoSizeMaxTextSize="@dimen/main_nav_label_text_size"
+                            app:autoSizeMinTextSize="7sp"
+                            app:autoSizeTextType="uniform" />
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/nav_item_color"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <!-- The pill hugs icon + label (reference bar, 2026-10-14); it IS the indicator. -->
+                    <LinearLayout
+                        android:id="@+id/nav_indicator_color"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:paddingHorizontal="@dimen/main_nav_pill_padding_h"
+                        android:paddingVertical="@dimen/main_nav_pill_padding_v">
+
+                        <ImageView
+                            android:id="@+id/iv_nav_color"
+                            android:layout_width="@dimen/main_nav_icon_size"
+                            android:layout_height="@dimen/main_nav_icon_size"
+                            android:layout_gravity="center"
+                            android:contentDescription="@string/todo"
+                            android:src="@drawable/ic_image_unselect" />
+
+                        <TextView
+                            android:id="@+id/nav_label_color"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/main_nav_label_margin_top"
+                            android:fontFamily="@font/quicksand_semibold"
+                            android:gravity="center"
+                            android:maxLines="1"
+                            android:text="Images"
+                            android:textColor="@color/unselect_nav_color"
+                            android:textSize="@dimen/main_nav_label_text_size"
+                            app:autoSizeMaxTextSize="@dimen/main_nav_label_text_size"
+                            app:autoSizeMinTextSize="7sp"
+                            app:autoSizeTextType="uniform" />
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/nav_item_pixel"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <!-- The pill hugs icon + label (reference bar, 2026-10-14); it IS the indicator. -->
+                    <LinearLayout
+                        android:id="@+id/nav_indicator_pixel"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:paddingHorizontal="@dimen/main_nav_pill_padding_h"
+                        android:paddingVertical="@dimen/main_nav_pill_padding_v">
+
+                        <ImageView
+                            android:id="@+id/iv_nav_pixel"
+                            android:layout_width="@dimen/main_nav_icon_size"
+                            android:layout_height="@dimen/main_nav_icon_size"
+                            android:layout_gravity="center"
+                            android:contentDescription="@string/todo"
+                            android:src="@drawable/ic_grid_unselect" />
+
+                        <TextView
+                            android:id="@+id/nav_label_pixel"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/main_nav_label_margin_top"
+                            android:fontFamily="@font/quicksand_semibold"
+                            android:gravity="center"
+                            android:maxLines="1"
+                            android:text="Pixel"
+                            android:textColor="@color/unselect_nav_color"
+                            android:textSize="@dimen/main_nav_label_text_size"
+                            app:autoSizeMaxTextSize="@dimen/main_nav_label_text_size"
+                            app:autoSizeMinTextSize="7sp"
+                            app:autoSizeTextType="uniform" />
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <!-- Saved (My Works) — back in the bar (2026-10-14), index NAV_SAVED = 5. -->
+                <LinearLayout
+                    android:id="@+id/nav_item_saved"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <!-- The pill hugs icon + label (reference bar, 2026-10-14); it IS the indicator. -->
+                    <LinearLayout
+                        android:id="@+id/nav_indicator_saved"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:paddingHorizontal="@dimen/main_nav_pill_padding_h"
+                        android:paddingVertical="@dimen/main_nav_pill_padding_v">
+
+                        <ImageView
+                            android:id="@+id/iv_nav_saved"
+                            android:layout_width="@dimen/main_nav_icon_size"
+                            android:layout_height="@dimen/main_nav_icon_size"
+                            android:layout_gravity="center"
+                            android:contentDescription="@string/todo"
+                            android:src="@drawable/ic_saved_unselect" />
+
+                        <TextView
+                            android:id="@+id/nav_label_saved"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/main_nav_label_margin_top"
+                            android:fontFamily="@font/quicksand_semibold"
+                            android:gravity="center"
+                            android:maxLines="1"
+                            android:text="Saved"
+                            android:textColor="@color/unselect_nav_color"
+                            android:textSize="@dimen/main_nav_label_text_size"
+                            app:autoSizeMaxTextSize="@dimen/main_nav_label_text_size"
+                            app:autoSizeMinTextSize="7sp"
+                            app:autoSizeTextType="uniform" />
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </FrameLayout>
+
+</RelativeLayout>

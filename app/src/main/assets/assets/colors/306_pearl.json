@@ -1,0 +1,38 @@
+{
+  "sprite" : "repal6.png",
+    "filter": "recolorpalettes",
+  "bg_color" : "ffd9c2b6",
+  "colors" :
+    [
+     {"color" : "0xe05c588c"},
+     {"color" : "0xe07293f6"},
+     {"color" : "0xe0a1b3e9"},
+     {"color" : "0xe0c2bee7"},
+     {"color" : "0xe0b6c2d9"},
+
+     {"color" : "0xe0473e47"},
+     {"color" : "0xe08c7366"},
+     {"color" : "0xe0a89e74"},
+     {"color" : "0xe0e2bda8"},
+     
+     {"color" : "0xe0ccd9cf"},
+     {"color" : "0xe084a2a7"}
+  ],
+    "colors_ipad" :
+    [
+     {"color" : "0xe0473e47"},
+     {"color" : "0xe08c7366"},
+     {"color" : "0xe0a89e74"},
+     {"color" : "0xe0e2bda8"},
+     
+     {"color" : "0xe0b6c2d9"},
+     {"color" : "0xe0c2bee7"},
+     {"color" : "0xe0a1b3e9"},
+     {"color" : "0xe07293f6"},
+     {"color" : "0xe05c588c"},
+     {"color" : "0xe084a2a7"},
+     {"color" : "0xe0ccd9cf"}
+     ],
+  "name" : "Pearl",
+  "premium" : false
+}

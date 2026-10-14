@@ -1,0 +1,39 @@
+{
+    "sprite" : "repal14.png",
+    "filter": "recolorpalettes",
+    "bg_color" : "ff69666f",
+    "colors" :
+    [
+     {"color" : "0xe049322a"},
+     {"color" : "0xe06f6669"},
+     {"color" : "0xe0a0a1ab"},
+     {"color" : "0xe0ced2de"},
+     {"color" : "0xe0edeff7"},
+     
+     {"color" : "0xe02e4556"},
+     {"color" : "0xe06c7a7c"},
+     {"color" : "0xe0adb8a3"},
+     {"color" : "0xe0e7eace"},
+     
+     {"color" : "0xe0ebc29a"},
+     {"color" : "0xe02a43a1"}
+     ],
+    "colors_ipad" :
+    [
+     {"color" : "0xe049322a"},
+     {"color" : "0xe06f6669"},
+     {"color" : "0xe0a0a1ab"},
+     {"color" : "0xe0ced2de"},
+     {"color" : "0xe0edeff7"},
+     
+     {"color" : "0xe0e7eace"},
+     {"color" : "0xe0adb8a3"},
+     {"color" : "0xe06c7a7c"},
+     {"color" : "0xe02e4556"},
+     
+     {"color" : "0xe02a43a1"},
+     {"color" : "0xe0ebc29a"}
+     ],
+    "name" : "Cloudy",
+    "premium" : false
+}

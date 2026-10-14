@@ -1,0 +1,21 @@
+{
+	"name": "woodwork", 
+	"shader": "shaders/bookexport_carvingstamp.fsh",
+	"autoblurmaps": true, 
+    
+    "inputs": {
+        "lut": {
+            "global_lut": true
+        }
+    },
+    
+    "uvmatrix": {
+    	"type": "diagonal",
+    	"allowxflip": true,
+    	"allowyflip": true, 
+    	"allowxrandom": true, 
+    	"allowyrandom": true,
+    	"scale": 1.0,
+    	"scale_random": 0.0
+    }
+}

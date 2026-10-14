@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="@dimen/dialog_drawbook_padding"
+    android:gravity="center"
+    android:id="@+id/in_main_page"
+    android:orientation="vertical">
+
+    <!-- Card container -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@drawable/bg_dialog_card"
+        android:padding="@dimen/dialog_drawbook_padding">
+
+        <!-- Header -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="My Artwork"
+                android:textColor="#111111"
+                android:textSize="@dimen/dialog_drawbook_header_text_size"
+                android:fontFamily="@font/quicksand_bold"
+                android:includeFontPadding="false" />
+
+
+            <RelativeLayout
+                android:id="@+id/btn_dlg_close"
+                android:layout_width="@dimen/dialog_close_btn_size"
+                android:layout_height="@dimen/dialog_close_btn_size"
+                android:layout_gravity="center_vertical"
+                android:background="@drawable/round_background">
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true"
+                    android:contentDescription="@string/todo"
+                    android:src="@drawable/round_close_24" />
+
+            </RelativeLayout>
+
+        </LinearLayout>
+
+        <!-- Divider -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/dialog_drawbook_divider_height"
+            android:layout_marginTop="@dimen/dialog_drawbook_divider_margin_top"
+            android:layout_marginBottom="@dimen/dialog_drawbook_divider_margin_bottom"
+            android:background="#14000000" />
+
+        <!-- Action icons row -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="end">
+
+            <ImageButton
+                android:id="@+id/ib_dlg_create_new_btn"
+                android:layout_width="@dimen/dialog_icon_button_size"
+                android:layout_height="@dimen/dialog_icon_button_size"
+                android:background="@drawable/bg_icon_chip"
+                android:contentDescription="@string/todo"
+                android:padding="@dimen/dialog_drawbook_icon_btn_padding"
+                android:scaleType="centerInside"
+                android:src="@drawable/round_content_copy_24" />
+
+            <Space
+                android:layout_width="@dimen/dialog_drawbook_btn_spacing"
+                android:layout_height="@dimen/dialog_drawbook_divider_height" />
+
+            <ImageButton
+                android:id="@+id/ib_dlg_delete_btn"
+                android:layout_width="@dimen/dialog_icon_button_size"
+                android:layout_height="@dimen/dialog_icon_button_size"
+                android:background="@drawable/bg_icon_chip"
+                android:contentDescription="@string/todo"
+                android:padding="@dimen/dialog_drawbook_icon_btn_padding"
+                android:scaleType="centerInside"
+                android:src="@drawable/round_delete_outline_24" />
+        </LinearLayout>
+
+        <!-- Image Preview Card -->
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/dialog_image_preview_height"
+            android:layout_marginTop="@dimen/dialog_drawbook_preview_margin_top"
+            android:background="@drawable/bg_preview"
+            android:clipToPadding="true">
+
+            <com.colourmate.paintbynumber.views.AspectRatioImageView
+                android:id="@+id/iv_dlg_art"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:adjustViewBounds="true"
+                android:contentDescription="@string/todo"
+                android:scaleType="centerCrop" />
+        </FrameLayout>
+
+        <!-- Bottom button -->
+        <LinearLayout
+            android:id="@+id/btn_dlg_continue"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/dialog_button_height"
+            android:layout_marginTop="@dimen/dialog_drawbook_continue_margin_top"
+            android:background="@drawable/round_button"
+            android:gravity="center"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackground"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/dialog_draw_color"
+                android:textAllCaps="false"
+                android:textColor="#FFFFFF"
+                android:textSize="@dimen/dialog_drawbook_continue_text_size"
+                android:fontFamily="@font/quicksand_bold"
+                android:includeFontPadding="false" />
+
+        </LinearLayout>
+    </LinearLayout>
+
+</LinearLayout>

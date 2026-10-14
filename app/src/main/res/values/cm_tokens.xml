@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Colour Mate design system — the single source of truth for colour, spacing, radius and type.
+
+  Every new screen reads from here rather than hardcoding a hex or a dp, so the app can be
+  re-skinned from one file. Existing colours in colors.xml are left alone: the four original
+  tabs still reference them and must keep looking exactly as they do today.
+
+  Naming: cm_<role>_<variant>. Roles are what a thing IS, not where it is used — so a card
+  background stays cm_surface even when it moves screen.
+-->
+<resources>
+
+    <!-- ============ PAINTS — the brand's five accents ============ -->
+    <color name="cm_violet">#FF7A5CFF</color>
+    <color name="cm_violet_light">#FF9B7BFF</color>
+    <color name="cm_violet_wash">#FFF0EBFF</color>
+
+    <color name="cm_sky">#FF37A9FF</color>
+    <color name="cm_sky_light">#FF6FC4FF</color>
+    <color name="cm_sky_wash">#FFE4F2FF</color>
+
+    <color name="cm_blossom">#FFFF6BA9</color>
+    <color name="cm_blossom_light">#FFFF9AC4</color>
+    <color name="cm_blossom_wash">#FFFFEAF3</color>
+
+    <color name="cm_turquoise">#FF21D4C2</color>
+    <color name="cm_turquoise_light">#FF6BE6D9</color>
+    <color name="cm_turquoise_wash">#FFDFF8F5</color>
+
+    <!-- Gold is the economy colour: coins, gems, rewards. Never UI chrome. -->
+    <color name="cm_gold">#FFFFC24B</color>
+    <color name="cm_gold_deep">#FFFFB524</color>
+    <color name="cm_gold_light">#FFFFD777</color>
+    <color name="cm_gold_wash">#FFFFF3DC</color>
+    <color name="cm_gold_ink">#FF4A3208</color>
+
+    <!-- ============ GROUND + INK — neutrals biased toward violet ============ -->
+    <color name="cm_paper">#FFF6F3FC</color>
+    <color name="cm_paper_deep">#FFEFE9FA</color>
+    <color name="cm_surface">#FFFFFFFF</color>
+    <color name="cm_surface_dim">#FFFBF9FF</color>
+
+    <color name="cm_ink">#FF201636</color>
+    <color name="cm_ink_2">#FF6B6386</color>
+    <color name="cm_ink_3">#FF9A93B4</color>
+    <color name="cm_line">#FFE7E1F4</color>
+
+    <!-- Premium is the one dark surface in the app — tier by contrast. -->
+    <color name="cm_night">#FF241A46</color>
+    <color name="cm_night_deep">#FF150F2C</color>
+    <color name="cm_night_ink_2">#FFB7ADD8</color>
+
+    <!-- ============ SEMANTIC — deliberately outside the paint set ============ -->
+    <color name="cm_success">#FF2FBF71</color>
+    <color name="cm_caution">#FFF2A03D</color>
+
+    <!-- Scrims -->
+    <color name="cm_scrim">#9E201636</color>
+    <color name="cm_scrim_soft">#40201636</color>
+
+    <!-- ============ RADIUS — size is encoded in the corner ============ -->
+    <dimen name="cm_radius_sm">12dp</dimen>   <!-- chips, tool buttons -->
+    <dimen name="cm_radius_md">20dp</dimen>   <!-- tiles, thumbnails -->
+    <dimen name="cm_radius_lg">24dp</dimen>   <!-- cards -->
+    <dimen name="cm_radius_xl">28dp</dimen>   <!-- sheets, hero cards -->
+    <dimen name="cm_radius_pill">999dp</dimen>
+
+    <!-- ============ SPACING — 4pt base, never mix neighbours in one group ============ -->
+    <dimen name="cm_space_1">4dp</dimen>
+    <dimen name="cm_space_2">8dp</dimen>
+    <dimen name="cm_space_3">12dp</dimen>
+    <dimen name="cm_space_4">16dp</dimen>
+    <dimen name="cm_space_5">20dp</dimen>
+    <dimen name="cm_space_6">24dp</dimen>
+    <dimen name="cm_space_7">32dp</dimen>
+    <dimen name="cm_space_8">40dp</dimen>
+
+    <dimen name="cm_gutter">18dp</dimen>          <!-- screen side padding -->
+    <dimen name="cm_card_padding">16dp</dimen>
+
+    <!-- ============ ELEVATION ============ -->
+    <dimen name="cm_elev_card">2dp</dimen>
+    <dimen name="cm_elev_raised">8dp</dimen>
+    <dimen name="cm_elev_modal">20dp</dimen>
+
+    <!-- ============ COMPONENT SIZES ============ -->
+    <dimen name="cm_btn_height">46dp</dimen>
+    <dimen name="cm_btn_height_sm">34dp</dimen>
+    <dimen name="cm_icon_btn">38dp</dimen>
+    <dimen name="cm_icon">20dp</dimen>
+    <dimen name="cm_cat_ball">52dp</dimen>
+    <dimen name="cm_cat_glyph">26dp</dimen>
+    <dimen name="cm_avatar">40dp</dimen>
+    <dimen name="cm_swatch">38dp</dimen>
+    <dimen name="cm_progress_height">7dp</dimen>
+
+    <!-- ============ TYPE SCALE ============ -->
+    <dimen name="cm_text_display">34sp</dimen>
+    <dimen name="cm_text_title">25sp</dimen>
+    <dimen name="cm_text_section">19sp</dimen>
+    <dimen name="cm_text_card">15sp</dimen>
+    <dimen name="cm_text_body">14sp</dimen>
+    <dimen name="cm_text_label">12sp</dimen>
+    <dimen name="cm_text_caption">11sp</dimen>
+    <dimen name="cm_text_micro">10sp</dimen>
+
+    <!-- ============ MOTION ============ -->
+    <integer name="cm_dur_press">220</integer>
+    <integer name="cm_dur_enter">380</integer>
+
+</resources>

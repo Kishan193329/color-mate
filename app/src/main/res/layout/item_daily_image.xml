@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  One day's picture in the grid. The date sits in the top-left on a glass pill so it stays legible
+  over any artwork, and the picture itself fills the tile.
+-->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="4dp">
+
+    <FrameLayout
+        android:id="@+id/tile_frame"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/cm_card_tile"
+        android:clipToOutline="true"
+        android:elevation="@dimen/cm_elev_card">
+
+        <ImageView
+            android:id="@+id/tile_image"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:contentDescription="@null"
+            android:scaleType="centerCrop" />
+
+        <TextView
+            android:id="@+id/tile_date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top|start"
+            android:layout_margin="6dp"
+            android:background="@drawable/cm_date_badge"
+            android:fontFamily="@font/quicksand_bold"
+            android:fontFeatureSettings="tnum"
+            android:includeFontPadding="false"
+            android:minWidth="26dp"
+            android:paddingHorizontal="7dp"
+            android:paddingVertical="3dp"
+            android:textAlignment="center"
+            android:textColor="@color/cm_ink"
+            android:textSize="11sp" />
+
+        <!--
+          The "today" ring is gone. It marked a tile whose date was today, which made sense when
+          every tile was a different date; now the whole grid belongs to the one selected date, so
+          the ring drew a border around every single picture instead of picking one out.
+        -->
+    </FrameLayout>
+</FrameLayout>

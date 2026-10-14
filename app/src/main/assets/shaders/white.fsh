@@ -1,0 +1,50 @@
+uniform sampler2D tex;
+uniform sampler2D outline;
+uniform sampler2D blurmap0;
+uniform sampler2D lut;
+varying highp vec2 texCoord;
+void main ()
+{
+  mediump vec4 r;
+  mediump vec4 y;
+  mediump vec4 g;
+  lowp vec4 x;
+  x = texture2D (tex, texCoord);
+  g = x;
+  lowp vec4 b;
+  b = texture2D (outline, texCoord);
+  y = b;
+  lowp vec4 z;
+  z = texture2D (blurmap0, texCoord);
+  r = z;
+  mediump vec4 a;
+  a.w = 1.0;
+  a.xyz = mix ((g.xyz * mix (r.w, 1.0, 0.7)), vec3(1.0, 1.0, 1.0), (1.0 - y.x));
+  highp vec2 _;
+  highp vec2 A;
+  mediump vec2 Y;
+  mediump vec2 R;
+  mediump float X;
+  X = (a.z * 63.0);
+  R.y = floor((floor(X) / 8.0));
+  R.x = (floor(X) - (R.y * 8.0));
+  Y.y = floor((ceil(X) / 8.0));
+  Y.x = (ceil(X) - (Y.y * 8.0));
+  A = (((R * vec2(0.125, 0.125)) + vec2(0.0009765625, 0.0009765625)) + (vec2(0.1230469, 0.1230469) * a.xy));
+  _ = (((Y * vec2(0.125, 0.125)) + vec2(0.0009765625, 0.0009765625)) + (vec2(0.1230469, 0.1230469) * a.xy));
+  lowp vec4 W;
+  W = texture2D (lut, A);
+  mediump vec4 Z;
+  Z = W;
+  lowp vec4 o;
+  o = texture2D (lut, _);
+  mediump vec4 O;
+  O = o;
+  mediump float I;
+  I = clamp (fract(X), 0.0, 1.0);
+  mediump vec4 i;
+  i.w = 1.0;
+  i.xyz = ((Z * (1.0 - I)) + (O * I)).xyz;
+  gl_FragColor = i;
+}
+

@@ -1,0 +1,33 @@
+{
+  "items" :
+    [
+     {
+      "label": "Gradients",
+      "color" : "FFEE3741",
+      "filter": "gradients"
+    },
+             
+    {
+      "label": "Solid Colors",
+      "color" : "FFFEAD18",
+      "filter": "solidcolors"
+    },
+    
+    {
+      "label": "Recolor palettes",
+      "color" : "ff86C360",
+      "filter": "recolorpalettes"
+    },
+    {
+      "label": "Crayons",
+      "color" : "ff4990E2",
+      "filter": "brushes"
+    },
+    {
+      "label": "My palettes",
+      "color" : "ff272A31",
+      "filter": "mypalettes",
+      "version": "10"
+    }
+	]
+}

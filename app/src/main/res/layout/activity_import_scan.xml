@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background"
+    android:fitsSystemWindows="true"
+    android:orientation="vertical">
+
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="?actionBarSize"
+        android:paddingHorizontal="@dimen/toolbar_padding_horizontal">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_centerVertical="true">
+
+            <RelativeLayout
+                android:id="@+id/btn_back"
+                android:layout_width="@dimen/toolbar_back_btn_size"
+                android:layout_height="@dimen/toolbar_back_btn_size"
+                android:layout_gravity="center_vertical"
+                android:background="@drawable/round_background">
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true"
+                    android:contentDescription="@string/todo"
+                    android:src="@drawable/round_arrow_back_24" />
+
+            </RelativeLayout>
+
+            <TextView
+                android:id="@+id/tv_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_marginStart="@dimen/toolbar_title_margin_start"
+                android:fontFamily="@font/quicksand_semibold"
+                android:includeFontPadding="false"
+                android:text=""
+                android:textColor="#191919"
+                android:textSize="@dimen/toolbar_title_size" />
+
+        </LinearLayout>
+
+
+        <TextView
+            android:id="@+id/tv_next"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:layout_gravity="center_vertical"
+            android:layout_marginStart="@dimen/toolbar_title_margin_start"
+            android:fontFamily="@font/quicksand_bold"
+            android:includeFontPadding="false"
+            android:text="@string/book_scan_done"
+            android:textColor="#191919"
+            android:textSize="@dimen/toolbar_title_size" />
+
+    </RelativeLayout>
+
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <include layout="@layout/book_scan_sheet_main" />
+
+        <include layout="@layout/book_scanning" />
+    </FrameLayout>
+
+</LinearLayout>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  SELECTED plan chip, on the violet premium card.
+
+  Was a near-transparent fill with a teal stroke, designed back when these chips sat on a white
+  card. On the gradient it has to read as "chosen" against white text — so: a brighter translucent
+  white with a solid white edge.
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="#4DFFFFFF" />
+    <stroke android:width="1.5dp" android:color="@color/cm_surface" />
+    <corners android:radius="@dimen/cm_radius_sm" />
+</shape>

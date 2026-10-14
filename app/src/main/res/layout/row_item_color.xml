@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="@dimen/color_row_swatch_size"
+    android:layout_height="@dimen/color_row_swatch_size"
+    android:layout_marginHorizontal="@dimen/color_row_item_spacing"
+    android:background="@drawable/shape_oval"
+    android:orientation="vertical">
+
+    <FrameLayout
+        android:id="@+id/fl_colorRipple"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:foreground="@drawable/ripple_round_button">
+
+        <View
+            android:id="@+id/view_colorHolder"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_margin="@dimen/color_row_swatch_inset"
+            android:background="@drawable/shape_oval" />
+
+        <TextView
+            android:id="@+id/txt_textViewNumber"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:textColor="#ffffffff"
+            android:textSize="@dimen/color_row_number_text_size" />
+
+        <ImageView
+            android:id="@+id/iv_imageCheck"
+            android:layout_width="@dimen/color_row_check_size"
+            android:layout_height="@dimen/color_row_check_size"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_done"
+            app:tint="#212121" />
+    </FrameLayout>
+</FrameLayout>

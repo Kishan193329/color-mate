@@ -1,0 +1,23 @@
+{
+	"shader": "shaders/bookexport_refract2.fsh",
+	"autoblurmaps": false, 
+    
+    "inputs": {
+        "specularMap": {
+        	"path": "assets/refract2.jpg",
+			"mipmaps": false,
+			"repeat": false
+        },
+        "lut": {
+            "global_lut": true
+        }
+    },
+        
+    "uvmatrix": {
+    	"type": "randomfree",
+    	"allowxflip": true,
+    	"allowyflip": true, 
+    	"scale": 1.0,
+    	"scale_random": 0.0
+    }
+}

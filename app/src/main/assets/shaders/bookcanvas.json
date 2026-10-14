@@ -1,0 +1,25 @@
+{
+	"name": "canvas", 
+	"shader": "shaders/bookexport_diflines3.fsh",
+	"autoblurmaps": true, 
+    "inputs": {
+        "basetex": {
+        	"path": ["assets/oil_paint_canvas1.jpg", "assets/oil_paint_canvas2.jpg"],
+			"mipmaps": true,
+			"repeat": true
+        },
+        "lut": {
+            "global_lut": true
+        }
+	},
+    "uvmatrix": {
+        "type": "none",
+        "allowxflip": true,
+        "allowyflip": false,
+        "allowxrandom": true,
+        "allowyrandom": true,
+        "scale": 2.05,
+        "scale_random": 0.05
+        
+    }
+}

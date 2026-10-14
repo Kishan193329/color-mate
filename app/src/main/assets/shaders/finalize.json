@@ -1,0 +1,13 @@
+{
+	"label": "finalizer",
+	"shader": "shaders/finalize.fsh",
+    
+    "inputs": {
+        "lut": {
+        	"lutsystem": true,
+			"mipmaps": false,
+			"repeat": false,
+			"randomize": false
+		}
+	}
+}

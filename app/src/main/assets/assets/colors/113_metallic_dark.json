@@ -1,0 +1,22 @@
+{
+    "filter": "gradients",
+    "bg_color" : "0x80000154",
+    "colors" :
+    [
+     {"color" : "0x8000010a"},
+     {"color" : "0x8000010c"},
+     {"color" : "0x80000154"},
+     {"color" : "0x80000110"},
+     {"color" : "0x8000010e"},
+     
+     {"color" : "0x80000109"},
+     {"color" : "0x8000010b"},
+     {"color" : "0x80000155"},
+     {"color" : "0x8000010f"},
+     {"color" : "0x8000010d"},
+     {"color" : "0x80000111"}
+     ],
+    
+    "name" : "Metallic",
+    "premium" : true
+}

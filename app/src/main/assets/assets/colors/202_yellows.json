@@ -1,0 +1,36 @@
+{
+    "sprite" : "repal18.png",
+    "filter" : "solidcolors",
+    "bg_color" : "ffffce32",
+    "colors" :
+    [
+     {"color" : "0xe02ea7c4"},
+     {"color" : "0xe08bc6cc"},
+     {"color" : "0xe024e1db"},
+     {"color" : "0xe01aeaf2"},
+     {"color" : "0xe03beffd"},
+     {"color" : "0xe01aa4fa"},
+     {"color" : "0xe016bafd"},
+     {"color" : "0xe032ceff"},
+     {"color" : "0xe000d8fc"},
+     {"color" : "0xe07ddff7"},
+     {"color" : "0xe0cef9fc"}
+     ],
+    "colors_ipad" :
+    [
+     {"color" : "0xe01aa4fa"},
+     {"color" : "0xe016bafd"},
+     {"color" : "0xe032ceff"},
+     {"color" : "0xe000d8fc"},
+     {"color" : "0xe07ddff7"},
+     {"color" : "0xe0cef9fc"},
+     
+     {"color" : "0xe03beffd"},
+     {"color" : "0xe01aeaf2"},
+     {"color" : "0xe024e1db"},
+     {"color" : "0xe08bc6cc"},
+     {"color" : "0xe02ea7c4"}
+     ],
+    "name" : "Yellows",
+    "premium" : false
+}

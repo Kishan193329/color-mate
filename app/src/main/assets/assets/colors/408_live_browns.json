@@ -1,0 +1,20 @@
+{
+  "bg_color" : "0xc300022f",
+  "filter": "livecolors",
+  "colors" : [
+    {"color" : "0xc300022d"},
+    {"color" : "0xc300025c"},
+    {"color" : "0xc3000231"},
+    {"color" : "0xc3000234"},
+    {"color" : "0xc3000233"},
+              
+    {"color" : "0xc300022e"},
+    {"color" : "0xc300022f"},
+    {"color" : "0xc3000230"},
+    {"color" : "0xc300025b"},
+    {"color" : "0xc3000232"},
+    {"color" : "0xc3000235"}
+  ],
+  "name" : "Browns",
+  "premium" : true
+}

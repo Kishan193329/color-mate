@@ -1,0 +1,20 @@
+{
+  "bg_color" : "0xc3000239",
+  "filter": "livecolors",
+  "colors" : [
+    {"color" : "0xc3000237"},
+    {"color" : "0xc3000239"},
+    {"color" : "0xc300025e"},
+    {"color" : "0xc300023b"},
+    {"color" : "0xc300023d"},
+              
+    {"color" : "0xc3000236"},
+    {"color" : "0xc3000238"},
+    {"color" : "0xc300023a"},
+    {"color" : "0xc300023c"},
+    {"color" : "0xc300023e"},
+    {"color" : "0xc300025d"},
+  ],
+  "name" : "Purples",
+  "premium" : true
+}

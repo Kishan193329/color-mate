@@ -1,0 +1,51 @@
+{
+	"shader": "shaders/board.fsh",
+    "autoblurmaps": true,
+    "uniforms": {
+		"lightDir": "r2"
+	},
+
+    "inputs": {
+		"normalMap": {
+			"shader": "shaders/board_createnormals.fsh",
+			"autoblurmaps": true,
+			"runonce": true
+		},
+        "overlay": {
+			"shader": "shaders/mix_fromoutlines.fsh",
+			"autoblurmaps": true,
+			"runonce": true,
+			"inputs": {
+				"tex1": {
+        			"path": "assets/wood3.jpg",
+					"mipmaps": true,
+					"repeat": true
+				},
+        		"tex2": {
+        			"path": "assets/wood6.jpg",
+					"mipmaps": true,
+					"repeat": true
+				}
+			},
+			"uvmatrix": {
+		    	"type": false,
+    			"allowyflip": false, 
+		    	"allowxflip": true,
+        		"allowxrandom": true,
+		        "allowyrandom": true,
+		    	"scale": 1.1,
+		    	"scale_random": 0.1
+		    }
+		}
+    },
+    
+    "uvmatrix": {
+    	"type": false,
+    	"allowyflip": false, 
+    	"allowxflip": true,
+        "allowxrandom": true,
+        "allowyrandom": true,
+    	"scale": 1.1,
+    	"scale_random": 0.1
+    }
+}

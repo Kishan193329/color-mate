@@ -1,0 +1,42 @@
+{
+    "sprite" : "repal20.png",
+    "filter" : "brushes",
+    "brush" : "true",
+    "premium": "true",
+    "bg_color" : "ff5e8d3e",
+    "colors" :
+    [
+     {"color" : "0xe06bad63"},
+     {"color" : "0xe054a63a"},
+     
+     {"color" : "0xe03e8d5e"},
+     {"color" : "0xe063af85"},
+     {"color" : "0xe07bddc5"},
+     
+     {"color" : "0xe0394f0a"},
+     {"color" : "0xe0455e18"},
+     {"color" : "0xe06f7802"},
+     {"color" : "0xe07b9d62"},
+     {"color" : "0xe094bd4d"},
+     {"color" : "0xe0b4d399"}
+     ],
+    "colors_ipad" :
+    [
+     {"color" : "0xe0394f0a"},
+     {"color" : "0xe0455e18"},
+     {"color" : "0xe06f7802"},
+     
+     {"color" : "0xe07b9d62"},
+     {"color" : "0xe094bd4d"},
+     {"color" : "0xe0b4d399"}
+
+     {"color" : "0xe07bddc5"},
+     {"color" : "0xe063af85"},
+     {"color" : "0xe03e8d5e"},
+     
+     {"color" : "0xe054a63a"},
+     {"color" : "0xe06bad63"}
+     ],
+    "name" : "Greens",
+    "premium" : false
+}

@@ -1,0 +1,56 @@
+{
+	looptimes: 0,
+	
+	images: {
+		prefix: "assets/animations/frames/touchtofillcolor_",
+		decimals: 5,
+		end: ".png",
+		first: 0,
+		last: 1,
+		xmul: 1,
+		ymul: 1,
+		xoffset: 0.183,
+		yoffset: 0.3416
+	},
+	
+	
+	keys: [
+		{
+			shake: 1.0,
+			pos: "hand_start",
+			scale: 2.0, 
+			frame: 0,
+			alpha: 0,
+			speed: 1.0
+		},
+		{
+			alpha: 5.0,
+			x: 0.7,
+			y: 0.4,
+			scale: 1.5
+			zangle: -0.5,
+		},
+		{
+			shake: 0.1,
+			zangle: -1.5,
+			subs: "Tap done when ready",
+			speed: 1.0,
+			pos: "done_button"
+		},
+		{	
+			shake: 0.0,
+			zangle: -1.5,
+			frame: 49
+		},
+		{},
+		{
+			zangle: 0.0,
+			subs: "off",
+			speed: 1.0, pos: "hand_start", scale: 2.0, alpha: 0
+		},
+		{
+			shake: 0.1,
+			speed: 0.25
+		},
+	]
+}

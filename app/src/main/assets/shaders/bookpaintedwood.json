@@ -1,0 +1,26 @@
+{
+	"name": "oldwood", 
+	"shader": "shaders/booklinearLight.fsh",
+	"autoblurmaps": false, 
+    
+    "inputs": {
+        "overlay": {
+        	"path": ["assets/plank1.jpg","assets/plank2.jpg","assets/plank3.jpg"],
+			"mipmaps": true,
+			"repeat": true
+        },
+        "lut": {
+            "global_lut": true
+        }
+	},
+    
+    "uvmatrix": {
+    	"type": "random",
+    	"allowxflip": true,
+    	"allowyflip": false, 
+    	"allowxrandom": false, 
+    	"allowyrandom": true,
+    	"scale": 1.0,
+    	"scale_random": 0.0
+    }
+}

@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/rl_main_page"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:id="@+id/ll_description_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_gravity="top"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/tv_description_textview"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_margin="@dimen/scan_text_margin"
+            android:fontFamily="@font/quicksand_medium"
+            android:gravity="center"
+            android:includeFontPadding="false"
+            android:text="@string/book_scan_desc"
+            android:textColor="@color/medium_gray"
+            android:textSize="@dimen/scan_text_size" />
+
+        <TextView
+            android:id="@+id/tv_counter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_margin="@dimen/scan_counter_margin"
+            android:fontFamily="@font/quicksand_semibold"
+            android:gravity="center"
+            android:includeFontPadding="false"
+            android:text="@string/adver_btn"
+            android:textColor="@color/charcoal_gray"
+            android:textSize="@dimen/scan_text_size" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/ll_book_pictures_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_gravity="center"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_margin="@dimen/scan_text_margin"
+            android:fontFamily="@font/quicksand_semibold"
+            android:gravity="center"
+            android:includeFontPadding="false"
+            android:text="@string/book_scan_exmp_pictures_desc"
+            android:textColor="@color/charcoal_gray"
+            android:textSize="@dimen/scan_text_size" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <com.makeramen.roundedimageview.RoundedImageView
+                android:layout_width="@dimen/scanner_example_picture_size"
+                android:layout_height="@dimen/scanner_example_picture_size"
+                android:layout_marginRight="@dimen/scan_example_spacing"
+                android:contentDescription="@null"
+                android:gravity="center"
+                android:onClick="onClickExample3"
+                android:scaleType="fitCenter"
+                android:src="@drawable/book_scan_ex3_thumb"
+                app:riv_corner_radius="@dimen/scan_example_corner_radius" />
+
+            <com.makeramen.roundedimageview.RoundedImageView
+                android:layout_width="@dimen/scanner_example_picture_size"
+                android:layout_height="@dimen/scanner_example_picture_size"
+                android:layout_marginLeft="@dimen/scan_example_spacing"
+                android:contentDescription="@null"
+                android:gravity="center"
+                android:onClick="onClickExample2"
+                android:scaleType="fitCenter"
+                android:src="@drawable/book_scan_ex2_thumb"
+                app:riv_corner_radius="@dimen/scan_example_corner_radius" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_gravity="bottom"
+        android:gravity="bottom"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="@dimen/scan_gallery_btn_margin_h"
+            android:layout_marginVertical="@dimen/scan_gallery_btn_margin_v"
+            android:background="@drawable/round_button"
+            android:gravity="center"
+            android:paddingVertical="@dimen/scan_gallery_btn_padding_v">
+
+            <ImageView
+                android:layout_width="@dimen/scan_gallery_icon_size"
+                android:layout_height="@dimen/scan_gallery_icon_size"
+                android:src="@drawable/ic_gallery" />
+
+            <TextView
+                android:id="@+id/btn_lower"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/scan_gallery_text_margin"
+                android:fontFamily="@font/quicksand_bold"
+                android:includeFontPadding="false"
+                android:text="@string/book_scan_gallery"
+                android:textColor="@color/white"
+                android:textSize="@dimen/scan_gallery_text_size" />
+        </LinearLayout>
+
+    </LinearLayout>
+</RelativeLayout>

@@ -1,0 +1,36 @@
+{
+    "filter": "gradients",
+    "bg_color" : "0x80000043",
+    "colors" :
+    [
+     {"color" : "0x8000003f"},
+     {"color" : "0x80000041"},
+     {"color" : "0x8000005c"},
+     {"color" : "0x80000045"},
+     {"color" : "0x80000047"},
+     
+     {"color" : "0x80000040"},
+     {"color" : "0x8000005d"},
+     {"color" : "0x80000043"},
+     {"color" : "0x80000042"},
+     {"color" : "0x80000044"},
+     {"color" : "0x80000046"}
+     ],
+    "colors_ipad" :
+    [
+     {"color" : "0x8000003f"},
+     {"color" : "0x80000041"},
+     {"color" : "0x8000005c"},
+     {"color" : "0x80000045"},
+     {"color" : "0x80000047"},
+     
+     {"color" : "0x80000046"},
+     {"color" : "0x80000044"},
+     {"color" : "0x80000042"},
+     {"color" : "0x80000043"},
+     {"color" : "0x8000005d"},
+     {"color" : "0x80000040"}
+     ],
+    "name" : "Oranges",
+    "premium" : false
+}

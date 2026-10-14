@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="?android:attr/selectableItemBackground"
+    android:gravity="center_vertical"
+    android:minHeight="48dp"
+    android:orientation="horizontal"
+    android:paddingHorizontal="@dimen/cm_space_2">
+
+    <View
+        android:id="@+id/pick_swatch"
+        android:layout_width="26dp"
+        android:layout_height="26dp"
+        android:background="@drawable/cm_cal_cell" />
+
+    <TextView
+        android:id="@+id/pick_name"
+        style="@style/CmText.Body"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/cm_space_3"
+        android:layout_weight="1"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:textColor="@color/cm_ink" />
+
+</LinearLayout>
