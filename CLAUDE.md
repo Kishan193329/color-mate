@@ -25,8 +25,15 @@ Two **separate** products that need to be connected:
 
 - The **root `README.md` is STALE**. It describes a `backend/` + `frontend/` (React/Vite)
   layout that no longer exists. Ignore it. The backend moved to `platform/backend/`.
-- `platform/` and `Colour Mate/` are **UNTRACKED in git**. They exist on disk only.
-  Copy the folder physically — a `git clone` will NOT include them.
+- **Since 2026-10-14 the whole thing IS in git** — `Colour Mate/` (the Android app),
+  `platform/backend`, `colour_mate/` (paused Flutter), CLAUDE.md, DEPLOY.md — pushed to
+  **https://github.com/Kishan193329/color-mate.git** (branches `main` and `quality-fixes`, same
+  commit). Ignored on purpose: `platform/backend/data/`, `models/*.pth`, `.venv`, `build/`,
+  `local.properties`, and `color_mate_old/` (the owner's 3 GB July backup — it was staged once by
+  accident and left a 3 GB dangling blob in `.git` until pruned). `google-services.json` is
+  committed deliberately. Put `ADMOB_APP_ID` in `~/.gradle/gradle.properties`, never the project.
+  *(Historical: before this date `platform/` and `Colour Mate/` were untracked — see §8.5al for
+  what that cost.)*
 - Root has ~40 `*_REPORT.md` files from earlier work. Mostly historical, low value.
 - `flutter_app/` was **deleted on 2026-07-20** at the owner's explicit request. It was an
   old Flutter prototype, not the real product. Do not recreate it. (An empty locked folder
