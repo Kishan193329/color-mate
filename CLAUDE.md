@@ -27,8 +27,11 @@ Two **separate** products that need to be connected:
   layout that no longer exists. Ignore it. The backend moved to `platform/backend/`.
 - **Since 2026-10-14 the whole thing IS in git** — `Colour Mate/` (the Android app),
   `platform/backend`, `colour_mate/` (paused Flutter), CLAUDE.md, DEPLOY.md — pushed to
-  **https://github.com/Kishan193329/color-mate.git** (branches `main` and `quality-fixes`, same
-  commit). Ignored on purpose: `platform/backend/data/`, `models/*.pth`, `.venv`, `build/`,
+  **https://github.com/Kishan193329/color-mate.git**. **Branch layout (owner's rule):**
+  `main` = **ONLY the Android project, at the repo root** (no CLAUDE.md, no backend) — made with
+  `git subtree split --prefix="Colour Mate/Colour Mate/Colour Mate"` and force-pushed; `quality-fixes`
+  = the full tree (app + `platform/backend` + Flutter + docs). After any app change: commit on
+  `quality-fixes`, re-split, `git push -f origin <split>:main`. Ignored on purpose: `platform/backend/data/`, `models/*.pth`, `.venv`, `build/`,
   `local.properties`, and `color_mate_old/` (the owner's 3 GB July backup — it was staged once by
   accident and left a 3 GB dangling blob in `.git` until pruned). `google-services.json` is
   committed deliberately. Put `ADMOB_APP_ID` in `~/.gradle/gradle.properties`, never the project.
