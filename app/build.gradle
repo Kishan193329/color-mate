@@ -41,10 +41,11 @@ android {
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
 
-            // The real id lives outside the repo (gradle.properties / -PADMOB_APP_ID=…), and a
-            // release without it FAILS rather than silently shipping the test id — which is what
-            // was in the manifest until 2026-07-22 and would have made every ad a "Test Ad".
-            manifestPlaceholders = [admobAppId: (project.findProperty('ADMOB_APP_ID') ?: '').toString()]
+            // The owner's real AdMob app id (2026-10-14). An app id is not a secret — it ships
+            // in every APK's manifest — so it lives here; -PADMOB_APP_ID / gradle.properties
+            // can still override it. The guard below still refuses a missing or TEST id, which
+            // is what the manifest carried until 2026-07-22 and made every ad a "Test Ad".
+            manifestPlaceholders = [admobAppId: admobAppId()]
         }
     }
     lint {
@@ -80,11 +81,17 @@ android {
 
 }
 
+// Release AdMob app id: a -P / gradle.properties value wins, else the owner's real id.
+def admobAppId() {
+    def override = (project.findProperty('ADMOB_APP_ID') ?: '').toString()
+    return override ? override : 'ca-app-pub-2992947096890498~7236574023'
+}
+
 // Stop a release build the moment it would ship without a real AdMob app id.
 tasks.whenTaskAdded { task ->
     if (task.name == 'processReleaseManifest' || task.name == 'processReleaseMainManifest') {
         task.doFirst {
-            def id = (project.findProperty('ADMOB_APP_ID') ?: '').toString()
+            def id = admobAppId()
             if (!id.startsWith('ca-app-pub-') || id.contains('3940256099942544')) {
                 throw new GradleException(
                         'Release build needs a REAL AdMob app id (this one is missing or is ' +
