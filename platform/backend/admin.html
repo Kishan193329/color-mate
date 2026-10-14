@@ -1,0 +1,1337 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>ColorForge Studio — Admin</title>
+<style>
+  :root{
+    /* Warm neutral ground so the artwork supplies the colour. Three surface steps, not one,
+       so a card sits above the page and a control sits above the card. */
+    --canvas:#FAF8F4;--surface:#FFFFFF;--surface-2:#F4F1EB;--surface-3:#EAE5DC;
+    --ink:#17140F;--muted:#6B6459;--faint:#9A9288;--border:#EAE4DA;--border-strong:#D6CEC1;
+    --sidebar:#1A1713;--sidebar-2:#262119;--sidebar-ink:#F2EDE5;--sidebar-muted:#9B9287;--sidebar-border:#2E2820;
+    --accent:#5B4BFF;--accent-2:#8A5CF6;--accent-ink:#FFFFFF;--accent-soft:#EDEAFF;--accent-line:#D6D0FF;
+    --good:#0E9A62;--good-soft:#E2F5EC;--warn:#B0730A;--warn-soft:#FBF0DA;--bad:#D93F47;--bad-soft:#FCE8E9;
+    --premium:#7C4DE0;--premium-soft:#F1EAFD;
+    --e1:0 1px 2px rgba(23,20,15,.05);
+    --e2:0 2px 4px rgba(23,20,15,.05),0 8px 20px -6px rgba(23,20,15,.10);
+    --e3:0 4px 8px rgba(23,20,15,.06),0 24px 48px -12px rgba(23,20,15,.20);
+    --edge:inset 0 1px 0 rgba(255,255,255,.7);          /* top highlight = the light source */
+    --r-sm:9px;--r:13px;--r-lg:18px;--r-xl:24px;--radius:13px;
+    --fs-display:30px;--fs-title:20px;--fs-h:15px;--fs-body:13.5px;--fs-label:12px;--fs-micro:11px;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --mono:ui-monospace,"SF Mono","Cascadia Mono",Menlo,monospace;
+  }
+  @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+    --canvas:#100E0B;--surface:#1A1713;--surface-2:#221E18;--surface-3:#2C2720;
+    --ink:#F5F1EA;--muted:#A69E93;--faint:#726B61;--border:#282320;--border-strong:#39332B;
+    --sidebar:#0C0A08;--sidebar-2:#191510;--sidebar-border:#221D17;
+    --accent:#8B7DFF;--accent-2:#A98BF0;--accent-ink:#14111F;--accent-soft:#211C3E;--accent-line:#332C63;
+    --good:#3ECB86;--good-soft:#0F2C22;--warn:#E0A431;--warn-soft:#2C220F;--bad:#F06A70;--bad-soft:#31191A;
+    --premium:#A98BF0;--premium-soft:#231C36;
+    --e1:0 1px 2px rgba(0,0,0,.4);
+    --e2:0 2px 4px rgba(0,0,0,.35),0 8px 20px -6px rgba(0,0,0,.55);
+    --e3:0 4px 8px rgba(0,0,0,.4),0 24px 48px -12px rgba(0,0,0,.7);
+    --edge:inset 0 1px 0 rgba(255,255,255,.045);
+  }}
+  :root[data-theme="light"]{
+    /* Warm neutral ground so the artwork supplies the colour. Three surface steps, not one,
+       so a card sits above the page and a control sits above the card. */
+    --canvas:#FAF8F4;--surface:#FFFFFF;--surface-2:#F4F1EB;--surface-3:#EAE5DC;
+    --ink:#17140F;--muted:#6B6459;--faint:#9A9288;--border:#EAE4DA;--border-strong:#D6CEC1;
+    --sidebar:#1A1713;--sidebar-2:#262119;--sidebar-ink:#F2EDE5;--sidebar-muted:#9B9287;--sidebar-border:#2E2820;
+    --accent:#5B4BFF;--accent-2:#8A5CF6;--accent-ink:#FFFFFF;--accent-soft:#EDEAFF;--accent-line:#D6D0FF;
+    --good:#0E9A62;--good-soft:#E2F5EC;--warn:#B0730A;--warn-soft:#FBF0DA;--bad:#D93F47;--bad-soft:#FCE8E9;
+    --premium:#7C4DE0;--premium-soft:#F1EAFD;
+    --e1:0 1px 2px rgba(23,20,15,.05);
+    --e2:0 2px 4px rgba(23,20,15,.05),0 8px 20px -6px rgba(23,20,15,.10);
+    --e3:0 4px 8px rgba(23,20,15,.06),0 24px 48px -12px rgba(23,20,15,.20);
+    --edge:inset 0 1px 0 rgba(255,255,255,.7);          /* top highlight = the light source */
+  }
+  :root[data-theme="dark"]{
+    --canvas:#100E0B;--surface:#1A1713;--surface-2:#221E18;--surface-3:#2C2720;
+    --ink:#F5F1EA;--muted:#A69E93;--faint:#726B61;--border:#282320;--border-strong:#39332B;
+    --sidebar:#0C0A08;--sidebar-2:#191510;--sidebar-border:#221D17;
+    --accent:#8B7DFF;--accent-2:#A98BF0;--accent-ink:#14111F;--accent-soft:#211C3E;--accent-line:#332C63;
+    --good:#3ECB86;--good-soft:#0F2C22;--warn:#E0A431;--warn-soft:#2C220F;--bad:#F06A70;--bad-soft:#31191A;
+    --premium:#A98BF0;--premium-soft:#231C36;
+    --e1:0 1px 2px rgba(0,0,0,.4);
+    --e2:0 2px 4px rgba(0,0,0,.35),0 8px 20px -6px rgba(0,0,0,.55);
+    --e3:0 4px 8px rgba(0,0,0,.4),0 24px 48px -12px rgba(0,0,0,.7);
+    --edge:inset 0 1px 0 rgba(255,255,255,.045);
+  }
+  *{box-sizing:border-box} html,body{margin:0;height:100%}
+  body{background:var(--canvas);color:var(--ink);font-family:var(--sans);font-size:var(--fs-body);
+    line-height:1.55;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+  .tnum{font-variant-numeric:tabular-nums} button{font-family:inherit}
+  /* ic() emits a bare <svg> with no width/height — without this base size an icon in an
+     unscoped spot stretches to fill its flex line. Every scoped rule below still wins. */
+  svg{width:16px;height:16px;flex:none;stroke-width:1.9}
+
+  /* ---- login ---- */
+  .login{min-height:100vh;display:grid;place-items:center;padding:24px;
+    background:radial-gradient(1100px 500px at 50% -10%,color-mix(in srgb,var(--accent) 12%,transparent),transparent),var(--canvas)}
+  .lcard{width:min(400px,100%);background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:30px;box-shadow:var(--shadow)}
+  .lcard .lg{display:flex;align-items:center;gap:11px;margin-bottom:22px}
+  .logo{width:38px;height:38px;border-radius:10px;background:conic-gradient(from 210deg,#FF6B4A,#FFC24B,#3ECF8E,#5B4BFF,#E0474C,#FF6B4A);display:grid;place-items:center;flex:none}
+  .logo b{width:12px;height:12px;border-radius:50%;background:var(--surface)}
+  .lcard h1{font-size:19px;margin:0;font-weight:750;letter-spacing:-.02em}
+  .lcard .sub{font-size:12.5px;color:var(--muted)}
+  .lerr{background:var(--bad-soft);color:var(--bad);border-radius:10px;padding:10px 12px;font-size:13px;font-weight:600;margin-bottom:14px;display:none}
+  .lerr.on{display:block}
+
+  .field{display:flex;flex-direction:column;gap:6px;margin-bottom:13px}
+  .field label{font-size:12px;font-weight:650;color:var(--muted)}
+  .field .hint{font-size:11.5px;line-height:1.45;color:var(--muted);margin-top:-1px}
+  .field input,.field select,.field textarea{border:1px solid var(--border);background:var(--canvas);border-radius:9px;padding:10px 12px;color:var(--ink);outline:none;font:inherit;font-size:13.5px}
+  .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--accent)}
+
+  .app{display:grid;grid-template-columns:250px 1fr;height:100vh;overflow:hidden}
+  .side{background:var(--sidebar);color:var(--sidebar-ink);display:flex;flex-direction:column;border-right:1px solid var(--sidebar-border)}
+  .brand{display:flex;align-items:center;gap:11px;padding:20px 20px 18px}
+  .brand .nm{font-weight:750;font-size:15px;line-height:1.1}.brand .sb{font-size:11px;color:var(--sidebar-muted)}
+  .deptsw{display:flex;gap:6px;padding:0 12px 4px}
+  .deptsw button{flex:1;border:1px solid var(--sidebar-border);background:var(--sidebar-2);color:var(--sidebar-muted);
+    border-radius:10px;padding:9px 6px;font-weight:700;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:.13s}
+  .deptsw button:hover{color:var(--sidebar-ink)}
+  .deptsw button.on{background:var(--accent);border-color:var(--accent);color:#fff}
+  .nav{padding:8px 12px;display:flex;flex-direction:column;gap:2px}
+  .nav .lbl{font-size:10.5px;text-transform:uppercase;letter-spacing:.09em;color:var(--sidebar-muted);padding:14px 10px 6px;font-weight:650}
+  .nav a{display:flex;align-items:center;gap:11px;padding:9px 11px;border-radius:9px;color:var(--sidebar-muted);text-decoration:none;font-weight:550;font-size:13.5px;cursor:pointer;transition:.13s}
+  .nav a svg{width:18px;height:18px;flex:none;stroke-width:1.8}
+  .nav a:hover{background:var(--sidebar-2);color:var(--sidebar-ink)}
+  .nav a.on{background:var(--sidebar-2);color:#fff}.nav a.on svg{color:var(--accent)}
+  .nav a .cnt{margin-left:auto;font-size:11px;background:var(--sidebar-2);padding:1px 7px;border-radius:20px;border:1px solid var(--sidebar-border)}
+  .nav a.on .cnt{background:var(--accent);color:#fff;border-color:transparent}
+  .side .foot{margin-top:auto;padding:14px;border-top:1px solid var(--sidebar-border);display:flex;align-items:center;gap:10px}
+  .side .foot .who{min-width:0;flex:1}.side .foot .n{font-size:13px;font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .side .foot .r{font-size:11px;color:var(--sidebar-muted)}
+  .avatar{border-radius:50%;display:grid;place-items:center;font-weight:700;color:#fff;flex:none}
+
+  .main{display:flex;flex-direction:column;min-width:0;overflow:hidden}
+  .top{display:flex;align-items:center;gap:14px;padding:11px 26px;border-bottom:1px solid var(--border);
+    background:color-mix(in srgb,var(--canvas) 82%,transparent);backdrop-filter:blur(10px);position:sticky;top:0;z-index:5}
+  .top .trail{display:flex;align-items:center;gap:7px;font-size:13px;min-width:0}
+  .top .trail .crumb{color:var(--faint);font-weight:550;white-space:nowrap}
+  .top .trail .sep{color:var(--border-strong)}
+  .top .trail h1{font-size:13.5px;font-weight:680;margin:0;letter-spacing:-.01em;white-space:nowrap;
+    overflow:hidden;text-overflow:ellipsis}
+  .grow{flex:1}
+  .search{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:7px 12px;width:220px;color:var(--muted)}
+  .search svg{width:16px;height:16px;flex:none}
+  .search input{border:0;background:transparent;outline:none;color:var(--ink);font-size:13px;width:100%}
+  .iconbtn{width:37px;height:37px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--muted);display:grid;place-items:center;cursor:pointer}
+  .iconbtn svg{width:18px;height:18px} .iconbtn:hover{color:var(--ink);border-color:var(--border-strong)}
+  .content{overflow-y:auto;padding:26px}
+  .pagehead{display:flex;align-items:flex-end;gap:16px;margin-bottom:24px;flex-wrap:wrap}
+  .pagehead .t{font-size:var(--fs-display);font-weight:800;letter-spacing:-.032em;margin:0;line-height:1.1}
+  .pagehead .d{color:var(--muted);font-size:var(--fs-body);margin-top:6px;max-width:64ch}
+
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+  .stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:17px 18px;box-shadow:var(--shadow-sm)}
+  .stat .ic{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;margin-bottom:13px}
+  .stat .ic svg{width:18px;height:18px} .stat .v{font-size:27px;font-weight:780;line-height:1}
+  .stat .k{color:var(--muted);font-size:12.5px;margin-top:5px;font-weight:550}
+  /* ---- audit timeline ---- */
+  .tline{list-style:none;margin:0;padding:0;position:relative}
+  .tline::before{content:"";position:absolute;left:5px;top:18px;bottom:18px;width:2px;background:var(--border-strong)}
+  .tev{display:flex;gap:14px;padding:11px 0;position:relative}
+  .tdot{flex:none;width:12px;height:12px;border-radius:50%;margin-top:4px;background:var(--surface-3);
+    box-shadow:0 0 0 3px var(--surface);position:relative;z-index:1}
+  .tdot.p-published{background:var(--good)} .tdot.p-rejected{background:var(--bad)}
+  .tdot.p-processing{background:var(--accent)}
+  .tbody{min-width:0}
+  .tl1{font-size:var(--fs-body);line-height:1.45}
+  .tl1 b{font-weight:700}
+  .ttar{color:var(--muted)}
+  .tl2{font-size:var(--fs-micro);color:var(--faint);margin-top:2px}
+
+  /* ---- dashboard ---- */
+  .pipe{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:16px}
+  .pstage{position:relative;text-align:left;background:var(--surface);border:1px solid var(--border);
+    border-radius:var(--r-lg);padding:16px 16px 14px;cursor:pointer;box-shadow:var(--e1),var(--edge);
+    display:flex;flex-direction:column;gap:3px;transition:.16s;font:inherit;color:inherit}
+  .pstage:hover{transform:translateY(-2px);box-shadow:var(--e2);border-color:var(--border-strong)}
+  .pstage.zero{opacity:.62}
+  .pstage .pv{font-size:26px;font-weight:800;line-height:1;letter-spacing:-.03em}
+  .pstage .pl{font-size:var(--fs-label);color:var(--muted);font-weight:600}
+  .pstage .ptrack{margin-top:9px;height:4px;border-radius:20px;background:var(--surface-3);overflow:hidden;display:block}
+  .pstage .ptrack i{display:block;height:100%;border-radius:20px;transition:width .4s cubic-bezier(.2,.7,.3,1)}
+  @media(max-width:1080px){.pipe{grid-template-columns:repeat(3,1fr)}}
+  @media(max-width:640px){.pipe{grid-template-columns:repeat(2,1fr)}}
+
+  .spark{display:flex;align-items:flex-end;gap:5px;height:112px}
+  .sbar{flex:1;height:100%;display:flex;align-items:flex-end;border-radius:5px}
+  .sbar:hover{background:var(--surface-2)}
+  .sbar i{display:block;width:100%;border-radius:5px 5px 3px 3px;
+    background:linear-gradient(180deg,var(--accent-2),var(--accent));transition:height .4s cubic-bezier(.2,.7,.3,1)}
+  .sxaxis{display:flex;justify-content:space-between;margin-top:9px;font-size:var(--fs-micro);color:var(--faint)}
+  .sxaxis .tnum{color:var(--muted);font-weight:650}
+
+  .kv{display:flex;align-items:baseline;gap:10px;padding:11px 0}
+  .kv+.kv{border-top:1px solid var(--border)}
+  .kv .kl{font-size:var(--fs-body);color:var(--muted);flex:1}
+  .kv .kvv{font-size:19px;font-weight:750;letter-spacing:-.02em}
+  .kv .ks{font-size:var(--fs-micro);color:var(--faint)}
+
+  .grid2{display:grid;grid-template-columns:1.55fr 1fr;gap:16px;align-items:start}
+  .grid2 .col{display:flex;flex-direction:column;gap:16px;min-width:0}
+  .catrow{display:grid;grid-template-columns:1fr 120px 34px;align-items:center;gap:12px;padding:7px 0}
+  .catrow+.catrow{border-top:1px solid var(--border)}
+  .catrow .cn{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .catrow .cv{font-size:12.5px;color:var(--muted);text-align:right}
+  .panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);
+    box-shadow:var(--e1),var(--edge)}
+  .panel .ph{display:flex;align-items:center;gap:10px;padding:15px 20px 13px;border-bottom:1px solid var(--border)}
+  .panel .ph h3{margin:0;font-size:var(--fs-h);font-weight:700;letter-spacing:-.01em}
+  .panel .ph .link{margin-left:auto;font-size:12.5px;color:var(--accent);font-weight:650;cursor:pointer}
+  .panel .pb{padding:8px}
+  table{width:100%;border-collapse:collapse}
+  .tbl th{text-align:left;font-size:var(--fs-micro);text-transform:uppercase;letter-spacing:.07em;
+    color:var(--faint);font-weight:700;padding:10px 16px}
+  .tbl td{padding:13px 16px;border-top:1px solid var(--border);font-size:var(--fs-body);vertical-align:middle}
+  .tbl tbody tr{transition:background .12s}
+  .tbl tbody tr:hover td{background:var(--surface-2)}
+  .emp{display:flex;align-items:center;gap:10px}.emp .nm{font-weight:650}.emp .role{font-size:11.5px;color:var(--faint)}
+  .bar{height:7px;border-radius:20px;background:var(--surface-3);overflow:hidden;display:flex}.bar i{display:block;height:100%}
+
+  .pill{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:650;padding:3px 9px 3px 7px;border-radius:20px;white-space:nowrap}
+  .pill::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+  .p-processing,.p-publishing{color:var(--accent);background:var(--accent-soft)}
+  .p-review{color:var(--warn);background:var(--warn-soft)} .p-submitted{color:var(--warn);background:var(--warn-soft)}
+  .p-published{color:var(--good);background:var(--good-soft)} .p-rejected,.p-error{color:var(--bad);background:var(--bad-soft)}
+  .chip{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:650;padding:3px 9px;border-radius:7px;background:var(--surface-2);color:var(--muted);border:1px solid var(--border)}
+  .tier{font-size:11px;font-weight:700;padding:2px 8px;border-radius:6px}
+  .t-free{color:var(--muted);background:var(--surface-3)}.t-reward{color:var(--warn);background:var(--warn-soft)}.t-premium{color:var(--premium);background:var(--premium-soft)}
+
+  .filters{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+  /* Two filter DIMENSIONS, visibly separated — status and category used to share one
+     undifferentiated row, so they read as one list and could not be combined. */
+  .filterbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:18px;
+    position:sticky;top:0;z-index:4;padding:10px 0;
+    background:linear-gradient(180deg,var(--canvas) 76%,transparent)}
+  .fgroup{display:flex;align-items:center;gap:6px;flex-wrap:wrap;background:var(--surface);
+    border:1px solid var(--border);border-radius:12px;padding:5px 5px 5px 11px;box-shadow:var(--shadow-sm)}
+  .flabel{font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;font-weight:700;color:var(--faint);margin-right:2px}
+  .fchip{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;padding:6px 11px;border-radius:8px;
+    border:1px solid transparent;background:transparent;color:var(--muted);cursor:pointer;transition:.13s}
+  .fchip:hover{background:var(--surface-2);color:var(--ink)}
+  .fchip.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+  .fchip .n{font-size:11px;font-weight:700;padding:0 5px;border-radius:20px;background:var(--surface-3);color:var(--faint);min-width:18px;text-align:center}
+  .fchip.on .n{background:color-mix(in srgb,var(--accent-ink) 22%,transparent);color:var(--accent-ink)}
+
+  /* Empty state — a bare "Nothing here." gave no way forward. */
+  .blank{grid-column:1/-1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;
+    padding:56px 24px;text-align:center;border:1px dashed var(--border-strong);border-radius:var(--radius);color:var(--muted)}
+  .blank svg{width:30px;height:30px;stroke-width:1.5;color:var(--faint);margin-bottom:6px}
+  .blank h4{margin:0;font-size:15px;font-weight:700;color:var(--ink)}
+  .blank p{margin:0 0 10px;font-size:13px;max-width:340px}
+
+  .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(208px,1fr));gap:18px}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;
+    box-shadow:var(--e1),var(--edge);display:flex;flex-direction:column;
+    transition:transform .18s cubic-bezier(.2,.7,.3,1),box-shadow .18s,border-color .18s}
+  .card:hover{transform:translateY(-2px);box-shadow:var(--e2);border-color:var(--border-strong)}
+  .thumb{aspect-ratio:1/1;position:relative;background:var(--surface-2) center/cover no-repeat;
+    background-image:var(--pat);cursor:pointer}
+  .thumb::after{content:"";position:absolute;inset:auto 0 0 0;height:44%;pointer-events:none;
+    background:linear-gradient(180deg,transparent,rgba(0,0,0,.42));opacity:0;transition:.18s}
+  .card:hover .thumb::after{opacity:1}
+  /* Second background layer under the photo — visible only while it is missing or loading. */
+  .thumb,.minithumb{--pat:repeating-linear-gradient(45deg,var(--surface-2) 0 8px,var(--surface-3) 8px 16px)}
+  .thumb .stat-pill{position:absolute;top:10px;left:10px;z-index:1}
+  .thumb .spin{position:absolute;inset:0;margin:auto;width:32px;height:32px;border:3px solid #ffffff55;border-top-color:var(--accent);border-radius:50%;animation:sp .8s linear infinite}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  .cbody{padding:12px 14px 13px;display:flex;flex-direction:column;gap:7px;flex:1;min-height:96px}
+  .cbody .ct{font-weight:700;font-size:var(--fs-h);letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .cmeta{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:var(--fs-micro);
+    white-space:nowrap;overflow:hidden}
+  .cmeta .cby{color:var(--faint);overflow:hidden;text-overflow:ellipsis}
+  .tierbadge{position:absolute;bottom:9px;left:10px;z-index:1}
+  .sched{display:flex;align-items:center;gap:6px;background:var(--warn-soft);color:var(--warn);border-radius:8px;
+    padding:5px 9px;font-size:11.5px;font-weight:650}
+  .sched svg{width:13px;height:13px}
+  .rej{background:var(--bad-soft);color:var(--bad);border-radius:8px;padding:6px 9px;font-size:11.5px;font-weight:600;
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  /* ---- generation failure ---- */
+  .errbox{border:1px solid color-mix(in srgb,var(--bad) 32%,var(--border));background:var(--bad-soft);
+    border-radius:var(--radius);padding:15px 16px;display:flex;gap:12px;align-items:flex-start}
+  .errbox .ei{width:30px;height:30px;border-radius:9px;background:var(--bad);color:#fff;display:grid;place-items:center;flex:none}
+  .errbox .ei svg{width:16px;height:16px;stroke-width:2.4}
+  .errbox h4{margin:0 0 3px;font-size:14px;font-weight:760;color:var(--bad);letter-spacing:-.01em}
+  .errbox p{margin:0;font-size:12.6px;color:var(--muted)}
+  .errbox p+p{margin-top:8px}
+  .errbox code{display:block;margin-top:8px;font-family:var(--mono);font-size:11.5px;background:var(--surface);
+    border:1px solid var(--border);border-radius:8px;padding:8px 10px;color:var(--ink);
+    white-space:pre-wrap;word-break:break-word;max-height:150px;overflow:auto}
+  .pimg.failed{filter:grayscale(.75);opacity:.5}
+  .row{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:auto}
+
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;font-weight:640;font-size:var(--fs-body);
+    padding:9px 15px;border-radius:var(--r-sm);border:1px solid var(--border-strong);background:var(--surface);
+    color:var(--ink);cursor:pointer;box-shadow:var(--e1);transition:.14s;white-space:nowrap}
+  .btn:hover{background:var(--surface-2);border-color:var(--faint)}
+  .btn:active{transform:translateY(1px);box-shadow:none}
+  .btn svg{width:16px;height:16px;stroke-width:2}
+  .btn.pri{background:linear-gradient(180deg,var(--accent-2),var(--accent));border-color:transparent;
+    color:var(--accent-ink);box-shadow:0 1px 2px rgba(0,0,0,.12),0 6px 16px -6px var(--accent)}
+  .btn.pri:hover{filter:brightness(1.06)}
+  .btn.good{background:var(--good);border-color:var(--good);color:#fff}
+  .btn.bad{background:var(--surface);border-color:var(--bad);color:var(--bad)}
+  .btn.danger{background:var(--bad);border-color:var(--bad);color:#fff}
+  .btn.sm{padding:6px 11px;font-size:12px} .btn.ghost{border-color:transparent;background:transparent;color:var(--muted)}
+  .btn:disabled{opacity:.45;cursor:default}
+  select.mini{padding:5px 7px;font-size:12px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--ink)}
+
+  /* ---- upload ---- */
+  .upwrap{max-width:760px;margin:0 auto}          /* one focused column, not a form lost on a wide page */
+  .drop{border:2px dashed var(--border-strong);border-radius:var(--r-lg);padding:38px 24px;text-align:center;
+    color:var(--muted);background:var(--surface-2);cursor:pointer;transition:.16s;margin-top:16px}
+  .drop:hover,.drop.over{border-color:var(--accent);background:var(--accent-soft);color:var(--accent)}
+  .drop .dicon{width:46px;height:46px;margin:0 auto 12px;border-radius:14px;display:grid;place-items:center;
+    background:var(--surface);border:1px solid var(--border);color:var(--accent);box-shadow:var(--e1)}
+  .drop .dicon svg{width:21px;height:21px;stroke-width:1.9}
+  .drop .big{font-weight:750;color:var(--ink);font-size:16px;margin-bottom:3px;letter-spacing:-.01em}
+  .drop .sub{font-size:var(--fs-label)}
+  .upstatus{margin-top:12px;font-size:var(--fs-body);color:var(--muted);min-height:1px}
+  .uprow{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:20px;padding-top:18px;
+    border-top:1px solid var(--border)}
+  .uprow .field{margin-bottom:0}
+  .uprow .field:only-child,.uprow .hint{grid-column:1/-1}
+  @media(max-width:680px){.uprow{grid-template-columns:1fr}}
+  .steps{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:18px}
+  .step{display:flex;gap:10px;align-items:flex-start;background:var(--surface);border:1px solid var(--border);
+    border-radius:var(--r);padding:13px 14px;box-shadow:var(--e1),var(--edge)}
+  .step .sn{flex:none;width:21px;height:21px;border-radius:50%;background:var(--accent-soft);color:var(--accent);
+    font-size:var(--fs-micro);font-weight:800;display:grid;place-items:center;margin-top:1px}
+  .step b{display:block;font-size:var(--fs-label);font-weight:700;margin-bottom:2px}
+  .step span{display:block;font-size:var(--fs-micro);color:var(--muted);line-height:1.5}
+  @media(max-width:900px){.steps{grid-template-columns:repeat(2,1fr)}}
+
+  .scrim{position:fixed;inset:0;background:rgba(20,16,12,.5);opacity:0;pointer-events:none;transition:.2s;z-index:40}
+  .scrim.on{opacity:1;pointer-events:auto}
+  .drawer{position:fixed;top:0;right:0;height:100%;width:min(920px,95vw);background:var(--canvas);border-left:1px solid var(--border);box-shadow:-20px 0 50px rgba(0,0,0,.18);transform:translateX(100%);transition:transform .28s cubic-bezier(.2,.7,.2,1);z-index:41;display:flex;flex-direction:column}
+  .drawer.on{transform:none}
+  .dhead{display:flex;align-items:center;gap:12px;padding:16px 22px;border-bottom:1px solid var(--border)}
+  .dhead h2{margin:0;font-size:17px;font-weight:750}
+  .dbody{flex:1;overflow-y:auto;display:grid;grid-template-columns:1.15fr 1fr}
+  .preview{padding:20px;border-right:1px solid var(--border);background:var(--surface-2);display:flex;flex-direction:column;gap:12px}
+  .pimg{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);aspect-ratio:1;background-size:contain;background-repeat:no-repeat;background-position:center}
+  .dside{padding:20px 22px;display:flex;flex-direction:column;gap:18px;overflow-y:auto}
+  .lblrow{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--faint);font-weight:700;margin-bottom:9px}
+  .flags{display:flex;flex-direction:column;gap:2px}
+  .flag{display:flex;align-items:center;gap:10px;padding:9px 11px;border-radius:9px;font-size:12.5px;font-weight:550}
+  .flag .fb{width:18px;height:18px;border-radius:5px;display:grid;place-items:center;flex:none}.flag .fb svg{width:12px;height:12px;stroke-width:2.6}
+  .flag.ok{color:var(--muted)}.flag.ok .fb{background:var(--good-soft);color:var(--good)}
+  .flag.warn{background:var(--warn-soft);color:var(--warn)}.flag.warn .fb{background:var(--warn);color:#fff}
+  .tierpick{display:flex;gap:8px}
+  .tierpick button{flex:1;border:1px solid var(--border);background:var(--surface);border-radius:10px;padding:10px 8px;cursor:pointer;font-weight:650;font-size:12.5px;color:var(--muted)}
+  .tierpick button.on{border-color:var(--accent);color:var(--ink);background:var(--accent-soft);box-shadow:inset 0 0 0 1px var(--accent)}
+  .regbar{display:flex;gap:6px}
+  .regbar button{flex:1;border:1px solid var(--border);background:var(--surface);border-radius:9px;padding:8px 6px;font-size:12px;font-weight:650;color:var(--muted);cursor:pointer}
+  .regbar button:hover{border-color:var(--accent);color:var(--accent)}
+  .comments{display:flex;flex-direction:column;gap:10px;max-height:230px;overflow-y:auto}
+  .cmt{display:flex;gap:9px}.cmt .cb{background:var(--surface);border:1px solid var(--border);border-radius:11px;border-top-left-radius:3px;padding:8px 11px;font-size:13px}
+  .cmt .cn{font-weight:700;font-size:11.5px;margin-bottom:2px}.cmt .cn span{color:var(--faint);font-weight:500;margin-left:6px}
+  .cmtbox{display:flex;gap:8px;margin-top:6px}
+  .cmtbox input{flex:1;border:1px solid var(--border);background:var(--surface);border-radius:10px;padding:9px 12px;color:var(--ink);outline:none;font-size:13px}
+  .dact{display:flex;gap:10px;padding:14px 22px;border-top:1px solid var(--border);background:var(--surface)}
+
+  .toasts{position:fixed;bottom:22px;right:22px;display:flex;flex-direction:column;gap:10px;z-index:60}
+  .toast{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:11px;padding:12px 15px;box-shadow:var(--shadow);font-size:13.5px;font-weight:600;min-width:250px;transition:.25s}
+  .toast.good{border-left-color:var(--good)}.toast.bad{border-left-color:var(--bad)}
+  .toast svg{width:17px;height:17px;flex:none}
+  .modalscrim{position:fixed;inset:0;background:rgba(20,16,12,.5);display:none;place-items:center;z-index:55}
+  .modalscrim.on{display:grid}
+  .modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow);width:min(430px,92vw);padding:22px}
+  .modal h3{margin:0 0 8px;font-size:18px;font-weight:750}.modal p{margin:0 0 16px;color:var(--muted);font-size:13.5px}
+  .modal textarea{width:100%;min-height:78px;margin-bottom:14px}
+  .macts{display:flex;gap:10px;justify-content:flex-end}
+  .rowbtn{border:1px solid transparent;background:transparent;color:var(--faint);width:30px;height:30px;border-radius:8px;display:grid;place-items:center;cursor:pointer}
+  .rowbtn svg{width:15px;height:15px}.rowbtn.plain:hover{background:var(--surface-3);color:var(--ink)}.rowbtn.danger:hover{background:var(--bad-soft);color:var(--bad)}
+  .sess{display:flex;align-items:center;gap:12px;padding:12px 14px;border-top:1px solid var(--border)}.sess:first-child{border-top:0}
+  .more{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:18px;color:var(--muted);font-size:12.5px}
+  .bulk{display:flex;align-items:center;gap:10px;margin-bottom:14px;padding:8px 12px;border-radius:11px;
+    border:1px solid var(--border);background:var(--surface);min-height:44px}
+  .bulk.on{border-color:var(--accent);background:var(--accent-soft)}
+  .bchk{display:flex;align-items:center;gap:9px;font-size:13px;font-weight:600;cursor:pointer;color:var(--muted)}
+  .bulk.on .bchk{color:var(--ink)}
+  .bchk input,.pick input{width:16px;height:16px;accent-color:var(--accent);cursor:pointer}
+  .pick{position:absolute;top:10px;right:10px;z-index:2;display:grid;place-items:center;width:26px;height:26px;
+    border-radius:7px;background:color-mix(in srgb,var(--surface) 78%,transparent);backdrop-filter:blur(4px);
+    border:1px solid var(--border)}
+  .card{position:relative}
+  .card.picked{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft),var(--shadow-sm)}
+  .toggle{display:flex;align-items:flex-start;gap:12px;cursor:pointer}
+  .toggle input{position:absolute;opacity:0;pointer-events:none}
+  .toggle .tk{width:42px;height:24px;border-radius:20px;background:var(--surface-3);border:1px solid var(--border-strong);
+    flex:none;position:relative;transition:.16s;margin-top:2px}
+  .toggle .tk::after{content:"";position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;
+    background:var(--surface);box-shadow:var(--shadow-sm);transition:.16s}
+  .toggle input:checked+.tk{background:var(--warn);border-color:var(--warn)}
+  .toggle input:checked+.tk::after{transform:translateX(18px)}
+  .toggle input:focus-visible+.tk{outline:2px solid var(--accent);outline-offset:2px}
+  .toggle .tl b{display:block;font-size:13.5px;font-weight:650}
+  .toggle .tl em{display:block;font-style:normal;font-size:12px;color:var(--muted);margin-top:2px}
+  .catedit{display:grid;grid-template-columns:1fr 72px 34px auto auto;gap:8px;align-items:center;padding:6px 0}
+  .catedit+.catedit{border-top:1px solid var(--border)}
+  .catedit input{border:1px solid var(--border);background:var(--canvas);border-radius:8px;padding:7px 10px;
+    color:var(--ink);outline:none;font:inherit;font-size:13px;min-width:0}
+  .catedit input:focus{border-color:var(--accent)}
+  .catedit .cuse{font-size:12px;color:var(--faint);text-align:center}
+  .mono{font-family:var(--mono)}
+  .empty{color:var(--faint);text-align:center;padding:34px}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  @media (max-width:1080px){.grid2{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}.dbody{grid-template-columns:1fr}.preview{border-right:0;border-bottom:1px solid var(--border)}}
+  @media (max-width:1080px){.app{grid-template-columns:64px 1fr}.brand .nm,.brand .sb,.nav .lbl,.nav a span.txt,.nav a .cnt,.side .foot .who,.deptsw button span.txt{display:none}
+    .brand{justify-content:center;padding:18px 0}.nav a{justify-content:center}.side .foot{justify-content:center}
+    .deptsw{flex-direction:column;gap:4px;padding:0 8px}.content{padding:18px}}
+  @media (max-width:760px){.stats{grid-template-columns:1fr}.top{padding:10px 16px}.search{display:none}.content{padding:14px}}
+</style></head>
+<body><div id="root"></div>
+<script>
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+function ic(n){const p={
+ grid:'<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/>',
+ images:'<rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.8"/><path d="M21 15l-5-5L5 21"/>',
+ check:'<path d="M20 6L9 17l-5-5"/>',users:'<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/>',
+ upload:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/>',
+ shield:'<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/>',
+ cog:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-2.79 1.17V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>',
+ search:'<circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/>',moon:'<path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/>',
+ sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
+ x:'<path d="M18 6L6 18M6 6l12 12"/>',plus:'<path d="M12 5v14M5 12h14"/>',trash:'<path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m2 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M10 11v6M14 11v6"/>',
+ play:'<path d="M6 4l14 8-14 8z"/>',send:'<path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>',lock:'<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+ alert:'<path d="M10.3 3.9L1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/>',
+ out:'<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/>',
+ clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',sliders:'<path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/>',
+ bell:'<path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/>',
+ refresh:'<path d="M20.5 12a8.5 8.5 0 1 1-2.5-6"/><path d="M21 3.5V9h-5.5"/>'};
+ return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">${p[n]||''}</svg>`;}
+
+/* ---------------- API ---------------- */
+const API={
+  get t(){return localStorage.getItem('cf_a')||''}, set t(v){v?localStorage.setItem('cf_a',v):localStorage.removeItem('cf_a')},
+  get r(){return localStorage.getItem('cf_r')||''}, set r(v){v?localStorage.setItem('cf_r',v):localStorage.removeItem('cf_r')},
+  async call(path,opts={},retry=true){
+    const o={...opts,headers:{...(opts.headers||{})}};
+    if(API.t)o.headers.Authorization='Bearer '+API.t;
+    if(o.body&&!(o.body instanceof FormData)){o.headers['Content-Type']='application/json';o.body=JSON.stringify(o.body);}
+    const res=await fetch(path,o);
+    if(res.status===401&&retry&&API.r){
+      const rr=await fetch('/api/auth/refresh',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({refresh:API.r})});
+      if(rr.ok){API.t=(await rr.json()).access;return API.call(path,opts,false);}
+      return logout();
+    }
+    if(!res.ok){let m='';try{m=(await res.json()).detail||''}catch(e){} throw new Error(m||('error '+res.status));}
+    return res.status===204?null:res.json();
+  }
+};
+let ME=null,ITEMS=[],CATS=[],USERS=[],CUR=null,FILTER='All',CATF='All',SEARCH='',VIEW='dashboard',poller=null;
+const PAGE=48;let shown=PAGE;                 // how many cards are rendered — grows on demand
+let SEL=new Set();                            // ids ticked for a bulk action
+let DEPT=localStorage.getItem('cf_dept')||'colour';           // colour-fill | diamond department
+const DEPTNAME={colour:'Colour-fill',diamond:'Diamond'};
+const inDept=i=>(i.type||'colour')===DEPT;
+const isBoss=()=>ME&&(ME.role==='boss'||ME.role==='reviewer');
+
+/* ---------------- login ---------------- */
+function renderLogin(msg){
+  $('#root').innerHTML=`<div class="login"><form class="lcard" id="lf">
+    <div class="lg"><div class="logo"><b></b></div><div><h1>ColorForge Studio</h1><div class="sub">Sign in to the admin</div></div></div>
+    <div class="lerr ${msg?'on':''}" id="lerr">${msg||''}</div>
+    <div class="field"><label>Email</label><input id="le" type="email" autocomplete="username" placeholder="you@studio.com" required/></div>
+    <div class="field"><label>Password</label><input id="lp" type="password" autocomplete="current-password" placeholder="••••••••" required/></div>
+    <button class="btn pri" style="width:100%;margin-top:6px" id="lb">${ic('lock')}Sign in</button>
+  </form></div>`;
+  $('#lf').onsubmit=async e=>{e.preventDefault();const b=$('#lb');b.disabled=true;b.textContent='Signing in…';
+    try{
+      const r=await fetch('/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({email:$('#le').value.trim(),password:$('#lp').value})});
+      const d=await r.json();
+      if(!r.ok)throw new Error(d.detail||'Sign in failed');
+      API.t=d.access;API.r=d.refresh;ME=d.user;startApp();
+    }catch(err){renderLogin(err.message);}};
+  $('#le').focus();
+}
+async function logout(){try{await fetch('/api/auth/logout',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({refresh:API.r})});}catch(e){}
+  API.t='';API.r='';ME=null;renderLogin();}
+
+/* ---------------- shell ---------------- */
+function initials(n){return (n||'?').split(/\s+/).map(w=>w[0]).join('').slice(0,2).toUpperCase();}
+function shell(){const boss=isBoss();
+  return `<div class="app">
+  <aside class="side">
+    <div class="brand"><div class="logo"><b></b></div><div><div class="nm">ColorForge</div><div class="sb">Studio · Admin</div></div></div>
+    <div class="deptsw" id="deptsw">
+      <button data-d="colour" class="${DEPT==='colour'?'on':''}">🎨<span class="txt">Colour</span></button>
+      <button data-d="diamond" class="${DEPT==='diamond'?'on':''}">💎<span class="txt">Diamond</span></button>
+    </div>
+    <nav class="nav" id="nav">
+      ${boss?`<div class="lbl">${DEPTNAME[DEPT]}</div>
+      <a data-v="dashboard">${ic('grid')}<span class="txt">Dashboard</span></a>
+      <a data-v="queue">${ic('check')}<span class="txt">Review queue</span><span class="cnt" id="qn">0</span></a>
+      <a data-v="library">${ic('images')}<span class="txt">Library</span></a>
+      <a data-v="upload">${ic('upload')}<span class="txt">Upload</span></a>
+      <div class="lbl">Team &amp; security</div>
+      <a data-v="employees">${ic('users')}<span class="txt">Employees</span></a>
+      <a data-v="audit">${ic('shield')}<span class="txt">Audit log</span></a>
+      <div class="lbl">Monetisation</div>
+      <a data-v="ads">${ic('sliders')}<span class="txt">Ads</span></a>`
+      :`<div class="lbl">${DEPTNAME[DEPT]}</div>
+      <a data-v="dashboard">${ic('grid')}<span class="txt">Dashboard</span></a>
+      <a data-v="upload">${ic('upload')}<span class="txt">Upload</span></a>
+      <a data-v="library">${ic('images')}<span class="txt">My submissions</span></a>`}
+      <div class="lbl">Settings</div>
+      <a data-v="settings">${ic('cog')}<span class="txt">Settings</span></a>
+    </nav>
+    <div class="foot"><div class="avatar" style="width:34px;height:34px;font-size:13px;background:var(--accent)">${initials(ME.name)}</div>
+      <div class="who"><div class="n">${ME.name}</div><div class="r">${ME.role==='boss'?'Owner':ME.role}</div></div>
+      <button class="rowbtn plain" title="Sign out" aria-label="Sign out" onclick="logout()">${ic('out')}</button></div>
+  </aside>
+  <div class="main">
+    <header class="top"><div class="trail"><span class="crumb" id="crumb"></span><span class="sep">/</span><h1 id="ptitle"></h1></div><div class="grow"></div>
+      <div class="search">${ic('search')}<input id="sq" placeholder="Search images…"/></div>
+      <button class="iconbtn" id="themeBtn" title="Switch theme" aria-label="Switch theme">${ic('moon')}</button>
+      <button class="iconbtn" id="reloadBtn" title="Refresh" aria-label="Refresh">${ic('bell')}</button>
+    </header>
+    <div class="content" id="content"><div class="empty">Loading…</div></div>
+  </div></div>
+  <div class="scrim" id="scrim"></div>
+  <aside class="drawer" id="drawer"><div class="dhead"><h2 id="dwTitle"></h2><span class="pill" id="dwStatus"></span><div class="grow"></div>
+      <button class="iconbtn" id="dwClose" title="Close" aria-label="Close">${ic('x')}</button></div>
+    <div class="dbody">
+      <div class="preview"><div class="pimg" id="dwImg"></div>
+        <a class="btn" id="dwOpen" target="_blank">${ic('play')}Open playable preview</a>
+        <div id="dwNote" style="display:none;font-size:12.5px;color:var(--warn);background:var(--warn-soft);
+             padding:9px 12px;border-radius:10px;text-align:center;font-weight:600"></div>
+        <div id="dwLock" style="display:flex;gap:7px;align-items:center;font-size:11.5px;color:var(--muted);justify-content:center">${ic('lock')}<span>Admin-only preview · every view is logged</span></div>
+      </div>
+      <div class="dside">
+        <div id="dwErr" style="display:none"></div>
+        <div id="dwQualityWrap"><div class="lblrow">Auto quality check</div><div class="flags" id="dwFlags"></div></div>
+        <div id="dwTierWrap"><div class="lblrow">Tier</div><div class="tierpick" id="dwTier">
+          <button data-t="free">Free</button><button data-t="reward">Reward ad</button><button data-t="premium">Premium</button></div></div>
+        <div><div class="lblrow" id="dwRegLbl">Too much detail? Rebuild the line art — no re-upload</div><div class="regbar" id="dwReg">
+          <button data-l="light">Cartoon</button><button data-l="medium">Detailed</button><button data-l="strong">Photograph</button><button data-l="">Off</button></div></div>
+        <div><div class="lblrow">Comments</div><div class="comments" id="dwComments"></div>
+          <div class="cmtbox"><input id="dwCmt" placeholder="Add a comment…"/><button class="btn sm pri" id="dwCmtBtn" title="Send comment" aria-label="Send comment">${ic('send')}</button></div></div>
+      </div>
+    </div>
+    <div class="dact" id="dwAct"></div>
+  </aside>
+  <div class="toasts" id="toasts"></div>
+  <div class="modalscrim" id="modalScrim"><div class="modal" id="modal"></div></div>`;}
+
+/* ---------------- helpers ---------------- */
+const SLABEL={processing:'Generating…',review:'Ready to check',submitted:'In review',publishing:'Publishing…',published:'Live',rejected:'Rejected',error:'Failed'};
+function pill(s){return `<span class="pill p-${s}">${SLABEL[s]||s}</span>`;}
+function tierChip(t){return `<span class="tier t-${t}">${t==='reward'?'Reward ad':t[0].toUpperCase()+t.slice(1)}</span>`;}
+function toast(m,k){const t=document.createElement('div');t.className='toast'+(k?' '+k:'');
+  t.innerHTML=`${ic(k==='good'?'check':k==='bad'?'x':'bell')}<span>${m}</span>`;$('#toasts').appendChild(t);
+  setTimeout(()=>{t.style.opacity='0';setTimeout(()=>t.remove(),260);},2800);}
+function today(){const d=new Date();return new Date(d.getTime()-d.getTimezoneOffset()*6e4).toISOString().slice(0,10);}
+function confirmModal(o){const d=o.danger;
+  // `o.date` adds a go-live date picker. onOk gets (text, date) — existing callers read only
+  // the first argument, so they are unaffected.
+  $('#modal').innerHTML=`<h3>${o.title}</h3><p>${o.body}</p>${o.input?`<div class="field"><textarea id="mi" placeholder="${o.input}"></textarea></div>`:''}
+    ${o.date?`<div class="field"><label>Go live on</label><input type="date" id="md" value="${o.date.value||today()}" min="${today()}"/>
+      <div class="hint">Today = live as soon as it finishes publishing. A future date keeps it hidden in the app until that day.</div></div>`:''}
+    <div class="macts"><button class="btn" id="mc">Cancel</button><button class="btn ${d?'danger':'pri'}" id="mo">${o.ok||'Confirm'}</button></div>`;
+  $('#modalScrim').classList.add('on');
+  const inp=$('#mi');if(inp)setTimeout(()=>inp.focus(),60);
+  $('#mc').onclick=closeModal;
+  $('#mo').onclick=()=>{let v=null;if(inp){v=inp.value.trim();if(!v){inp.style.borderColor='var(--bad)';return;}}
+    const dt=$('#md')?$('#md').value:null;closeModal();o.onOk&&o.onOk(v,dt);};}
+function closeModal(){$('#modalScrim').classList.remove('on');}
+
+/* ---------------- data ---------------- */
+async function loadData(){
+  const jobs=[API.call('/api/items').then(d=>ITEMS=d),API.call('/api/categories').then(d=>CATS=d)];
+  if(isBoss())jobs.push(API.call('/api/users').then(d=>USERS=d).catch(()=>USERS=[]));
+  await Promise.all(jobs);
+  const q=ITEMS.filter(i=>inDept(i)&&i.status==='submitted').length;const qn=$('#qn');if(qn)qn.textContent=q;
+}
+// While something is generating the list has to refresh, but re-running go(VIEW) rebuilt the
+// whole screen every 4s: the scroll jumped to the top, filters and the "show more" page were
+// re-applied, and every thumbnail was re-requested. Now the poll refetches, and if anything
+// actually changed it swaps only the cards whose state moved.
+function itemSig(){return ITEMS.map(i=>`${i.id}:${i.status}:${i.regions||''}:${i.error?1:0}`).join('|');}
+function schedulePoll(){
+  const busy=ITEMS.some(i=>i.status==='processing'||i.status==='publishing');
+  if(busy&&!poller)poller=setInterval(pollTick,4000);
+  if(!busy&&poller){clearInterval(poller);poller=null;}
+}
+async function pollTick(){
+  if(document.hidden)return;                      // don't poll a tab nobody is looking at
+  const before=itemSig(), had=new Set(ITEMS.map(i=>i.id));
+  try{await loadData();}catch(e){return;}
+  if(itemSig()===before){schedulePoll();return;}   // nothing moved — leave the DOM alone
+  const appeared=ITEMS.some(i=>!had.has(i.id))||ITEMS.length!==had.size;
+  if(appeared||!$('.cards')){await go(VIEW);return;}   // list membership changed -> full redraw
+  let missed=false;
+  ITEMS.forEach(i=>{
+    const el=$(`.card[data-id="${i.id}"]`);
+    if(!el)return;                                 // filtered out of this view — nothing to patch
+    const fresh=document.createElement('div');fresh.innerHTML=card(i);
+    el.replaceWith(fresh.firstElementChild);
+    missed=true;
+  });
+  if(missed){bindView();}                          // re-attach handlers to the swapped cards
+  const dw=$('#drawer');if(CUR&&dw&&dw.classList.contains('on'))openDrawer(CUR);
+  schedulePoll();
+}
+
+/* ---------------- views ---------------- */
+function vDashboard(){
+  const L=ITEMS.filter(inDept);
+  const c=s=>L.filter(i=>i.status===s).length;
+  const stat=(icn,col,v,k)=>`<div class="stat"><div class="ic" style="background:${col}1a;color:${col}">${ic(icn)}</div><div class="v tnum">${v}</div><div class="k">${k}</div></div>`;
+  if(isBoss()){
+    const waiting=c('submitted');
+    return `<div class="pagehead"><div><h2 class="t">Hi ${ME.name.split(' ')[0]}</h2>
+      <div class="d">${waiting?`<b>${waiting}</b> image${waiting>1?'s are':' is'} waiting for your review in ${DEPTNAME[DEPT]}.`
+        :`Nothing is waiting for you in ${DEPTNAME[DEPT]}. ${c('published')} picture(s) are live.`}</div></div><div class="grow"></div>
+      ${waiting?`<button class="btn pri" data-v="queue">${ic('check')}Review ${waiting}</button>`
+               :`<button class="btn pri" data-v="upload">${ic('upload')}Upload</button>`}</div>
+    ${pipeline(L)}
+    <div class="grid2" style="margin-bottom:16px"><div class="panel">
+      <div class="ph"><h3>Uploads</h3><span class="link">last 14 days</span></div>
+      <div class="pb" style="padding:18px 20px 14px">${sparkChart(L)}</div></div>
+      ${statPanel(L)}</div>
+    <div class="grid2">
+      <div class="col">
+      <div class="panel"><div class="ph"><h3>Employee performance</h3><span class="link" data-v="employees">Manage</span></div>
+        <div class="pb"><table class="tbl"><thead><tr><th>Member</th><th>Uploaded</th><th>Live</th><th>Rejected</th><th>Rate</th></tr></thead><tbody>
+        ${USERS.map(u=>{const tot=(u.approved||0)+(u.rejected||0),rate=tot?Math.round(u.approved/tot*100):0;
+          return `<tr><td><div class="emp"><div class="avatar" style="width:30px;height:30px;font-size:11px;background:var(--accent)">${initials(u.name)}</div>
+            <div><div class="nm">${u.name}</div><div class="role">${u.role==='boss'?'Owner':u.role}${u.active?'':' · inactive'}</div></div></div></td>
+            <td class="tnum">${u.uploaded||0}</td><td class="tnum" style="color:var(--good);font-weight:650">${u.approved||0}</td>
+            <td class="tnum" style="color:var(--bad);font-weight:650">${u.rejected||0}</td>
+            <td><div style="display:flex;align-items:center;gap:8px"><div class="bar" style="width:76px">${tot?`<i style="width:${rate}%;background:var(--good)"></i><i style="width:${100-rate}%;background:var(--bad)"></i>`:''}</div><span class="tnum" style="font-size:12px;color:var(--muted)">${tot?rate+'%':'No activity yet'}</span></div></td></tr>`;}).join('')||'<tr><td colspan="5" class="empty">No team yet</td></tr>'}
+        </tbody></table></div></div>
+      <div class="panel"><div class="ph"><h3>Categories</h3><span class="link" data-v="settings">Edit</span></div>
+        <div class="pb" style="padding:14px 16px 16px">${(()=>{
+          const counts=CATS.map(c=>({name:c.name,n:L.filter(i=>(i.category||'')===c.name).length}));
+          const top=Math.max(1,...counts.map(c=>c.n));
+          return counts.length?counts.sort((a,b)=>b.n-a.n).map(c=>`<div class="catrow">
+            <span class="cn">${esc(c.name)}</span>
+            <div class="bar"><i style="width:${Math.round(c.n/top*100)}%;background:var(--accent)"></i></div>
+            <span class="tnum cv">${c.n}</span></div>`).join(''):'<div class="empty">No categories yet</div>';})()}</div></div>
+      </div>
+      <div class="panel"><div class="ph"><h3>Latest uploads</h3><span class="link" data-v="library">Library</span></div>
+        <div class="pb">${L.slice(0,9).map(i=>`<div style="display:flex;gap:11px;align-items:center;padding:10px 12px;border-top:1px solid var(--border)">
+          <div class="minithumb" style="width:38px;height:38px;border-radius:8px;flex:none;background-size:cover;background-position:center;background-image:url('/api/items/${i.id}/thumb'),var(--pat)"></div>
+          <div style="flex:1;min-width:0"><div style="font-weight:650;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${i.title}</div>
+          <div style="font-size:11.5px;color:var(--faint)">${i.uploader_name||'—'} · ${i.category||'no category'}</div></div>${pill(i.status)}</div>`).join('')||'<div class="empty">Nothing yet</div>'}</div></div>
+    </div>`;}
+  // employee dashboard
+  return `<div class="pagehead"><div><h2 class="t">Hi ${ME.name.split(' ')[0]} 👋</h2>
+    <div class="d">${c('review')} ready to check · ${c('submitted')} waiting on the owner · ${c('rejected')} to fix.</div></div>
+    <div class="grow"></div><button class="btn pri" data-v="upload">${ic('upload')}Upload image</button></div>
+  <div class="stats">${stat('upload','#5B4BFF',L.length,'Uploaded')}${stat('check','#B87708',c('review')+c('submitted'),'In progress')}
+    ${stat('shield','#0F9D58',c('published'),'Live')}${stat('alert','#DE434A',c('rejected'),'To fix')}</div>
+  <div class="panel"><div class="ph"><h3>My submissions</h3><span class="link" data-v="library">All</span></div>
+    <div class="pb" style="padding:16px"><div class="cards">${L.slice(0,8).map(card).join('')||'<div class="empty">Nothing yet — upload your first image.</div>'}</div></div></div>`;}
+
+// The ids the current filters actually show — "select all" must never reach past them.
+function visibleIds(){return $$('[data-pick]').map(b=>b.dataset.pick);}
+function pickedItems(){return [...SEL].map(id=>ITEMS.find(i=>i.id===id)).filter(Boolean);}
+
+async function runBatch(items,fn,verb){
+  let ok=0,fail=0;
+  for(const it of items){                        // sequential on purpose: generation and
+    try{await fn(it);ok++;}catch(e){fail++;}     // publishing are heavy server-side jobs
+  }
+  SEL.clear();await go(VIEW);
+  toast(fail?`${verb} ${ok}, ${fail} failed`:`${verb} ${ok}`,fail?'bad':'good');
+}
+function doBulkPublish(){
+  const items=pickedItems().filter(i=>['review','submitted','rejected'].includes(i.status));
+  if(!items.length)return;
+  confirmModal({title:`Publish ${items.length} image(s)?`,ok:`Publish ${items.length}`,date:{},
+    body:'Each goes live at its current tier. They publish one after another — the cards update as they finish.',
+    onOk:(_,dt)=>runBatch(items,it=>API.call(`/api/items/${it.id}/approve`,
+      {method:'POST',body:dt?{tier:it.tier,publish_date:dt}:{tier:it.tier}}),'Publishing')});}
+function doBulkDelete(){
+  const items=pickedItems();if(!items.length)return;
+  confirmModal({title:`Delete ${items.length} image(s)?`,danger:true,ok:`Delete ${items.length}`,
+    body:'Their generated assets are removed too. This cannot be undone.',
+    onOk:()=>runBatch(items,it=>API.call('/api/items/'+it.id,{method:'DELETE'}),'Deleted')});}
+
+let thumbObs=null;
+function lazyThumbs(){
+  const els=$$('[data-thumb]');
+  if(!els.length)return;
+  const show=el=>{el.style.backgroundImage=`url('${el.dataset.thumb}'),var(--pat)`;el.removeAttribute('data-thumb');};
+  // Load what is already on screen immediately — waiting for the observer's first callback
+  // leaves the visible cards blank for a beat, and in some environments it never fires at all.
+  const near=el=>{const r=el.getBoundingClientRect();return r.top<innerHeight+400&&r.bottom>-400;};
+  els.filter(near).forEach(show);
+  const rest=$$('[data-thumb]');
+  if(!rest.length)return;
+  if(!('IntersectionObserver' in window)){rest.forEach(show);return;}
+  if(thumbObs)thumbObs.disconnect();
+  thumbObs=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){show(e.target);thumbObs.unobserve(e.target);}}),
+    {rootMargin:'400px'});                                  // start a screen early — no blank cards
+  rest.forEach(el=>thumbObs.observe(el));
+}
+function schedNote(i){
+  // publish_ts in the future = the app filters it out until that day (Manager.java:417-424),
+  // so a "Live" pill alone would be misleading.
+  if(i.status!=='published'||!i.publish_ts)return '';
+  const d=new Date(i.publish_ts*1000);
+  if(d.getTime()<=Date.now())return '';
+  return `<div class="sched">${ic('clock')}Goes live ${d.toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'})}</div>`;
+}
+// The pipeline replaces four unrelated stat boxes. Content moves left to right through exactly
+// these stages, so showing them in order — with the bar underneath sized by share — says where the
+// work is piling up, which four separate numbers never did.
+function ago(d){
+  const sec=(Date.now()-d.getTime())/1000;
+  if(sec<60)return 'just now';
+  const m=[[31536000,'year'],[2592000,'month'],[86400,'day'],[3600,'hour'],[60,'minute']];
+  for(const [n,l] of m){ if(sec>=n){ const v=Math.floor(sec/n); return `${v} ${l}${v>1?'s':''} ago`; } }
+  return 'just now';
+}
+function pipeline(L){
+  const S=[{k:'processing',l:'Generating',c:'var(--accent)'},
+           {k:'review',    l:'Ready to check',c:'var(--warn)'},
+           {k:'submitted', l:'Awaiting you', c:'var(--warn)'},
+           {k:'published', l:'Live in app',  c:'var(--good)'},
+           {k:'error',     l:'Failed',       c:'var(--bad)'}];
+  const n=k=>L.filter(i=>i.status===k).length;
+  const tot=Math.max(1,L.length);
+  return `<div class="pipe">${S.map(x=>{const v=n(x.k);return `
+    <button class="pstage${v?'':' zero'}" data-f="${SLABEL[x.k]}" data-v="library" title="Show ${x.l}">
+      <span class="pv tnum" style="color:${v?x.c:'var(--faint)'}">${v}</span>
+      <span class="pl">${x.l}</span>
+      <span class="ptrack"><i style="width:${Math.round(v/tot*100)}%;background:${x.c}"></i></span>
+    </button>`;}).join('')}</div>`;
+}
+
+// Uploads per day for the last fortnight, drawn from data already loaded — no extra request.
+function sparkChart(L){
+  const DAY=86400000, today=new Date(); today.setHours(0,0,0,0);
+  const days=[...Array(14)].map((_,i)=>new Date(today-(13-i)*DAY));
+  const counts=days.map(d=>L.filter(i=>{const t=new Date((i.created||0)*1000);t.setHours(0,0,0,0);
+    return t.getTime()===d.getTime();}).length);
+  const peak=Math.max(1,...counts);
+  if(!L.length)return '<div class="empty">Nothing uploaded yet</div>';
+  return `<div class="spark">${counts.map((v,i)=>`
+    <div class="sbar" title="${days[i].toLocaleDateString(undefined,{day:'numeric',month:'short'})} — ${v} upload(s)">
+      <i style="height:${v?Math.max(6,Math.round(v/peak*100)):2}%;${v?'':'opacity:.35'}"></i>
+    </div>`).join('')}</div>
+    <div class="sxaxis"><span>${days[0].toLocaleDateString(undefined,{day:'numeric',month:'short'})}</span>
+      <span class="tnum">${counts.reduce((a,b)=>a+b,0)} in 14 days</span>
+      <span>Today</span></div>`;
+}
+
+function statPanel(L){
+  const live=L.filter(i=>i.status==='published');
+  const prem=live.filter(i=>i.tier==='premium').length;
+  const cats=new Set(L.map(i=>i.category).filter(Boolean)).size;
+  const row=(l,v,sub)=>`<div class="kv"><span class="kl">${l}</span><span class="kvv tnum">${v}</span>
+    ${sub?`<span class="ks">${sub}</span>`:''}</div>`;
+  return `<div class="panel"><div class="ph"><h3>At a glance</h3></div>
+    <div class="pb" style="padding:6px 20px 16px">
+      ${row('Live in the app', live.length, live.length?`${prem} premium`:'')}
+      ${row('Total images', L.length)}
+      ${row('Categories', cats)}
+      ${row('Team members', USERS.length)}
+    </div></div>`;
+}
+
+function card(i){
+  const busy=i.status==='processing'||i.status==='publishing';
+  return `<div class="card ${SEL.has(i.id)?'picked':''}" data-id="${i.id}">
+    ${isBoss()?`<label class="pick"><input type="checkbox" data-pick="${i.id}" ${SEL.has(i.id)?'checked':''} aria-label="Select ${esc(i.title)}"/></label>`:''}
+    <div class="thumb" data-thumb="/api/items/${i.id}/thumb"${busy?'':` data-open="${i.id}"`}>
+      <div class="stat-pill">${pill(i.status)}</div>${i.tier&&i.tier!=='free'?`<div class="tierbadge">${tierChip(i.tier)}</div>`:''}${busy?'<div class="spin"></div>':''}</div>
+    <div class="cbody"><div class="ct">${i.title}</div>
+      <div class="cmeta"><span class="chip">${i.category||'no category'}</span>${i.regions?`<span title="${i.regions} regions · ${i.colours} colours">${i.regions}r/${i.colours}c</span>`:''}
+        ${isBoss()&&i.uploader_name?`<span class="cby">${esc(i.uploader_name)}</span>`:''}</div>
+      ${schedNote(i)}
+      ${i.status==='rejected'&&i.rejection?`<div class="rej">✕ ${esc(i.rejection)}</div>`:''}
+      ${i.status==='error'&&i.error?`<div class="rej" title="${esc(i.error)}">⚠ ${esc(i.error)}</div>`:''}
+      <div class="row">${cardActions(i)}</div></div></div>`;}
+
+function cardActions(i){
+  const open=`<button class="btn sm" data-open="${i.id}">Open</button>`;
+  if(i.status==='processing')return `<span style="font-size:12px;color:var(--muted)">Generating…</span>`;
+  if(i.status==='publishing')return `<span style="font-size:12px;color:var(--muted)">Publishing…</span>`;
+  // a failed item is only ever retried or removed — Open still works, it shows the reason
+  if(i.status==='error')return open+`<button class="btn sm pri" data-retry="${i.id}">${ic('refresh')}Try again</button><button class="btn sm ghost" data-del="${i.id}" title="Delete" aria-label="Delete">${ic('trash')}</button>`;
+  if(isBoss()){
+    if(i.status==='submitted')return open+`<button class="btn sm good" data-approve="${i.id}">Approve</button><button class="btn sm bad" data-reject="${i.id}">Reject</button>`;
+    // the owner uploads straight to 'review' — let them publish it without a submit-to-self step
+    if(i.status==='review'||i.status==='rejected')return open+`<button class="btn sm good" data-approve="${i.id}">Publish</button><button class="btn sm ghost" data-del="${i.id}" title="Delete" aria-label="Delete">${ic('trash')}</button>`;
+    return open+(i.status==='published'
+      ?`<button class="btn sm ghost" data-sched="${i.id}" title="Change go-live date" aria-label="Change go-live date">${ic('clock')}</button>`
+      :`<button class="btn sm ghost" data-del="${i.id}" title="Delete">${ic('trash')}</button>`);
+  }
+  if(i.status==='review'||i.status==='rejected')return open+`<button class="btn sm pri" data-submit="${i.id}">Submit</button><button class="btn sm ghost" data-del="${i.id}" title="Delete" aria-label="Delete">${ic('trash')}</button>`;
+  return open;
+}
+
+function vLibrary(){
+  let list=ITEMS.filter(inDept);
+  if(VIEW==='queue')list=list.filter(i=>i.status==='submitted');
+  const scoped=list.slice();                       // everything in this dept/view, before the chips
+  if(FILTER!=='All')list=list.filter(i=>SLABEL[i.status]===FILTER);
+  if(CATF!=='All')list=list.filter(i=>(i.category||'')===CATF);
+  if(SEARCH)list=list.filter(i=>(i.title+' '+(i.category||'')+' '+(i.uploader_name||'')).toLowerCase().includes(SEARCH.toLowerCase()));
+  const title=VIEW==='queue'?'Review queue':(isBoss()?'Library':'My submissions');
+  const n=s=>scoped.filter(i=>i.status===s).length;
+  // Counts come from `scoped`, not the filtered list — a chip must say how many it WOULD show.
+  const sChip=(lbl,cnt)=>`<button class="fchip ${FILTER===lbl?'on':''}" data-f="${lbl}">${lbl}${cnt!==null?`<span class="n tnum">${cnt}</span>`:''}</button>`;
+  const cChip=lbl=>`<button class="fchip ${CATF===lbl?'on':''}" data-fc="${lbl}">${lbl}${lbl==='All'?'':`<span class="n tnum">${scoped.filter(i=>(i.category||'')===lbl).length}</span>`}</button>`;
+  const active=(FILTER!=='All'||CATF!=='All'||SEARCH);
+  return `<div class="pagehead"><div><h2 class="t">${title}</h2>
+      <div class="d">${scoped.length} image(s) in ${DEPTNAME[DEPT]} · ${n('published')} live · ${n('submitted')} awaiting review${n('error')?` · <b style="color:var(--bad)">${n('error')} failed</b>`:''}</div></div>
+    <div class="grow"></div><button class="btn pri" data-v="upload">${ic('upload')}Upload</button></div>
+  <div class="filterbar">
+    <div class="fgroup"><span class="flabel">Status</span>
+      ${sChip('All',scoped.length)}${['Ready to check','In review','Live','Rejected','Failed'].map(l=>sChip(l,scoped.filter(i=>SLABEL[i.status]===l).length)).join('')}</div>
+    ${CATS.length?`<div class="fgroup"><span class="flabel">Category</span>
+      ${cChip('All')}${CATS.map(c=>cChip(c.name)).join('')}</div>`:''}
+    ${active?`<button class="btn ghost sm" id="fclear">${ic('x')}Clear</button>`:''}
+  </div>
+  ${isBoss()?bulkBar(list):''}
+  <div class="cards">${list.slice(0,shown).map(card).join('')||`<div class="blank">${ic('images')}<h4>Nothing matches</h4>
+    <p>${active?'No image fits these filters. Clear them to see everything.':'Upload an image to get started.'}</p>
+    ${active?'<button class="btn sm" id="fclear2">Clear filters</button>':`<button class="btn pri sm" data-v="upload">Upload an image</button>`}</div>`}</div>
+  ${list.length>shown?`<div class="more"><button class="btn" id="showMore">Show ${Math.min(PAGE,list.length-shown)} more</button>
+    <span class="tnum">${Math.min(shown,list.length)} of ${list.length}</span></div>`:''}`;}
+
+// Bulk bar — publishing or deleting a batch one card at a time was the slowest thing in here.
+function bulkBar(list){
+  const ids=list.map(i=>i.id), picked=ids.filter(id=>SEL.has(id));
+  const pub=picked.map(id=>ITEMS.find(i=>i.id===id)).filter(i=>i&&['review','submitted','rejected'].includes(i.status));
+  return `<div class="bulk ${picked.length?'on':''}">
+    <label class="bchk"><input type="checkbox" id="selAll" ${picked.length&&picked.length===ids.length?'checked':''}/>
+      <span>${picked.length?`${picked.length} selected`:'Select all'}</span></label>
+    ${picked.length?`<div class="grow"></div>
+      ${pub.length?`<button class="btn sm good" id="bulkPub">${ic('check')}Publish ${pub.length}</button>`:''}
+      ${picked.length>1?`<button class="btn sm" id="bulkDaily">${ic('clock')}Daily schedule ${picked.length}</button>`:''}
+      <button class="btn sm bad" id="bulkDel">${ic('trash')}Delete ${picked.length}</button>
+      <button class="btn sm ghost" id="bulkNone">Clear</button>`:''}
+  </div>`;}
+
+function vUpload(){
+  const dia=DEPT==='diamond';
+  const opts=`${CATS.map(c=>`<option>${c.name}</option>`).join('')}<option value="__new">＋ New category…</option>`;
+  return `<div class="upwrap">
+  <div class="pagehead"><div><h2 class="t">New ${dia?'diamond':'colour-fill'} picture</h2>
+    <div class="d">${dia?'Every cell becomes one round diamond of exactly one colour.':'The engine draws the line art, splits it into regions and numbers them — the player taps a number to reveal the photo underneath.'}</div></div></div>
+  <div class="panel"><div class="pb" style="padding:8px 22px 22px">
+    <div class="drop" id="drop"><div class="dicon">${ic('upload')}</div>
+      <div class="big">Drop your picture${dia?'':'s'} here</div>
+      <div class="sub">or click to choose · PNG or JPG · several at once is fine</div>
+      <input id="file" type="file" accept="image/*" multiple hidden/></div>
+    <div id="upStatus" class="upstatus"></div>
+    <div class="uprow">
+    <div class="field"><label>Category</label><select id="upCat">${opts}</select></div>
+    <div class="field" id="newCatWrap" style="display:none"><label>New category name</label><input id="upNewCat" placeholder="e.g. Animals"/></div>
+    ${dia?`
+    <div class="field"><label>Source type — these work differently</label><select id="upMode">
+      <option value="auto">Already a diamond render — detect its bead grid</option>
+      <option value="flat">Flat artwork — build a brand-new grid</option></select></div>
+    <div class="field" id="gridWrap" style="display:none"><label>Grid width (beads across)</label><select id="upCols">
+      <option>50</option><option>60</option><option selected>78</option><option>100</option><option>120</option><option>150</option></select></div>
+    <div class="field"><label>Diamond colours</label><select id="upK">
+      <option>18</option><option>24</option><option selected>32</option><option>40</option><option>50</option></select></div>`
+    :`<div class="field"><label>Simplify (dark / photo / busy art)</label><select id="upSimp">
+      <option value="">Off — clean line art</option><option value="light">Light</option><option value="medium">Medium — photos</option><option value="strong">Strong — very busy</option></select></div>`}
+    </div>
+  </div></div>
+  <div class="steps">
+  ${(dia?[['Upload','The engine finds the bead grid and one exact colour per cell (~1 s).'],
+           ['Play it','Open the preview — pick a colour, tap or drag its diamonds.'],
+           ['Adjust','Grid too coarse? Regenerate with a wider grid or more colours.'],
+           ['Submit','The owner reviews it and publishes it live.']]
+         :[['Upload','The engine draws the line art and builds the game (~40 s).'],
+           ['Play it','Open the preview — check one tap fills exactly one region.'],
+           ['Adjust','Not clean? Regenerate at a different Detail level.'],
+           ['Submit','The owner reviews it and publishes it live.']])
+    .map(([t,d],i)=>`<div class="step"><span class="sn">${i+1}</span>
+      <div><b>${t}</b><span>${d}</span></div></div>`).join('')}
+  </div></div>`;}
+
+function vEmployees(){
+  return `<div class="pagehead"><div><h2 class="t">Employees</h2><div class="d">Only you can add, deactivate, or remove team members.</div></div></div>
+  <div class="grid2">
+    <div class="panel"><div class="ph"><h3>Team</h3><span class="link">${USERS.length} members</span></div>
+      <div class="pb"><table class="tbl"><thead><tr><th>Member</th><th>Role</th><th>Uploaded</th><th>Status</th><th></th></tr></thead><tbody>
+      ${USERS.map(u=>{const owner=u.role==='boss';return `<tr>
+        <td><div class="emp"><div class="avatar" style="width:30px;height:30px;font-size:11px;background:var(--accent)">${initials(u.name)}</div><div><div class="nm">${u.name}</div></div></div></td>
+        <td>${owner?'<span class="chip" style="color:var(--accent);border-color:var(--accent-line);background:var(--accent-soft)">Owner</span>':u.role}</td>
+        <td class="tnum">${u.uploaded||0}</td>
+        <td><span class="pill ${u.active?'p-published':'p-rejected'}">${u.active?'Active':'Deactivated'}</span></td>
+        <td>${owner?'':`<div style="display:flex;gap:4px;justify-content:flex-end">
+          <button class="rowbtn plain" title="${u.active?'Deactivate':'Activate'}" data-toggle="${u.id}" data-act="${u.active?0:1}">${ic(u.active?'lock':'check')}</button>
+          <button class="rowbtn danger" title="Remove" data-rmuser="${u.id}" data-name="${u.name}">${ic('trash')}</button></div>`}</td></tr>`;}).join('')}
+      </tbody></table></div></div>
+    <div class="panel"><div class="pb" style="padding:18px">
+      <h3 style="margin:0 0 4px;font-size:15px">Add employee</h3>
+      <p style="margin:0 0 14px;color:var(--muted);font-size:12.5px">They get their own login. Uploads land in your review queue.</p>
+      <div class="field"><label>Full name</label><input id="nuName" placeholder="e.g. Neha Rao"/></div>
+      <div class="field"><label>Email</label><input id="nuEmail" type="email" placeholder="neha@studio.com"/></div>
+      <div class="field"><label>Role</label><select id="nuRole"><option value="employee">Content artist</option><option value="reviewer">Reviewer</option></select></div>
+      <button class="btn pri" style="width:100%" id="nuBtn">${ic('plus')}Create account</button>
+      <div id="nuOut" style="margin-top:12px"></div>
+    </div></div>
+  </div>`;}
+
+async function vAudit(){
+  let a=[],s=[];
+  try{a=await API.call('/api/audit');s=await API.call('/api/sessions');}catch(e){}
+  const cls=x=>x==='Approved'?'p-published':(x==='Rejected'||x.startsWith('Removed'))?'p-rejected':'p-processing';
+  return `<div class="pagehead"><div><h2 class="t">Audit log</h2><div class="d">Every action recorded — user, what, IP, time.</div></div></div>
+  <div class="grid2">
+    <div class="panel"><div class="ph"><h3>Activity</h3><span class="link">${a.length} events</span></div>
+      <div class="pb" style="padding:6px 20px 18px">${a.length?`<ol class="tline">${a.map(x=>{
+        const d=new Date(x.created*1000);
+        return `<li class="tev"><span class="tdot ${cls(x.action)}"></span>
+          <div class="tbody"><div class="tl1"><b>${esc(x.uname||'Someone')}</b> ${esc(x.action).toLowerCase()}
+            ${x.target?`<span class="ttar">${esc(x.target)}</span>`:''}</div>
+          <div class="tl2"><span title="${d.toLocaleString()}">${ago(d)}</span> · <span class="mono">${esc(x.ip||'—')}</span></div></div></li>`;
+        }).join('')}</ol>`:'<div class="empty">No events</div>'}</div></div>
+    <div class="panel"><div class="ph"><h3>Active sessions</h3><span class="link">${s.length} devices</span></div>
+      <div>${s.map(x=>`<div class="sess"><div style="width:32px;height:32px;border-radius:8px;background:var(--surface-2);display:grid;place-items:center;color:var(--muted)">${ic('shield')}</div>
+        <div style="flex:1;min-width:0"><div style="font-weight:650;font-size:13px">${x.uname}</div>
+        <div class="mono" style="font-size:11.5px;color:var(--faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${x.ip} · ${(x.device||'').slice(0,40)}</div></div>
+        <button class="btn sm bad" data-revoke="${x.jti}">Revoke</button></div>`).join('')||'<div class="empty">None</div>'}</div></div>
+  </div>`;}
+
+async function vAds(){
+  if(!isBoss())return '<div class="blank"><h4>Owner only</h4><p>Ad settings control revenue.</p></div>';
+  let d={config:{},warnings:[]};
+  try{d=await API.call('/api/ads');}catch(e){}
+  const c=d.config||{};
+  const txt=(k,l,ph,hint)=>`<div class="field"><label>${l}</label>
+    <input data-ad="${k}" value="${esc(c[k]==null?'':String(c[k]))}" placeholder="${ph||''}" spellcheck="false"/>
+    ${hint?`<div class="hint">${hint}</div>`:''}</div>`;
+  const num=(k,l,hint)=>`<div class="field"><label>${l}</label>
+    <input data-ad="${k}" data-t="int" type="number" min="0" value="${c[k]==null?0:c[k]}"/>
+    ${hint?`<div class="hint">${hint}</div>`:''}</div>`;
+  const tog=(k,l,hint)=>`<label class="toggle" style="padding:9px 0">
+    <input type="checkbox" data-ad="${k}" data-t="bool" ${c[k]?'checked':''}/><span class="tk"></span>
+    <span class="tl"><b>${l}</b>${hint?`<em>${hint}</em>`:''}</span></label>`;
+  return `<div class="pagehead"><div><h2 class="t">Ads</h2>
+      <div class="d">These are the settings the app used to read from Firebase. Saving here changes them
+        for <b>every installed app</b> the next time it starts — no Play Store update needed.</div></div>
+    <div class="grow"></div><button class="btn pri" id="adsSave">${ic('check')}Save</button></div>
+  ${d.warnings&&d.warnings.length?`<div class="errbox" style="margin-bottom:18px">
+    <div class="ei">${ic('alert')}</div><div><h4>Check these before you rely on it</h4>
+    ${d.warnings.map(w=>`<p>${esc(w)}</p>`).join('')}</div></div>`:''}
+  <div class="grid2"><div class="col">
+    <div class="panel"><div class="ph"><h3>AdMob unit ids</h3></div><div class="pb" style="padding:16px 20px 20px">
+      <p class="hint" style="margin:0 0 14px">From AdMob → Ad units. Leave a box <b>empty to keep the current value</b> —
+        an empty box never wipes a live id.</p>
+      <div class="uprow" style="margin:0;padding:0;border:0">
+        ${txt('adIdBanner','Banner','ca-app-pub-…/…')}
+        ${txt('adIdInter','Interstitial','ca-app-pub-…/…')}
+        ${txt('adIdRewarded','Rewarded','ca-app-pub-…/…')}
+        ${txt('adIdRewardedInter','Rewarded interstitial','ca-app-pub-…/…')}
+        ${txt('adIdNative','Native','ca-app-pub-…/…')}
+        ${txt('adIdOpen','App open','ca-app-pub-…/…')}
+        ${txt('adIdSplashOpen','Splash app-open','ca-app-pub-…/…')}
+        ${txt('adIdStart','Start interstitial','ca-app-pub-…/…')}
+      </div></div></div>
+    <div class="panel"><div class="ph"><h3>How often</h3></div><div class="pb" style="padding:16px 20px 20px">
+      <div class="uprow" style="margin:0;padding:0;border:0">
+        ${num('dAdsCount','Interstitial every N actions','2 = every second picture opened. Lower earns more and annoys more.')}
+        ${num('dAdsStartCount','Skip the first N actions','Give a new player a clean run before the first ad.')}
+        ${num('dPreloadLimit','Native ads kept ready','')}
+        ${num('dAllowedPlay','Free plays before the paywall','')}
+      </div></div></div>
+  </div>
+  <div class="col">
+    <div class="panel"><div class="ph"><h3>Where ads appear</h3></div><div class="pb" style="padding:8px 20px 18px">
+      ${tog('dIsSplashOpen','App-open ad on launch','Full screen before the home screen. Highest paying, most intrusive.')}
+      <!-- 'Ad on back press' and 'Exit dialog' toggles removed 2026-10-14: the app ignores
+           dAllowBack / dIsExitDialog since the Play Disruptive Ads strike (back-press
+           interstitials and the exit-sheet native ad are permanently off in the APK). -->
+      <div class="hint">Back-press ads and the exit-dialog ad are permanently off in the app (Play policy, Oct 2026).</div>
+      ${tog('dShowIntroInter','Ad after the intro','')}
+      ${tog('dPlayVideo','Allow video ads','')}
+      ${tog('reward_ads_inter','Interstitial instead of rewarded','On = locked pictures open without watching a video.')}
+      ${tog('show_reward_confirm','Ask before a rewarded video','')}
+    </div></div>
+    <div class="panel"><div class="ph"><h3>Store &amp; legal</h3></div><div class="pb" style="padding:16px 20px 20px">
+      ${txt('remove_ads_sku','Remove-ads product id','remove_ads','Must match the product id in Play Console.')}
+      ${txt('bPolicy','Privacy policy URL','https://…')}
+      ${txt('bDevEmail','Support email','')}
+    </div></div>
+  </div></div>`;}
+
+async function vSettings(){
+  let cfg={};try{cfg=await API.call('/api/config');}catch(e){}
+  const f=(k,l,ph)=>`<div class="field"><label>${l}</label><input data-k="${k}" value="${cfg[k]||''}" placeholder="${ph}"/></div>`;
+  return `<div class="pagehead"><div><h2 class="t">Settings</h2><div class="d">App configuration${isBoss()?'':' — read only'}.</div></div></div>
+  <div class="grid2"><div class="col">
+  <div class="panel"><div class="pb" style="padding:18px">
+    <h3 style="margin:0 0 14px;font-size:15px">App config</h3>
+    ${f('logo','App logo URL','https://…')}${f('banner','Banner URL','https://…')}
+    ${f('ad_rewarded','AdMob rewarded id','ca-app-pub-…')}${f('premium_price','Premium price','₹299 / year')}
+    ${isBoss()?`<button class="btn pri" id="cfgSave">${ic('check')}Save config</button>`:''}
+  </div></div>
+  ${isBoss()?`<div class="panel"><div class="pb" style="padding:18px">
+    <h3 style="margin:0 0 4px;font-size:15px">What the New 2026 tab shows</h3>
+    <p style="margin:0 0 14px;font-size:12.8px;color:var(--muted);line-height:1.55">
+      This decides whether the app's New&nbsp;2026 tab lists <b>only your ColorForge images</b> or also
+      pulls in the bought <span class="mono">ionicsolutions</span> catalogue. It has bitten before —
+      the code default is <b>merge&nbsp;ON</b>, so a fresh database turns it back on silently.</p>
+    <label class="toggle"><input type="checkbox" id="cfgMerge" ${cfg.number_merge?'checked':''}/>
+      <span class="tk"></span>
+      <span class="tl"><b>Also show the bought catalogue</b>
+        <em>${cfg.number_merge?'ON — ionicsolutions images appear in New 2026 too.':'OFF — ColorForge only. This is what you want.'}</em></span></label>
+    <div class="field" style="margin-top:14px"><label>Upstream base URL</label>
+      <input data-k="number_upstream" value="${esc(cfg.number_upstream||'')}" placeholder="http://ionicsolutions.in/ColoringBook/"/>
+      <div class="hint">Only used while the switch above is ON.</div></div>
+    <button class="btn pri" id="mergeSave">${ic('check')}Save</button>
+  </div></div>`:''}
+  ${isBoss()?`<div class="panel"><div class="ph"><h3>Categories</h3><span class="link" id="catAdd">${ic('plus')}Add</span></div>
+    <div class="pb" style="padding:8px 14px 16px">
+      <p style="margin:2px 0 10px;font-size:12.5px;color:var(--muted)">Order decides the order the app shows them in — lowest first.</p>
+      ${CATS.length?CATS.map(c=>`<div class="catedit" data-cid="${c.id}">
+        <input class="cname" value="${esc(c.name)}" aria-label="Category name"/>
+        <input class="cord tnum" type="number" value="${c.ord||0}" aria-label="Order" title="Order — lowest shows first"/>
+        <span class="cuse tnum">${ITEMS.filter(i=>(i.category||'')===c.name).length}</span>
+        <button class="btn sm" data-catsave="${c.id}" title="Save" aria-label="Save category">${ic('check')}</button>
+        <button class="btn sm ghost" data-catdel="${c.id}" title="Delete category" aria-label="Delete category">${ic('trash')}</button>
+      </div>`).join(''):'<div class="empty">No categories yet</div>'}
+    </div></div>`:''}
+  </div>
+  <div class="panel"><div class="pb" style="padding:18px">
+    <h3 style="margin:0 0 12px;font-size:15px">Your account</h3>
+    <div style="font-size:13.5px;color:var(--muted);line-height:1.9">
+      <div><b style="color:var(--ink)">${ME.name}</b></div><div>${ME.email}</div><div>Role: ${ME.role}</div></div>
+    <button class="btn" style="margin-top:14px" onclick="logout()">${ic('out')}Sign out</button>
+  </div></div></div>`;}
+
+/* ---------------- router ---------------- */
+const TITLES={dashboard:['Overview','Dashboard'],queue:['Overview','Review queue'],library:['Content','Library'],
+  upload:['My work','Upload'],employees:['Team','Employees'],audit:['Security','Audit log'],
+  ads:['Monetisation','Ads'],settings:['Settings','Settings']};
+async function go(v){
+  VIEW=v;const t=TITLES[v]||['',v];$('#crumb').textContent=t[0];$('#ptitle').textContent=t[1];
+  $$('#nav a').forEach(a=>a.classList.toggle('on',a.dataset.v===v));
+  try{await loadData();}catch(e){toast(e.message,'bad');}
+  let html='';
+  if(v==='dashboard')html=vDashboard();
+  else if(v==='library'||v==='queue')html=vLibrary();
+  else if(v==='upload')html=vUpload();
+  else if(v==='employees')html=vEmployees();
+  else if(v==='audit')html=await vAudit();
+  else if(v==='ads')html=await vAds();
+  else if(v==='settings')html=await vSettings();
+  $('#content').innerHTML=html;bindView();schedulePoll();
+}
+
+function bindView(){
+  $$('[data-v]').forEach(el=>el.onclick=()=>go(el.dataset.v));
+  $$('[data-f]').forEach(b=>b.onclick=()=>{FILTER=b.dataset.f;go(VIEW);});
+  $$('[data-fc]').forEach(b=>b.onclick=()=>{CATF=b.dataset.fc;go(VIEW);});
+  ['fclear','fclear2'].forEach(id=>{const b=$('#'+id);if(b)b.onclick=()=>{FILTER='All';CATF='All';SEARCH='';
+    const sb=$('#sq');if(sb)sb.value='';go(VIEW);};});
+  $$('[data-open]').forEach(b=>b.onclick=e=>{e.stopPropagation();openDrawer(b.dataset.open);});
+  $$('[data-submit]').forEach(b=>b.onclick=e=>{e.stopPropagation();act(b.dataset.submit,'submit');});
+  $$('[data-approve]').forEach(b=>b.onclick=e=>{e.stopPropagation();doApprove(b.dataset.approve);});
+  $$('[data-reject]').forEach(b=>b.onclick=e=>{e.stopPropagation();doReject(b.dataset.reject);});
+  $$('[data-del]').forEach(b=>b.onclick=e=>{e.stopPropagation();doDelete(b.dataset.del);});
+  $$('[data-sched]').forEach(b=>b.onclick=e=>{e.stopPropagation();doSchedule(b.dataset.sched);});
+  // pagination
+  const sm=$('#showMore');if(sm)sm.onclick=()=>{shown+=PAGE;go(VIEW);};
+  // bulk selection
+  $$('[data-pick]').forEach(b=>b.onclick=e=>{e.stopPropagation();
+    b.checked?SEL.add(b.dataset.pick):SEL.delete(b.dataset.pick);go(VIEW);});
+  const sa=$('#selAll');if(sa)sa.onclick=()=>{
+    const ids=visibleIds();
+    if(ids.every(id=>SEL.has(id)))ids.forEach(id=>SEL.delete(id));else ids.forEach(id=>SEL.add(id));
+    go(VIEW);};
+  const bn=$('#bulkNone');if(bn)bn.onclick=()=>{SEL.clear();go(VIEW);};
+  const bp=$('#bulkPub');if(bp)bp.onclick=()=>doBulkPublish();
+  const bdy=$('#bulkDaily');if(bdy)bdy.onclick=()=>doBulkDaily();
+  const bd=$('#bulkDel');if(bd)bd.onclick=()=>doBulkDelete();
+  lazyThumbs();
+  $$('[data-retry]').forEach(b=>b.onclick=e=>{e.stopPropagation();doRetry(b.dataset.retry);});
+  $$('[data-toggle]').forEach(b=>b.onclick=async()=>{try{await API.call('/api/users/'+b.dataset.toggle,{method:'PATCH',body:{active:+b.dataset.act}});toast('Updated','good');go('employees');}catch(e){toast(e.message,'bad');}});
+  $$('[data-rmuser]').forEach(b=>b.onclick=()=>confirmModal({title:`Remove ${b.dataset.name}?`,danger:true,ok:'Remove employee',
+    body:'Their login is revoked immediately. Their uploaded images stay in the library. This cannot be undone.',
+    onOk:async()=>{try{await API.call('/api/users/'+b.dataset.rmuser,{method:'DELETE'});toast('Employee removed','bad');go('employees');}catch(e){toast(e.message,'bad');}}}));
+  $$('[data-revoke]').forEach(b=>b.onclick=async()=>{try{await API.call('/api/sessions/'+b.dataset.revoke+'/revoke',{method:'POST'});toast('Session revoked','bad');go('audit');}catch(e){toast(e.message,'bad');}});
+  const nu=$('#nuBtn');if(nu)nu.onclick=addEmployee;
+  const cs=$('#cfgSave');if(cs)cs.onclick=async()=>{const p={};$$('[data-k]').forEach(i=>{if(i.value.trim())p[i.dataset.k]=i.value.trim();});
+    try{await API.call('/api/config',{method:'PUT',body:p});toast('Config saved','good');}catch(e){toast(e.message,'bad');}};
+  // ── New 2026 source switch — the one setting that can silently fill the tab with
+  //    someone else's paid catalogue, so it is saved on its own and confirmed when turned ON.
+  const as=$('#adsSave');if(as)as.onclick=async()=>{
+    const body={};
+    $$('[data-ad]').forEach(el=>{
+      const t=el.dataset.t;
+      body[el.dataset.ad] = t==='bool' ? el.checked : (t==='int' ? (+el.value||0) : el.value.trim());
+    });
+    try{const r=await API.call('/api/ads',{method:'PUT',body});
+      toast(r.warnings&&r.warnings.length?'Saved — but check the warnings':'Ad settings saved',
+            r.warnings&&r.warnings.length?'bad':'good');
+      go('ads');
+    }catch(e){toast(e.message,'bad');}};
+  const mg=$('#mergeSave');if(mg)mg.onclick=async()=>{
+    const on=$('#cfgMerge').checked, up=($('[data-k="number_upstream"]')||{}).value||'';
+    const save=async()=>{try{
+        const body={number_merge:on};if(up.trim())body.number_upstream=up.trim();
+        await API.call('/api/config',{method:'PUT',body});
+        toast(on?'Merge ON — the bought catalogue will appear in New 2026':'Merge OFF — ColorForge only','good');
+        go('settings');
+      }catch(e){toast(e.message,'bad');}};
+    if(on)confirmModal({title:'Show the bought catalogue too?',ok:'Turn merge on',danger:true,
+      body:'The New 2026 tab will list <b>ionicsolutions</b> images alongside yours. You asked for this tab to be ColorForge only — turn this on only if you have changed your mind.',
+      onOk:save});
+    else save();};
+  // ── Categories: rename, reorder (the app sorts by `ord`), delete.
+  $$('[data-catsave]').forEach(b=>b.onclick=async()=>{
+    const row=b.closest('.catedit');
+    try{await API.call('/api/categories/'+b.dataset.catsave,{method:'PATCH',
+      body:{name:row.querySelector('.cname').value.trim(),ord:+row.querySelector('.cord').value||0}});
+      toast('Category saved','good');go('settings');}catch(e){toast(e.message,'bad');}});
+  $$('[data-catdel]').forEach(b=>b.onclick=()=>{
+    const row=b.closest('.catedit'), nm=row.querySelector('.cname').value.trim();
+    const used=+row.querySelector('.cuse').textContent||0;
+    confirmModal({title:'Delete category?',danger:true,ok:'Delete',
+      body:used?`<b>${esc(nm)}</b> still has <b>${used}</b> image(s). They keep their pictures but lose this category label.`
+               :`<b>${esc(nm)}</b> is empty. It will be removed from the app's category list.`,
+      onOk:async()=>{try{await API.call('/api/categories/'+b.dataset.catdel,{method:'DELETE'});
+        toast('Category deleted','bad');go('settings');}catch(e){toast(e.message,'bad');}}});});
+  const ca=$('#catAdd');if(ca)ca.onclick=()=>confirmModal({title:'New category',ok:'Create',input:'Category name',
+    body:'It appears in the app as soon as an image is published in it.',
+    onOk:async n=>{try{await API.call('/api/categories',{method:'POST',body:{name:n}});
+      toast('Category created','good');go('settings');}catch(e){toast(e.message,'bad');}}});
+  const cat=$('#upCat');if(cat)cat.onchange=()=>{$('#newCatWrap').style.display=cat.value==='__new'?'':'none';};
+  const md=$('#upMode');if(md)md.onchange=()=>{const g=$('#gridWrap');if(g)g.style.display=md.value==='flat'?'':'none';};
+  const drop=$('#drop'),file=$('#file');
+  if(drop){drop.onclick=()=>file.click();
+    ['dragover','dragenter'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.style.borderColor='var(--accent)';}));
+    ['dragleave','drop'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.style.borderColor='';}));
+    drop.addEventListener('drop',e=>upload([...e.dataTransfer.files]));
+    file.onchange=()=>upload([...file.files]);}
+}
+
+/* ---------------- actions ---------------- */
+async function act(id,path,body){try{await API.call(`/api/items/${id}/${path}`,{method:'POST',body:body||{}});await go(VIEW);return true;}
+  catch(e){toast(e.message,'bad');return false;}}
+async function doApprove(id){const it=ITEMS.find(i=>i.id===id)||{};
+  confirmModal({title:'Approve & publish?',ok:'Approve & publish',date:{},
+    body:`“${it.title}” goes live in the app as <b>${it.tier}</b>. You can change the tier in the review panel first.`,
+    onOk:async(_,dt)=>{const b={tier:it.tier};if(dt)b.publish_date=dt;
+      if(await act(id,'approve',b))toast(dt&&dt>today()?`Scheduled for ${dt}`:'Approved — publishing…','good');}});}
+// Change the go-live date of something already published — the app hides a future-dated item
+// until that day (client-side, Manager.java), so this is real scheduling, not a label.
+async function doSchedule(id){const it=ITEMS.find(i=>i.id===id)||{};
+  const cur=it.publish_ts?new Date(it.publish_ts*1000).toISOString().slice(0,10):today();
+  confirmModal({title:'Change go-live date',ok:'Save date',date:{value:cur},
+    body:`“${it.title}” — the app shows it from this date onwards.`,
+    onOk:async(_,dt)=>{if(!dt)return;if(await act(id,'publish',{publish_date:dt}))toast(`Go-live set to ${dt}`,'good');}});}
+/* One picture per day. The selection becomes a run of go-live dates — first picked item on the
+   chosen date, the next a day later, and so on, in the order they appear in the grid. The app
+   hides a future-dated item until its day (Manager.java, §3.4), so this fills the "new picture
+   every day" pipeline in one action instead of opening seven date pickers.
+   Published items get the cheap date-only route; anything still in review is published WITH its
+   date. Sequential on purpose — publishing is a heavy server job (§8.5av). */
+async function doBulkDaily(){
+  const ids=visibleIds().filter(id=>SEL.has(id));
+  if(ids.length<2)return;
+  const good=ids.map(id=>ITEMS.find(i=>i.id===id))
+    .filter(i=>i&&['published','review','submitted','rejected'].includes(i.status));
+  if(!good.length){toast('Nothing schedulable selected','bad');return;}
+  confirmModal({title:`One per day — ${good.length} pictures`,ok:'Schedule',date:{value:today()},
+    body:`The first picture goes live on the date below, the next one a day later, and so on, in
+      the order they appear in the grid. The app keeps each hidden until its day.`,
+    onOk:async(_,dt)=>{
+      if(!dt)return;
+      let ok=0,fail=0,day=new Date(dt+'T00:00:00');
+      for(const it of good){
+        const d=day.toISOString().slice(0,10);
+        try{
+          if(it.status==='published')
+            await API.call('/api/items/'+it.id+'/schedule',{method:'POST',body:{publish_date:d}});
+          else
+            await API.call('/api/items/'+it.id+'/publish',{method:'POST',body:{publish_date:d}});
+          ok++;
+        }catch(e){fail++;}
+        day.setDate(day.getDate()+1);
+      }
+      SEL.clear();
+      toast(`Scheduled ${ok} picture${ok===1?'':'s'}, one per day from ${dt}`+(fail?` — ${fail} failed`:''),fail?'bad':'good');
+      go(VIEW);}});}
+async function doReject(id){confirmModal({title:'Reject image',danger:true,ok:'Reject',input:'What should the artist fix?',
+  body:'The artist sees this note and can fix and resubmit.',
+  onOk:async r=>{if(await act(id,'reject',{reason:r}))toast('Rejected — artist notified','bad');}});}
+async function doDelete(id){confirmModal({title:'Delete image?',danger:true,ok:'Delete',
+  body:'The image and its generated assets are removed. This cannot be undone.',
+  onOk:async()=>{try{await API.call('/api/items/'+id,{method:'DELETE'});toast('Deleted','bad');closeDrawer();go(VIEW);}catch(e){toast(e.message,'bad');}}});}
+
+async function upload(files){
+  const imgs=[...files].filter(f=>f.type.startsWith('image/'));if(!imgs.length)return;
+  const sel=$('#upCat');let cat=sel?sel.value:'';
+  if(cat==='__new')cat=($('#upNewCat').value||'').trim();
+  const simp=$('#upSimp')?$('#upSimp').value:'';
+  const out=$('#upStatus');
+  for(let n=0;n<imgs.length;n++){const f=imgs[n];
+    if(out)out.textContent=`Uploading ${n+1}/${imgs.length}: ${f.name}…`;
+    const fd=new FormData();fd.append('file',f);fd.append('title',f.name.replace(/\.[^.]+$/,''));fd.append('category',cat);
+    fd.append('type',DEPT);
+    if(DEPT==='diamond'){fd.append('mode',$('#upMode')?$('#upMode').value:'auto');
+      fd.append('cols',$('#upCols')?$('#upCols').value:78);fd.append('colours',$('#upK')?$('#upK').value:32);}
+    else fd.append('simplify',simp);
+    try{await API.call('/api/items',{method:'POST',body:fd});}catch(e){toast('Upload failed: '+e.message,'bad');}
+  }
+  if(out)out.textContent='';
+  toast(`${imgs.length} image(s) uploading — generating in background`,'good');
+  go('library');
+}
+
+async function addEmployee(){
+  const n=$('#nuName').value.trim(),e=$('#nuEmail').value.trim(),r=$('#nuRole').value;
+  if(!n||!e){toast('Name and email are required','bad');return;}
+  try{const d=await API.call('/api/users',{method:'POST',body:{name:n,email:e,role:r}});
+    $('#nuOut').innerHTML=`<div style="background:var(--good-soft);color:var(--good);padding:11px 13px;border-radius:10px;font-size:13px;font-weight:600">
+      Account created. Temporary password:<br/><span class="mono" style="font-size:14px">${d.tempPassword}</span><br/>
+      <span style="font-weight:500">Share it with ${n} — they sign in with ${e}.</span></div>`;
+    $('#nuName').value='';$('#nuEmail').value='';toast('Employee added','good');await loadData();
+  }catch(err){toast(err.message,'bad');}}
+
+/* ---------------- review drawer ---------------- */
+function flagsFor(i){
+  const f=[],dia=(i.type||'colour')==='diamond';
+  if(!i.regions)f.push([false,'Not generated yet']);
+  else if(dia){
+    f.push([true,`${i.regions.toLocaleString()} diamonds in the grid`]);
+    f.push([i.colours<=50,`${i.colours} colours — ${i.colours>50?'a lot to sort by hand':'comfortable'}`]);
+    f.push([true,'Every cell is exactly one colour']);
+  }else{
+    f.push([i.regions>60&&i.regions<300,`${i.regions} regions — ${i.regions<60?'few, may be too simple':i.regions>=300?'very dense':'good density'}`]);
+    f.push([i.colours<=100,`${i.colours} palette colours`]);
+    f.push([true,'One tap fills exactly one region (id-map based)']);
+  }
+  return f.map(x=>`<div class="flag ${x[0]?'ok':'warn'}"><div class="fb">${ic(x[0]?'check':'alert')}</div><div>${x[1]}</div></div>`).join('');}
+
+async function openDrawer(id){
+  const i=ITEMS.find(x=>x.id===id);if(!i)return;CUR=id;
+  $('#dwTitle').textContent=i.title;
+  $('#dwStatus').className='pill p-'+i.status;$('#dwStatus').textContent=SLABEL[i.status]||i.status;
+  $('#dwImg').style.backgroundImage=`url('/api/items/${id}/thumb')`;
+  const isDia=(i.type||'colour')==='diamond';
+  const failed=i.status==='error';
+  const ready=!['processing','publishing','error'].includes(i.status);
+  const op=$('#dwOpen');
+  op.style.display=ready?'':'none';
+  op.href='/review/'+id;
+  op.innerHTML=(isDia?'💎 Play the diamond preview':'▶ Open playable preview');
+  // A failure gets its own panel in the side column; the thin yellow note is for the
+  // in-progress states only, where there is nothing to explain beyond "wait".
+  const note=$('#dwNote');
+  if(note){note.style.display=(ready||failed)?'none':'';note.textContent=
+    i.status==='publishing'?'Publishing to storage…'
+    :'Still generating — the preview appears when it is ready.';}
+  $('#dwImg').classList.toggle('failed',failed);
+  $('#dwLock').style.display=failed?'none':'';       // nothing was generated to protect
+  $('#dwErr').style.display=failed?'':'none';
+  if(failed)$('#dwErr').innerHTML=errorPanel(i,isDia);
+  $('#dwQualityWrap').style.display=failed?'none':'';
+  /* The Detail level matters more than anything in the renderer: the model inks whatever texture
+     it can see, so a flat cartoon comes out at 8% ink and a textured photo at 27%. The backend
+     measures which the upload is (source_kind) — say so here, next to the control that fixes it.
+     It is advice only; picking the level automatically wiped a cartoon's outlines once (§8.5as). */
+  $('#dwRegLbl').textContent=failed
+    ?(isDia?'Rebuild at a different grid size':'Or try a different Simplify level')
+    :(isDia?'Too much detail? Rebuild the line art — no re-upload'
+      :i.source_kind==='textured'?'Lots of texture in this picture — if the lines look busy, rebuild it as Photograph'
+      :i.source_kind==='flat'?'Flat artwork — Cartoon is the right setting for this one'
+      :'Too much detail? Rebuild the line art — no re-upload');
+  $('#dwReg').innerHTML=isDia
+    ? [50,60,78,100,120].map(c=>`<button data-cols="${c}">${c} wide</button>`).join('')
+    : [['light','Cartoon'],['medium','Detailed'],['strong','Photograph'],['','Off']].map(x=>`<button data-l="${x[0]}">${x[1]}</button>`).join('');
+  bindRegen();
+  $('#dwFlags').innerHTML=flagsFor(i);
+  $('#dwTierWrap').style.display=(isBoss()&&!failed)?'':'none';   // nothing to price yet
+  $$('#dwTier button').forEach(b=>b.classList.toggle('on',b.dataset.t===i.tier));
+  $('#dwAct').innerHTML=drawerActions(i);
+  bindDrawerActions();
+  try{const cm=await API.call(`/api/items/${id}/comments`);
+    $('#dwComments').innerHTML=cm.map(c=>`<div class="cmt"><div class="avatar" style="width:26px;height:26px;font-size:10px;background:var(--accent)">${initials(c.uname)}</div>
+      <div class="cb"><div class="cn">${c.uname||'—'}<span>${new Date(c.created*1000).toLocaleString()}</span></div>${c.text}</div></div>`).join('')
+      ||'<div style="color:var(--faint);font-size:12.5px">No comments yet.</div>';}catch(e){}
+  $('#scrim').classList.add('on');$('#drawer').classList.add('on');
+}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+
+/* The failure card. `error` is whatever the engine actually raised (app.py:_fail) — printing it
+   verbatim is the whole point: a generic "it failed" costs an hour of guessing. */
+function errorPanel(i,isDia){
+  const msg=(i.error||'').trim();
+  return `<div class="errbox"><div class="ei">${ic('alert')}</div><div>
+    <h4>${isDia?'Bead grid':'Colour-fill'} generation failed</h4>
+    <p>${msg?'The engine stopped with:':'No reason was recorded — this item failed before the engine could report one. The server console has the traceback.'}</p>
+    ${msg?`<code>${esc(msg)}</code>`:''}
+    <p>Your upload is safe on the server. Fix the cause, then <b>Try again</b> — there is no need to re-upload the picture.</p>
+  </div></div>`;}
+
+function drawerActions(i){
+  if(i.status==='error')return `<button class="btn ghost" data-ddel>${ic('trash')}Delete</button><div class="grow"></div><button class="btn pri" data-dretry>${ic('refresh')}Try again</button>`;
+  if(isBoss()&&i.status==='submitted')return `<button class="btn bad" data-dreject>${ic('x')}Reject with reason</button><div class="grow"></div><button class="btn good" data-dapprove>${ic('check')}Approve &amp; publish</button>`;
+  // owner on their own freshly-generated (review) or rejected image: publish it directly
+  if(isBoss()&&(i.status==='review'||i.status==='rejected'))return `<button class="btn ghost" data-ddel>${ic('trash')}Delete</button><div class="grow"></div><button class="btn good" data-dapprove>${ic('check')}Approve &amp; publish</button>`;
+  if(!isBoss()&&(i.status==='review'||i.status==='rejected'))return `<button class="btn ghost" data-ddel>${ic('trash')}Delete</button><div class="grow"></div><button class="btn pri" data-dsubmit>${ic('check')}Submit for approval</button>`;
+  return `<div class="grow"></div><span style="font-size:12.5px;color:var(--muted);align-self:center">${SLABEL[i.status]||i.status}</span>`;
+}
+function bindDrawerActions(){
+  const a=$('[data-dapprove]');if(a)a.onclick=()=>doApprove(CUR);
+  const r=$('[data-dreject]');if(r)r.onclick=()=>doReject(CUR);
+  const s=$('[data-dsubmit]');if(s)s.onclick=async()=>{if(await act(CUR,'submit')){toast('Submitted for approval','good');closeDrawer();}};
+  const d=$('[data-ddel]');if(d)d.onclick=()=>doDelete(CUR);
+  const rt=$('[data-dretry]');if(rt)rt.onclick=()=>doRetry(CUR);
+}
+/* Retry = regenerate at the item's default settings. The upload is untouched, so this is the
+   same path the Regenerate bar uses — just without asking the user to pick a level first. */
+async function doRetry(id){
+  const i=ITEMS.find(x=>x.id===id);
+  const body=(i&&(i.type||'colour')==='diamond')?{mode:'auto'}:{simplify:''};
+  try{await API.call('/api/items/'+id+'/regenerate',{method:'POST',body});
+    toast('Generating again…','good');closeDrawer();go(VIEW);}catch(e){toast(e.message,'bad');}
+}
+function bindRegen(){
+  $$('#dwReg button').forEach(b=>b.onclick=async()=>{
+    const body=b.dataset.cols?{mode:'flat',cols:+b.dataset.cols}:{simplify:b.dataset.l};
+    try{await API.call('/api/items/'+CUR+'/regenerate',{method:'POST',body});
+      toast(b.dataset.cols?`Rebuilding at ${b.dataset.cols} beads wide…`:'Regenerating…','good');
+      closeDrawer();go(VIEW);}catch(e){toast(e.message,'bad');}});
+}
+function closeDrawer(){$('#scrim').classList.remove('on');$('#drawer').classList.remove('on');}
+
+/* ---------------- app boot ---------------- */
+function wire(){
+  $('#dwClose').onclick=closeDrawer;$('#scrim').onclick=closeDrawer;
+  $('#modalScrim').onclick=e=>{if(e.target.id==='modalScrim')closeModal();};
+  $('#reloadBtn').onclick=()=>go(VIEW);
+  $$('#deptsw button').forEach(b=>b.onclick=()=>{DEPT=b.dataset.d;localStorage.setItem('cf_dept',DEPT);startApp();});
+  const tb=$('#themeBtn');const cur=()=>document.documentElement.getAttribute('data-theme')||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');
+  tb.innerHTML=ic(cur()==='dark'?'sun':'moon');
+  tb.onclick=()=>{const t=cur()==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',t);
+    tb.innerHTML=ic(t==='dark'?'sun':'moon');const lbl=`Switch to ${t==='dark'?'light':'dark'} theme`;
+    tb.title=lbl;tb.setAttribute('aria-label',lbl);};
+  $('#sq').addEventListener('input',e=>{SEARCH=e.target.value.trim();if(VIEW!=='library'&&VIEW!=='queue')go('library');else go(VIEW);});
+  $$('#dwTier button').forEach(b=>b.onclick=async()=>{$$('#dwTier button').forEach(x=>x.classList.remove('on'));b.classList.add('on');
+    try{await API.call('/api/items/'+CUR,{method:'PATCH',body:{tier:b.dataset.t}});const it=ITEMS.find(i=>i.id===CUR);if(it)it.tier=b.dataset.t;toast('Tier: '+b.dataset.t,'good');}catch(e){toast(e.message,'bad');}});
+
+  $('#dwCmtBtn').onclick=async()=>{const t=$('#dwCmt').value.trim();if(!t)return;
+    try{await API.call('/api/items/'+CUR+'/comments',{method:'POST',body:{text:t}});$('#dwCmt').value='';openDrawer(CUR);}catch(e){toast(e.message,'bad');}};
+  $('#dwCmt').addEventListener('keydown',e=>{if(e.key==='Enter')$('#dwCmtBtn').click();});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();closeDrawer();}});
+}
+function startApp(){$('#root').innerHTML=shell();wire();go('dashboard');}
+(async function boot(){
+  if(API.t){try{ME=await API.call('/api/me');return startApp();}catch(e){}}
+  renderLogin();
+})();
+</script></body></html>

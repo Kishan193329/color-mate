@@ -32,3 +32,8 @@ experience/patterns/*
 .env
 .DS_Store
 Thumbs.db
+
+# Owner's July-2026 backup copy of the project (3 GB rar, video, duplicate tree) - never commit
+color_mate_old/
+*.rar
+*.mp4

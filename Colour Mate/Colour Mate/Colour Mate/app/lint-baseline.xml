@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<issues format="6" by="lint 8.13.2" type="baseline" client="gradle" dependencies="false" name="AGP (8.13.2)" variant="fatal" version="8.13.2">
+
+    <issue
+        id="InvalidSetHasFixedSize"
+        message="When using `setHasFixedSize() in an `RecyclerView`, `wrap_content` cannot be used as a value for `size` in the scrolling direction."
+        errorLine1="        rv.setHasFixedSize(true);"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/colourmate/paintbynumber/activity/EffectSelectionActivity.java"
+            line="237"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="InvalidSetHasFixedSize"
+        message="When using `setHasFixedSize() in an `RecyclerView`, `wrap_content` cannot be used as a value for `size` in the scrolling direction."
+        errorLine1="        rv.setHasFixedSize(true);"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/colourmate/paintbynumber/activity/EffectSelectionActivity.java"
+            line="237"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="InvalidSetHasFixedSize"
+        message="When using `setHasFixedSize() in an `RecyclerView`, `wrap_content` cannot be used as a value for `size` in the scrolling direction."
+        errorLine1="        rv.setHasFixedSize(true);"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/colourmate/paintbynumber/activity/EffectSelectionActivity.java"
+            line="237"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="InvalidSetHasFixedSize"
+        message="When using `setHasFixedSize() in an `RecyclerView`, `wrap_content` cannot be used as a value for `size` in the scrolling direction."
+        errorLine1="        mEffectRV.setHasFixedSize(true);"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/colourmate/paintbynumber/activity/ScanProcessActivity.java"
+            line="161"
+            column="9"/>
+    </issue>
+
+</issues>

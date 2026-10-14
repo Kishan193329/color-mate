@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The little progress pill on a grid tile (item_coloring.xml). Violet, matching the accent. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <solid android:color="#CC7A5CFF" />
+    <corners android:radius="20dp" />
+</shape>

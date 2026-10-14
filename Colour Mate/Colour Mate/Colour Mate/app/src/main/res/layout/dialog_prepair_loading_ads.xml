@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  The moment between tapping a picture and the ad appearing. It uses the app's own ground rather
+  than a bare white sheet, so the wait reads as part of Colour Mate instead of a system screen.
+  fitsSystemWindows keeps the content clear of the status bar while the background still paints
+  behind it — the dialog window is pushed edge-to-edge in AdController.makeFullScreen().
+-->
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/cm_bg_paper"
+    android:fitsSystemWindows="true">
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:gravity="center_horizontal"
+        android:orientation="vertical">
+
+        <ProgressBar
+            android:id="@+id/spin_kit"
+            android:layout_width="@dimen/dialog_loading_progress_size"
+            android:layout_height="@dimen/dialog_loading_progress_size"
+            android:indeterminate="true"
+            android:indeterminateTint="@color/cm_violet"
+            android:indeterminateTintMode="src_in" />
+
+        <TextView
+            android:id="@+id/loading_dialog_tv"
+            style="@style/CmText.Card"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/dialog_loading_text_margin_top"
+            android:text="@string/loading_ads"
+            android:textColor="@color/cm_ink" />
+
+        <TextView
+            style="@style/CmText.Caption"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/cm_space_1"
+            android:text="@string/loading_ads_sub" />
+    </LinearLayout>
+
+</RelativeLayout>

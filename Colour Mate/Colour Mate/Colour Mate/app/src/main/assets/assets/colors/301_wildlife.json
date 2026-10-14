@@ -1,0 +1,37 @@
+{
+    "sprite" : "repal1.png",
+    "filter": "recolorpalettes",
+    "bg_color" : "ff00c09d",
+    "colors" :
+    [
+     {"color" : "0xe091441f"},
+     {"color" : "0xe08e4b5f"},
+     {"color" : "0xe0d48d9f"},
+
+     {"color" : "0xe09dc000"},
+     {"color" : "0xe05c7100"},
+
+     {"color" : "0xe0a664d1"},
+     {"color" : "0xe04d6aff"},
+     {"color" : "0xe080b3fb"},
+     {"color" : "0xe039cefb"},
+     {"color" : "0xe0b3d3e3"},
+     {"color" : "0xe03b305e"}
+     ],
+    "colors_ipad" :
+    [
+     {"color" : "0xe03b305e"},
+     {"color" : "0xe0b3d3e3"},
+     {"color" : "0xe039cefb"},
+     {"color" : "0xe080b3fb"},
+     {"color" : "0xe04d6aff"},
+     {"color" : "0xe0a664d1"},
+     {"color" : "0xe0d48d9f"},
+     {"color" : "0xe08e4b5f"},
+     {"color" : "0xe091441f"},
+     {"color" : "0xe05c7100"},
+     {"color" : "0xe09dc000"}
+     ],
+    "name" : "Wildlife",
+    "premium" : false
+}

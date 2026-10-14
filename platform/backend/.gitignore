@@ -1,0 +1,10 @@
+# runtime content (regenerated / synced to S3) — never commit
+data/
+
+# python
+.venv/
+__pycache__/
+*.pyc
+
+# model weights are large (>100 MB) and auto-download from HuggingFace on first run
+models/*.pth

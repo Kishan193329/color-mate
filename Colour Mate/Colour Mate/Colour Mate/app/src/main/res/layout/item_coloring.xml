@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Artwork tile.
+
+  Two things worth knowing before editing this:
+
+  1. The "drop shadow" people see around By Number pictures is NOT drawn by the app. Every
+     ionicsolutions thumbnail has a 1px frame baked into its ALPHA channel — alpha ~196 along the
+     top/left edge and ~55 along the bottom/right, clear from the second pixel inward. Scaled into
+     a tile it reads as a soft grey shadow. We cannot edit their files, so the ImageView is scaled
+     a hair past its bounds and clipped (1.008 ~ 2px per edge, against a 1px frame plus the
+     bleed from scaling), which crops that outermost pixel away.
+  2. The picture is transparent line art (black in alpha, nothing in RGB), so it needs the white
+     plate underneath or it renders as a black square.
+-->
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/ll_item_container"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="@dimen/grid_item_margins"
+    android:foreground="@drawable/white_ripple"
+    android:outlineAmbientShadowColor="@android:color/transparent"
+    android:outlineSpotShadowColor="@android:color/transparent"
+    app:cardBackgroundColor="@color/cm_surface"
+    app:cardCornerRadius="@dimen/cm_radius_md"
+    app:cardElevation="0dp"
+    app:cardPreventCornerOverlap="false"
+    app:cardUseCompatPadding="false">
+
+    <com.colourmate.paintbynumber.views.AspectRatioImageView
+        android:id="@+id/imageViewResult"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:adjustViewBounds="true"
+        android:clipToOutline="true"
+        android:contentDescription="@null"
+        android:elevation="0dp"
+        android:outlineAmbientShadowColor="@android:color/transparent"
+        android:outlineSpotShadowColor="@android:color/transparent"
+        android:scaleType="centerCrop"
+        android:scaleX="1.008"
+        android:scaleY="1.008" />
+
+    <ProgressBar
+        android:id="@+id/loading_view"
+        android:layout_width="@dimen/grid_progress_size"
+        android:layout_height="@dimen/grid_progress_size"
+        android:layout_gravity="center"
+        android:indeterminate="true"
+        android:indeterminateTint="@color/hint_text_color"
+        android:indeterminateTintMode="src_in"
+        android:visibility="gone" />
+
+    <ImageView
+        android:id="@+id/iv_favorite"
+        android:layout_width="28dp"
+        android:layout_height="28dp"
+        android:layout_gravity="top|end"
+        android:layout_margin="@dimen/cm_space_2"
+        android:background="@drawable/cm_fav_circle"
+        android:contentDescription="@string/todo"
+        android:padding="6dp"
+        android:src="@drawable/ic_favorite_border"
+        app:tint="#8A8A8A" />
+
+    <!-- Progress on a ColorForge picture: "42%" while playing, a tick when finished.
+         GONE for the paid tabs, whose progress lives in a different system. -->
+    <TextView
+        android:id="@+id/tv_progress_chip"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|start"
+        android:layout_margin="@dimen/cm_space_2"
+        android:background="@drawable/cm_progress_chip"
+        android:paddingStart="9dp"
+        android:paddingEnd="9dp"
+        android:paddingTop="3dp"
+        android:paddingBottom="3dp"
+        android:textColor="#FFFFFF"
+        android:textSize="11sp"
+        android:textStyle="bold"
+        android:visibility="gone" />
+
+</androidx.cardview.widget.CardView>

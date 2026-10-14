@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Bottom sheet plate for the coins dialog: white, rounded at the top only. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="#FFFFFFFF" />
+    <corners android:topLeftRadius="@dimen/cm_radius_xl" android:topRightRadius="@dimen/cm_radius_xl" />
+</shape>

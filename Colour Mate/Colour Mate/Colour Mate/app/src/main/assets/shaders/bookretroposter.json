@@ -1,0 +1,30 @@
+{
+	"name": "retroposter", 
+	"shader": "shaders/bookblurposterize.fsh",
+	"autoblurmaps": true, 
+    
+    "inputs": {
+        "paper": {
+        	"path": ["assets/booksheet_art1.jpg","assets/booksheet_art2.jpg","assets/booksheet_art3.jpg"],
+			"mipmaps": true,
+			"repeat": true
+        },
+        "lut": {
+            "global_lut": true
+        }
+	},
+    
+    "uniforms": {
+    	"posterizeLevel": "r1"
+    },
+
+    "uvmatrix": {
+    	"type": "diagonal",
+    	"allowxflip": true,
+    	"allowyflip": false,
+        "allowxrandom": true,
+        "allowyrandom": true,
+    	"scale": 1.25,
+    	"scale_random": 0.25
+    }
+}

@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Laid out to match the By Number game screen (activity_game.xml) piece for piece, at the owner's
+  request: same rounded bg_hint_btn containers, back top-left, counter top-right, tool rail on the
+  left, two round buttons bottom-right, and the palette in a rounded strip along the bottom.
+-->
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/cm_surface_dim"
+    android:clipChildren="false"
+    android:clipToPadding="false">
+
+    <com.colourmate.paintbynumber.model.reveal.RevealView
+        android:id="@+id/reveal_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/ll_reveal_tools"
+        android:layout_above="@+id/fl_reveal_palette" />
+
+    <!-- Back -->
+    <FrameLayout
+        android:id="@+id/fl_reveal_back"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_marginStart="@dimen/main_content_padding_h"
+        android:layout_marginTop="@dimen/main_top_bar_margin_top"
+        android:background="@drawable/cm_glass_panel"
+        android:elevation="@dimen/cm_elev_card"
+        android:padding="14dp">
+
+        <ImageView
+            android:id="@+id/iv_reveal_back"
+            android:layout_width="@dimen/main_nav_icon_size"
+            android:layout_height="@dimen/main_nav_icon_size"
+            android:contentDescription="@string/todo"
+            android:src="@drawable/round_arrow_back_24"
+            app:tint="@color/cm_ink" />
+    </FrameLayout>
+
+    <!-- Progress, where the game keeps its hint counter -->
+    <FrameLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@id/fl_reveal_back"
+        android:layout_alignParentEnd="true"
+        android:layout_alignTop="@id/fl_reveal_back"
+        android:layout_marginEnd="@dimen/main_content_padding_h"
+        android:background="@drawable/cm_glass_panel"
+        android:elevation="@dimen/cm_elev_card"
+        android:paddingHorizontal="18dp">
+
+        <TextView
+            android:id="@+id/tv_reveal_progress"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:fontFamily="@font/quicksand_bold"
+            android:fontFeatureSettings="tnum"
+            android:gravity="center"
+            android:includeFontPadding="false"
+            android:text="0%"
+            android:textColor="@color/cm_violet"
+            android:textSize="17sp" />
+    </FrameLayout>
+
+    <!-- Tool rail -->
+    <LinearLayout
+        android:id="@+id/ll_reveal_tools"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_below="@id/fl_reveal_back"
+        android:layout_marginStart="@dimen/main_content_padding_h"
+        android:layout_marginTop="18dp"
+        android:background="@drawable/cm_glass_panel"
+        android:elevation="@dimen/cm_elev_card"
+        android:orientation="vertical"
+        android:padding="6dp">
+
+        <ImageView
+            android:id="@+id/btn_reveal_fit"
+            android:layout_width="52dp"
+            android:layout_height="52dp"
+            android:background="@drawable/cm_tool_bg"
+            android:contentDescription="@string/todo"
+            android:padding="13dp"
+            android:src="@drawable/ic_zoom_in"
+            app:tint="@color/cm_ink_2" />
+
+        <ImageView
+            android:id="@+id/btn_reveal_next"
+            android:layout_width="52dp"
+            android:layout_height="52dp"
+            android:layout_marginTop="4dp"
+            android:background="@drawable/cm_tool_bg"
+            android:contentDescription="@string/todo"
+            android:padding="13dp"
+            android:src="@drawable/ic_magic_wand"
+            app:tint="@color/cm_ink_2" />
+    </LinearLayout>
+
+    <!-- Palette strip — sits just above the ad banner, not at the very bottom -->
+    <FrameLayout
+        android:id="@+id/fl_reveal_palette"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/ll_reveal_ads"
+        android:layout_marginHorizontal="@dimen/main_content_padding_h"
+        android:layout_marginBottom="8dp"
+        android:background="@drawable/cm_glass_panel"
+        android:elevation="@dimen/cm_elev_raised"
+        android:paddingHorizontal="12dp"
+        android:paddingVertical="8dp">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_reveal_palette"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:clipToPadding="false"
+            android:paddingVertical="4dp" />
+    </FrameLayout>
+
+    <!-- Bottom banner ad — same container the By Number game uses -->
+    <LinearLayout
+        android:id="@+id/ll_reveal_ads"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true">
+
+        <include
+            android:id="@+id/container_banner"
+            layout="@layout/ads_banner_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+
+    <ProgressBar
+        android:id="@+id/pb_reveal_loading"
+        android:layout_width="@dimen/tab_loading_size"
+        android:layout_height="@dimen/tab_loading_size"
+        android:layout_centerInParent="true"
+        android:indeterminate="true"
+        android:indeterminateTint="@color/cm_violet"
+        android:indeterminateTintMode="src_in" />
+    <!-- Completion sheet. Hidden until the last region is revealed; the finish used to be a
+         two-second Toast, which threw away the best moment of the whole session. -->
+    <FrameLayout
+        android:id="@+id/fl_reveal_done"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#66201636"
+        android:visibility="gone"
+        android:clickable="true"
+        android:focusable="true">
+
+        <LinearLayout
+            android:id="@+id/ll_done_card"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:layout_margin="18dp"
+            android:background="@drawable/cm_card"
+            android:elevation="10dp"
+            android:orientation="vertical"
+            android:padding="22dp">
+
+            <TextView
+                android:id="@+id/tv_done_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="@string/reveal_done_title"
+                android:textColor="@color/cm_ink"
+                android:textSize="22sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tv_done_sub"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:gravity="center"
+                android:text="@string/reveal_done_sub"
+                android:textColor="@color/cm_ink_2"
+                android:textSize="14sp" />
+
+            <Button
+                android:id="@+id/btn_done_next"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:layout_marginTop="18dp"
+                android:background="@drawable/cm_btn_primary"
+                android:text="@string/reveal_done_next"
+                android:textAllCaps="false"
+                android:textColor="#FFFFFF"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/btn_done_share"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/cm_btn_soft"
+                android:text="@string/reveal_done_share"
+                android:textAllCaps="false"
+                android:textColor="@color/cm_ink"
+                android:textSize="15sp" />
+
+            <Button
+                android:id="@+id/btn_done_close"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/cm_btn_ghost"
+                android:text="@string/reveal_done_close"
+                android:textAllCaps="false"
+                android:textColor="@color/cm_ink"
+                android:textSize="15sp" />
+        </LinearLayout>
+    </FrameLayout>
+
+</RelativeLayout>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Large phones / small phablets (smallest width ≥ 400dp) -->
+    <dimen name="main_content_padding_h">18dp</dimen>
+    <dimen name="main_top_bar_margin_top">18dp</dimen>
+    <dimen name="main_app_title_text_size">30sp</dimen>
+    <dimen name="main_nav_indicator_size">68dp</dimen>
+    <dimen name="main_nav_icon_size">26dp</dimen>
+    <dimen name="fragment_main_content_padding">14dp</dimen>
+    <dimen name="daily_banner_height">164dp</dimen>
+</resources>

@@ -1,0 +1,418 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Standard phones (360dp+): same as base -->
+    <dimen name="activity_vertical_margin">16dp</dimen>
+    <dimen name="grid_item_margins">2dp</dimen>
+    <dimen name="max_query_dlg_width">260dp</dimen>
+    <dimen name="max_text_size">60dp</dimen>
+    <dimen name="min_text_size">12dp</dimen>
+    <dimen name="preview_size">162dp</dimen>
+    <dimen name="scanner_example_picture_size">130dp</dimen>
+    <dimen name="sub_dialog_width">350dp</dimen>
+    <dimen name="tab_height">3dp</dimen>
+
+    <!-- Toolbar & back button -->
+    <dimen name="toolbar_back_btn_size">28dp</dimen>
+    <dimen name="toolbar_padding_horizontal">16dp</dimen>
+    <dimen name="toolbar_title_size">16sp</dimen>
+    <dimen name="toolbar_title_margin_start">16dp</dimen>
+
+    <!-- Dialogs: common -->
+    <dimen name="dialog_image_preview_height">220dp</dimen>
+    <dimen name="dialog_button_height">40dp</dimen>
+    <dimen name="dialog_icon_button_size">36dp</dimen>
+    <dimen name="dialog_close_btn_size">28dp</dimen>
+    <dimen name="progress_dialog_width">90dp</dimen>
+
+    <!-- Dialog: Reward -->
+    <dimen name="dialog_reward_width">0dp</dimen>
+    <dimen name="dialog_reward_margin">20dp</dimen>
+    <dimen name="dialog_reward_corner_radius">16dp</dimen>
+    <dimen name="dialog_reward_elevation">6dp</dimen>
+    <dimen name="dialog_reward_padding">20dp</dimen>
+    <dimen name="dialog_reward_icon_size">80dp</dimen>
+    <dimen name="dialog_reward_title_margin_top">12dp</dimen>
+    <dimen name="dialog_reward_title_text_size">24sp</dimen>
+    <dimen name="dialog_reward_subtitle_margin_top">6dp</dimen>
+    <dimen name="dialog_reward_subtitle_text_size">16sp</dimen>
+    <dimen name="dialog_reward_container_margin_top">12dp</dimen>
+    <dimen name="dialog_reward_container_padding_h">20dp</dimen>
+    <dimen name="dialog_reward_container_padding_v">10dp</dimen>
+    <dimen name="dialog_reward_type_icon_size">32dp</dimen>
+    <dimen name="dialog_reward_amount_margin_start">10dp</dimen>
+    <dimen name="dialog_reward_amount_text_size">28sp</dimen>
+    <dimen name="dialog_reward_type_margin_start">8dp</dimen>
+    <dimen name="dialog_reward_type_text_size">18sp</dimen>
+    <dimen name="dialog_reward_desc_margin_top">10dp</dimen>
+    <dimen name="dialog_reward_desc_text_size">14sp</dimen>
+    <dimen name="dialog_reward_claim_height">44dp</dimen>
+    <dimen name="dialog_reward_claim_margin_top">16dp</dimen>
+    <dimen name="dialog_reward_claim_text_size">16sp</dimen>
+
+    <!-- Dialog: Exit -->
+    <dimen name="dialog_exit_title_margin_top">10dp</dimen>
+    <dimen name="dialog_exit_title_text_size">18sp</dimen>
+    <dimen name="dialog_exit_ad_margin_h">5dp</dimen>
+    <dimen name="dialog_exit_ad_margin_top">3dp</dimen>
+    <dimen name="dialog_exit_btn_margin_top">3dp</dimen>
+    <dimen name="dialog_exit_btn_height">40dp</dimen>
+    <dimen name="dialog_exit_btn_text_size">15sp</dimen>
+
+    <!-- Dialog: Two Button -->
+    <dimen name="dialog_two_btn_width">250dp</dimen>
+    <dimen name="dialog_two_btn_elevation">6dp</dimen>
+    <dimen name="dialog_two_btn_padding">12dp</dimen>
+    <dimen name="dialog_two_btn_title_margin_top">4dp</dimen>
+    <dimen name="dialog_two_btn_title_margin_bottom">6dp</dimen>
+    <dimen name="dialog_two_btn_title_text_size">14sp</dimen>
+    <dimen name="dialog_two_btn_msg_margin_bottom">10dp</dimen>
+    <dimen name="dialog_two_btn_msg_line_spacing">2dp</dimen>
+    <dimen name="dialog_two_btn_msg_padding">10dp</dimen>
+    <dimen name="dialog_two_btn_msg_text_size">12sp</dimen>
+    <dimen name="dialog_two_btn_btn_height">36dp</dimen>
+    <dimen name="dialog_two_btn_btn_margin_end">8dp</dimen>
+    <dimen name="dialog_two_btn_btn_text_size">13sp</dimen>
+
+    <!-- Dialog: Progress -->
+    <dimen name="progress_dialog_corner_radius">15dp</dimen>
+    <dimen name="progress_dialog_elevation">2dp</dimen>
+    <dimen name="progress_dialog_padding">10dp</dimen>
+    <dimen name="progress_dialog_margin_top">10dp</dimen>
+    <dimen name="progress_dialog_image_size">80dp</dimen>
+    <dimen name="progress_dialog_lottie_size">40dp</dimen>
+    <dimen name="progress_dialog_progress_size">40dp</dimen>
+    <dimen name="progress_dialog_msg_margin_top">10dp</dimen>
+    <dimen name="progress_dialog_msg_text_size">14sp</dimen>
+
+    <!-- Dialog: Drawbook -->
+    <dimen name="dialog_drawbook_padding">16dp</dimen>
+    <dimen name="dialog_drawbook_header_text_size">14sp</dimen>
+    <dimen name="dialog_drawbook_divider_height">1dp</dimen>
+    <dimen name="dialog_drawbook_divider_margin_top">8dp</dimen>
+    <dimen name="dialog_drawbook_divider_margin_bottom">10dp</dimen>
+    <dimen name="dialog_drawbook_icon_btn_padding">8dp</dimen>
+    <dimen name="dialog_drawbook_btn_spacing">10dp</dimen>
+    <dimen name="dialog_drawbook_preview_margin_top">10dp</dimen>
+    <dimen name="dialog_drawbook_continue_margin_top">12dp</dimen>
+    <dimen name="dialog_drawbook_continue_text_size">14sp</dimen>
+
+    <!-- Dialog: Sound/Music -->
+    <dimen name="dialog_sound_toolbar_text_margin">16dp</dimen>
+    <dimen name="dialog_sound_toolbar_text_size">16sp</dimen>
+    <dimen name="dialog_sound_btn_size">28dp</dimen>
+    <dimen name="dialog_sound_btn_margin_h">16dp</dimen>
+    <dimen name="dialog_sound_icon_size">24dp</dimen>
+    <dimen name="dialog_sound_progress_size">20dp</dimen>
+    <dimen name="dialog_sound_lib_margin_h">12dp</dimen>
+    <dimen name="dialog_sound_lib_icon_size">24dp</dimen>
+    <dimen name="dialog_sound_lib_icon_padding">2dp</dimen>
+    <dimen name="dialog_sound_lib_icon_margin">6dp</dimen>
+    <dimen name="dialog_sound_lib_text_margin_start">8dp</dimen>
+    <dimen name="dialog_sound_lib_text_size">14sp</dimen>
+    <dimen name="dialog_sound_list_margin_top">10dp</dimen>
+    <dimen name="dialog_sound_list_margin_bottom">30dp</dimen>
+
+    <!-- Dialog: Music Item -->
+    <dimen name="music_item_padding_v">10dp</dimen>
+    <dimen name="music_item_padding_h">16dp</dimen>
+    <dimen name="music_item_play_btn_size">30dp</dimen>
+    <dimen name="music_item_play_btn_padding">7dp</dimen>
+    <dimen name="music_item_title_text_size">12sp</dimen>
+    <dimen name="music_item_title_margin_h">10dp</dimen>
+    <dimen name="music_item_choose_padding_v">4dp</dimen>
+    <dimen name="music_item_choose_padding_h">6dp</dimen>
+    <dimen name="music_item_choose_text_size">12sp</dimen>
+
+    <!-- Dialog: Loading Ads -->
+    <dimen name="dialog_loading_progress_size">20dp</dimen>
+    <dimen name="dialog_loading_text_size">13sp</dimen>
+    <dimen name="dialog_loading_text_margin_top">16dp</dimen>
+
+    <!-- Ads -->
+    <dimen name="ad_media_height">140dp</dimen>
+    <dimen name="ad_native_view_min_height">192dp</dimen>
+    <dimen name="ad_native_item_min_height">69dp</dimen>
+    <dimen name="ad_banner_min_height">50dp</dimen>
+    <dimen name="ad_icon_size">52dp</dimen>
+    <dimen name="ad_icon_size_small">55dp</dimen>
+
+    <!-- Tabs -->
+    <dimen name="tab_layout_height">40dp</dimen>
+    <dimen name="tab_text_size">13sp</dimen>
+    <dimen name="tab_indicator_height">3dp</dimen>
+    <dimen name="tab_padding_h">0dp</dimen>
+    <dimen name="tab_item_padding_h">12dp</dimen>
+    <dimen name="tab_content_padding">5dp</dimen>
+    <dimen name="tab_loading_size">20dp</dimen>
+    <dimen name="tab_no_data_text_size">13sp</dimen>
+    <dimen name="tab_no_data_margin_top">16dp</dimen>
+    <dimen name="tab_ads_margin_top">5dp</dimen>
+    <dimen name="tab_ads_margin_bottom">-1dp</dimen>
+
+    <!-- Effect/filter items -->
+    <dimen name="effect_item_size">65dp</dimen>
+    <dimen name="effect_scroll_height">85dp</dimen>
+    <dimen name="effect_scroll_offset_filter">105dp</dimen>
+    <dimen name="effect_scroll_offset_outline">210dp</dimen>
+    <dimen name="effect_item_margin_h">6dp</dimen>
+    <dimen name="effect_item_corner_radius">10dp</dimen>
+    <dimen name="effect_item_text_size">10sp</dimen>
+    <dimen name="effect_item_text_margin_h">3dp</dimen>
+    <dimen name="effect_item_text_margin_bottom">4dp</dimen>
+
+    <!-- Game elements -->
+    <dimen name="game_action_btn_size">40dp</dimen>
+    <dimen name="game_btn_margin">16dp</dimen>
+    <dimen name="game_btn_elevation">6dp</dimen>
+    <dimen name="game_btn_icon_padding">12dp</dimen>
+    <dimen name="game_btn_icon_padding_inner">11dp</dimen>
+    <dimen name="game_hint_btn_padding">6dp</dimen>
+    <dimen name="game_hint_text_size">16sp</dimen>
+    <dimen name="game_music_btn_spacing">12dp</dimen>
+    <dimen name="game_loading_spinner_size">20dp</dimen>
+    <dimen name="game_loading_text_size">13sp</dimen>
+    <dimen name="game_loading_text_margin_top">26dp</dimen>
+    <dimen name="game_error_text_size">12sp</dimen>
+    <dimen name="game_error_margin_top">12dp</dimen>
+    <dimen name="game_error_btn_margin_top">10dp</dimen>
+    <dimen name="game_error_btn_padding_h">14dp</dimen>
+    <dimen name="game_error_btn_padding_v">5dp</dimen>
+    <dimen name="game_timer_size">60dp</dimen>
+    <dimen name="game_timer_inner_size">35dp</dimen>
+    <dimen name="game_timer_margin_start">5dp</dimen>
+    <dimen name="game_timer_radius">8dp</dimen>
+    <dimen name="game_timer_stroke_width">1dp</dimen>
+    <dimen name="game_ads_margin_top">5dp</dimen>
+    <dimen name="game_ads_margin_bottom">-1dp</dimen>
+
+    <!-- Share icons -->
+    <dimen name="share_icon_size">42dp</dimen>
+    <dimen name="share_icon_size_small">36dp</dimen>
+
+    <!-- No data icon -->
+    <dimen name="no_data_icon_size">100dp</dimen>
+
+    <!-- Splash -->
+    <dimen name="splash_icon_size">90dp</dimen>
+    <dimen name="splash_title_text_size">19sp</dimen>
+    <dimen name="splash_title_margin_top">16dp</dimen>
+    <dimen name="splash_progress_size">22dp</dimen>
+    <dimen name="splash_progress_margin_bottom">8dp</dimen>
+    <dimen name="splash_ads_text_size">13sp</dimen>
+    <dimen name="splash_bottom_margin">28dp</dimen>
+
+    <!-- Color palette item (game) -->
+    <dimen name="color_item_size">48dp</dimen>
+    <dimen name="color_item_inner_margin">4dp</dimen>
+    <dimen name="color_item_progress_width">3dp</dimen>
+    <dimen name="color_item_number_text_size">13sp</dimen>
+    <dimen name="color_item_spacing">4dp</dimen>
+    <dimen name="color_item_rv_padding_h">12dp</dimen>
+    <dimen name="color_item_rv_padding_v">10dp</dimen>
+    <dimen name="color_item_rv_margin_h">16dp</dimen>
+    <dimen name="color_item_rv_margin_v">8dp</dimen>
+
+    <!-- Pixel art screen (activity_pixels_by_number) -->
+    <dimen name="pixel_tool_btn_size">38dp</dimen>
+    <dimen name="pixel_tool_btn_padding">12dp</dimen>
+    <dimen name="pixel_tool_btn_elevation">6dp</dimen>
+    <dimen name="pixel_tool_btn_margin">16dp</dimen>
+    <dimen name="pixel_tool_btn_spacing">10dp</dimen>
+    <dimen name="pixel_wand_holder_size">40dp</dimen>
+    <dimen name="pixel_wand_icon_padding">10dp</dimen>
+    <dimen name="pixel_ad_badge_size">26dp</dimen>
+    <dimen name="pixel_ad_badge_text_size">10sp</dimen>
+    <dimen name="pixel_aim_size">64dp</dimen>
+    <dimen name="pixel_ads_margin_top">5dp</dimen>
+    <dimen name="pixel_ads_margin_bottom">-1dp</dimen>
+
+    <!-- Color palette item (pixel art) -->
+    <dimen name="color_row_item_size">38dp</dimen>
+    <dimen name="color_row_swatch_size">44dp</dimen>
+    <dimen name="color_row_swatch_inset">3dp</dimen>
+    <dimen name="color_row_number_text_size">12sp</dimen>
+    <dimen name="color_row_check_size">16dp</dimen>
+    <dimen name="color_row_item_spacing">2dp</dimen>
+    <dimen name="color_row_rv_padding_h">10dp</dimen>
+    <dimen name="color_row_rv_margin_bottom">4dp</dimen>
+    <dimen name="color_row_stroke_width">2dp</dimen>
+
+    <!-- Import / Scan screen -->
+    <dimen name="scan_text_size">13sp</dimen>
+    <dimen name="scan_text_margin">16dp</dimen>
+    <dimen name="scan_counter_margin">10dp</dimen>
+    <dimen name="scan_example_spacing">6dp</dimen>
+    <dimen name="scan_example_corner_radius">16dp</dimen>
+    <dimen name="scan_gallery_btn_margin_h">22dp</dimen>
+    <dimen name="scan_gallery_btn_margin_v">12dp</dimen>
+    <dimen name="scan_gallery_btn_padding_v">13dp</dimen>
+    <dimen name="scan_gallery_icon_size">18dp</dimen>
+    <dimen name="scan_gallery_text_margin">12dp</dimen>
+    <dimen name="scan_gallery_text_size">14sp</dimen>
+    <dimen name="scan_progress_size">20dp</dimen>
+    <dimen name="scan_action_btn_size">38dp</dimen>
+    <dimen name="scan_action_btn_margin">10dp</dimen>
+    <dimen name="scan_action_btn_elevation">6dp</dimen>
+    <dimen name="scan_action_btn_padding">12dp</dimen>
+    <dimen name="scan_crop_margin_h">16dp</dimen>
+    <dimen name="scan_section_spacing">10dp</dimen>
+
+    <!-- Settings screen -->
+    <dimen name="settings_row_margin_top">12dp</dimen>
+    <dimen name="settings_row_padding_v">8dp</dimen>
+    <dimen name="settings_icon_size">22dp</dimen>
+    <dimen name="settings_text_margin_start">10dp</dimen>
+    <dimen name="settings_text_size">14sp</dimen>
+    <dimen name="settings_arrow_size">16dp</dimen>
+    <dimen name="settings_section_margin_top">16dp</dimen>
+    <dimen name="settings_ads_margin_top">5dp</dimen>
+    <dimen name="settings_ads_margin_bottom">-1dp</dimen>
+    <dimen name="settings_content_padding_h">0dp</dimen>
+
+    <!-- My Works empty state -->
+    <dimen name="myworks_empty_text_size">14sp</dimen>
+    <dimen name="myworks_empty_desc_margin">24dp</dimen>
+    <dimen name="myworks_empty_padding_h">16dp</dimen>
+
+    <!-- Share screen -->
+    <dimen name="share_back_btn_padding">8dp</dimen>
+    <dimen name="share_done_btn_height">34dp</dimen>
+    <dimen name="share_done_btn_padding_h">13dp</dimen>
+    <dimen name="share_done_btn_text_size">12sp</dimen>
+    <dimen name="share_card_corner_radius">14dp</dimen>
+    <dimen name="share_card_elevation">2dp</dimen>
+    <dimen name="share_card_inner_padding">16dp</dimen>
+    <dimen name="share_handle_width">36dp</dimen>
+    <dimen name="share_handle_height">4dp</dimen>
+    <dimen name="share_handle_margin_bottom">10dp</dimen>
+    <dimen name="share_desc_text_size">13sp</dimen>
+    <dimen name="share_btn_container_margin_top">10dp</dimen>
+    <dimen name="share_btn_container_padding">12dp</dimen>
+    <dimen name="share_btn_icon_padding">8dp</dimen>
+    <dimen name="share_btn_label_margin_top">5dp</dimen>
+    <dimen name="share_btn_label_text_size">9sp</dimen>
+    <dimen name="share_ad_margin_top">10dp</dimen>
+    <dimen name="share_content_margin_h">0dp</dimen>
+    <dimen name="share_preview_margin_h">16dp</dimen>
+    <dimen name="share_preview_margin_v">12dp</dimen>
+    <dimen name="share_sheet_padding_top">14dp</dimen>
+    <dimen name="share_icon_card_margin">8dp</dimen>
+    <dimen name="share_icon_card_corner_radius">50dp</dimen>
+    <dimen name="share_icon_card_padding">10dp</dimen>
+
+    <!-- Finalize / Effect Selection screen -->
+    <dimen name="finalize_scroll_margin_v">5dp</dimen>
+    <dimen name="finalize_bar_margin_top">8dp</dimen>
+    <dimen name="finalize_bar_margin_bottom">16dp</dimen>
+    <dimen name="finalize_bar_btn_text_size">13sp</dimen>
+    <dimen name="finalize_bar_btn_spacing">8dp</dimen>
+    <dimen name="finalize_ads_margin_top">5dp</dimen>
+    <dimen name="finalize_ads_margin_bottom">-1dp</dimen>
+    <dimen name="finalize_content_margin_h">0dp</dimen>
+
+    <!-- Bottom bar buttons -->
+    <dimen name="bottom_bar_btn_height">38dp</dimen>
+
+    <!-- Main home screen -->
+    <dimen name="main_content_padding_h">16dp</dimen>
+    <dimen name="main_title_text_size">24sp</dimen>
+    <dimen name="main_subtitle_text_size">12sp</dimen>
+    <dimen name="main_subtitle_margin_top">8dp</dimen>
+    <dimen name="main_header_margin_top">24dp</dimen>
+    <dimen name="main_streak_padding_h">8dp</dimen>
+    <dimen name="main_streak_padding_v">4dp</dimen>
+    <dimen name="main_streak_icon_size">16dp</dimen>
+    <dimen name="main_streak_text_margin">4dp</dimen>
+    <dimen name="main_streak_text_size">12sp</dimen>
+    <dimen name="main_content_padding_top">8dp</dimen>
+    <dimen name="main_content_padding_bottom">18dp</dimen>
+    <dimen name="main_feature_card_height">155dp</dimen>
+    <dimen name="main_feature_card_spacing">10dp</dimen>
+    <dimen name="main_feature_card_radius">20dp</dimen>
+    <dimen name="main_feature_icon_size">48dp</dimen>
+    <dimen name="main_feature_icon_margin">14dp</dimen>
+    <dimen name="main_feature_icon_padding">8dp</dimen>
+    <dimen name="main_feature_icon_bg_radius">12dp</dimen>
+    <dimen name="main_sparkle_gold_size">22dp</dimen>
+    <dimen name="main_sparkle_white_size">14dp</dimen>
+    <dimen name="main_sparkle_spacing">2dp</dimen>
+    <dimen name="main_dot_size">5dp</dimen>
+    <dimen name="main_feature_text_size">16sp</dimen>
+    <dimen name="main_feature_text_size_sm">15sp</dimen>
+    <dimen name="main_feature_arrow_size">28dp</dimen>
+    <dimen name="main_feature_arrow_padding">7dp</dimen>
+    <dimen name="main_badge_padding_h">8dp</dimen>
+    <dimen name="main_badge_padding_v">2dp</dimen>
+    <dimen name="main_badge_text_size">9sp</dimen>
+    <dimen name="main_badge_margin">10dp</dimen>
+    <dimen name="main_row_spacing">12dp</dimen>
+    <dimen name="main_dark_card_radius">16dp</dimen>
+    <dimen name="main_list_icon_size">38dp</dimen>
+    <dimen name="main_list_icon_margin">10dp</dimen>
+    <dimen name="main_list_icon_padding">10dp</dimen>
+    <dimen name="main_list_text_size">15sp</dimen>
+    <dimen name="main_list_arrow_size">30dp</dimen>
+    <dimen name="main_list_arrow_padding">8dp</dimen>
+    <dimen name="main_list_row_spacing">10dp</dimen>
+    <dimen name="main_list_padding_v">12dp</dimen>
+    <dimen name="main_list_padding_h">14dp</dimen>
+    <dimen name="main_ads_margin_top">10dp</dimen>
+
+    <!-- Main home screen (landscape) -->
+    <dimen name="main_land_content_padding_bottom">12dp</dimen>
+    <dimen name="main_land_feature_card_height">120dp</dimen>
+    <dimen name="main_land_card_spacing">6dp</dimen>
+    <dimen name="main_land_feature_icon_size">30dp</dimen>
+    <dimen name="main_land_text_size">13sp</dimen>
+
+    <!-- Editor screen -->
+    <dimen name="editor_progress_size">20dp</dimen>
+    <dimen name="editor_back_margin">16dp</dimen>
+    <dimen name="editor_ads_margin_top">5dp</dimen>
+    <dimen name="editor_ads_margin_bottom">-1dp</dimen>
+
+    <!-- Music storage dialog -->
+    <dimen name="music_dialog_list_margin">16dp</dimen>
+
+    <!-- Grid items (book, coloring, daily) -->
+    <dimen name="grid_card_corner_radius">16dp</dimen>
+    <dimen name="grid_card_corner_radius_lg">16dp</dimen>
+    <dimen name="grid_card_elevation">2dp</dimen>
+    <dimen name="grid_card_inner_padding">3dp</dimen>
+    <dimen name="grid_image_padding">2dp</dimen>
+    <dimen name="grid_badge_margin">1dp</dimen>
+    <dimen name="grid_progress_size">20dp</dimen>
+
+    <!-- Pixel art grid item -->
+    <dimen name="pixel_grid_card_margin">10dp</dimen>
+    <dimen name="pixel_grid_card_corner_radius">10dp</dimen>
+    <dimen name="pixel_grid_image_margin">1dp</dimen>
+
+    <!-- Ads loading placeholder -->
+    <dimen name="ad_loading_padding">4dp</dimen>
+    <dimen name="ad_loading_progress_size">12dp</dimen>
+    <dimen name="ad_loading_text_size">9sp</dimen>
+    <dimen name="ad_loading_text_margin_top">2dp</dimen>
+
+    <!-- Ads unified item (banner style) -->
+    <dimen name="ad_item_outer_margin">1dp</dimen>
+    <dimen name="ad_item_icon_margin_v">2dp</dimen>
+    <dimen name="ad_item_icon_margin_start">2dp</dimen>
+    <dimen name="ad_item_icon_margin_end">5dp</dimen>
+    <dimen name="ad_item_badge_padding_h">2dp</dimen>
+    <dimen name="ad_item_badge_margin_start">3dp</dimen>
+    <dimen name="ad_item_badge_text_size">9sp</dimen>
+    <dimen name="ad_item_headline_text_size">12sp</dimen>
+    <dimen name="ad_item_headline_margin_start">5dp</dimen>
+    <dimen name="ad_item_body_text_size">10sp</dimen>
+    <dimen name="ad_item_body_margin_top">3dp</dimen>
+    <dimen name="ad_item_cta_text_size">11sp</dimen>
+
+    <!-- Ads unified view (native ad) -->
+    <dimen name="ad_view_section_margin_top">4dp</dimen>
+    <dimen name="ad_view_section_margin_h">2dp</dimen>
+    <dimen name="ad_view_badge_margin_start">2dp</dimen>
+    <dimen name="ad_view_headline_text_size">15sp</dimen>
+    <dimen name="ad_view_content_margin_h">4dp</dimen>
+    <dimen name="ad_view_body_margin_top">2dp</dimen>
+</resources>

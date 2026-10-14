@@ -1,0 +1,36 @@
+{
+    "filter": "gradients",
+    "bg_color" : "0x8000006e",
+    "colors" :
+    [
+     {"color" : "0x8000006c"},
+     {"color" : "0x8000006d"},
+     {"color" : "0x8000006e"},
+     {"color" : "0x8000006f"},
+     {"color" : "0x80000070"},
+     
+     {"color" : "0x80000071"},
+     {"color" : "0x80000072"},
+     {"color" : "0x80000073"},
+     {"color" : "0x80000074"},
+     {"color" : "0x80000075"},
+     {"color" : "0x80000076"}
+     ],
+    "colors_ipad" :
+    [
+     {"color" : "0x8000006c"},
+     {"color" : "0x8000006d"},
+     {"color" : "0x8000006e"},
+     {"color" : "0x8000006f"},
+     {"color" : "0x80000070"},
+     
+     {"color" : "0x80000071"},
+     {"color" : "0x80000072"},
+     {"color" : "0x80000073"},
+     {"color" : "0x80000074"},
+     {"color" : "0x80000075"},
+     {"color" : "0x80000076"}
+     ],
+    "name" : "Violets",
+    "premium" : false
+}

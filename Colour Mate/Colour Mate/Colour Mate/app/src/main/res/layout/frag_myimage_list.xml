@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <include
+        android:id="@+id/book_list_include"
+        layout="@layout/frag_book_item_list" />
+
+    <include
+        android:id="@+id/none_colored"
+        layout="@layout/frag_book_myworks_none_colored" />
+</FrameLayout>

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="@dimen/effect_item_size"
+    android:layout_height="@dimen/effect_item_size"
+    android:layout_marginLeft="@dimen/effect_item_margin_h"
+    android:layout_marginRight="@dimen/effect_item_margin_h"
+    android:background="@null"
+    app:cardBackgroundColor="@null"
+    app:cardCornerRadius="@dimen/effect_item_corner_radius"
+    app:cardElevation="0dp">
+
+    <FrameLayout
+        android:id="@+id/fl_effect_item_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@null"
+        android:foreground="@drawable/white_ripple"
+        android:orientation="vertical">
+
+
+        <TextView
+            android:id="@+id/tv_effect_item_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|center_vertical|center_horizontal|center"
+            android:layout_marginBottom="@dimen/effect_item_text_margin_bottom"
+            android:background="@null"
+            android:fontFamily="@font/quicksand_bold"
+            android:gravity="center"
+            android:includeFontPadding="false"
+            android:text=""
+            android:textColor="@color/charcoal_gray"
+            android:textSize="@dimen/effect_item_text_size"
+            android:textStyle="normal" />
+
+        <View
+            android:id="@+id/v_effect_sel"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/effect_selector" />
+    </FrameLayout>
+</androidx.cardview.widget.CardView>

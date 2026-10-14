@@ -1,0 +1,20 @@
+{
+  "bg_color" : "0xc3000240",
+  "filter": "livecolors",
+  "colors" : [
+    {"color" : "0xc3000240"},
+    {"color" : "0xc3000242"},
+    {"color" : "0xc3000244"},
+    {"color" : "0xc3000246"},
+    {"color" : "0xc300025f"},
+              
+    {"color" : "0xc300023f"},
+    {"color" : "0xc3000241"},
+    {"color" : "0xc3000243"},
+    {"color" : "0xc3000245"},
+    {"color" : "0xc3000247"},
+    {"color" : "0xc3000260"}
+  ],
+  "name" : "Blacks",
+  "premium" : true
+}

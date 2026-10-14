@@ -1,0 +1,38 @@
+{
+    "sprite" : "repal9.png",
+    "filter": "recolorpalettes",
+    "bg_color" : "fff36e52",
+    "colors" :
+    [
+     {"color" : "0xe0393b2e"},
+     {"color" : "0xe08d8b91"},
+     {"color" : "0xe083aac3"},
+     {"color" : "0xe0b0d4e6"},
+     {"color" : "0xe0f8f4f5"},
+     
+     {"color" : "0xe0526ef3"},
+     {"color" : "0xe0a37ff2"},
+     {"color" : "0xe07fb5fb"},
+     {"color" : "0xe098ecfc"},
+     {"color" : "0xe0f1dfaa"},
+     {"color" : "0xe0a5ca80"}
+     ],
+    "colors_ipad" :
+    [
+     {"color" : "0xe0f1dfaa"},
+     {"color" : "0xe0a5ca80"},
+     {"color" : "0xe0526ef3"},
+     {"color" : "0xe0a37ff2"},
+     {"color" : "0xe07fb5fb"},
+     {"color" : "0xe098ecfc"},
+     
+     {"color" : "0xe0f8f4f5"},
+     {"color" : "0xe0b0d4e6"},
+     {"color" : "0xe083aac3"},
+     {"color" : "0xe08d8b91"},
+     {"color" : "0xe0393b2e"}
+     
+     ],
+    "name" : "Vintage",
+    "premium" : false
+}

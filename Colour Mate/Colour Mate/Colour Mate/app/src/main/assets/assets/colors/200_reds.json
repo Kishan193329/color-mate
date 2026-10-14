@@ -1,0 +1,39 @@
+{
+    "sprite" : "repal17.png",
+    "filter" : "solidcolors",
+    "bg_color" : "ffd92327",
+    "colors" :
+    [
+     {"color" : "0xe01a188a"},
+     {"color" : "0xe0272dbf"},
+     {"color" : "0xe02723d9"},
+     {"color" : "0xe02923ee"},
+     {"color" : "0xe03e1aed"},
+     
+     {"color" : "0xe03d56ae"},
+     {"color" : "0xe0335ee9"},
+     {"color" : "0xe0a999f5"},
+     {"color" : "0xe06d4bef"},
+     {"color" : "0xe05441cb"},
+     {"color" : "0xe06018df"}
+     ],
+    "colors_ipad" :
+    [
+     {"color" : "0xe01a188a"},
+     {"color" : "0xe0272dbf"},
+     {"color" : "0xe02723d9"},
+     {"color" : "0xe02923ee"},
+     {"color" : "0xe03e1aed"},
+     
+     {"color" : "0xe0a999f5"},
+     {"color" : "0xe06d4bef"},
+     {"color" : "0xe05441cb"},
+
+     {"color" : "0xe03d56ae"},
+     {"color" : "0xe0335ee9"},
+     {"color" : "0xe06018df"}
+
+     ],
+    "name" : "Reds",
+    "premium" : false
+}

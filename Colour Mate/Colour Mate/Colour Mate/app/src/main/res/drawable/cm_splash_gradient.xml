@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Splash ground: violet through purple into blossom, the brand gradient at full strength. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:angle="290"
+                android:startColor="#FF6D4DFF"
+                android:centerColor="#FF9A5BFF"
+                android:endColor="#FFFF7FB5"
+                android:type="linear" />
+        </shape>
+    </item>
+    <!-- A turquoise glow low-left keeps the gradient from reading as a stock purple-pink. -->
+    <item android:gravity="bottom|left" android:width="380dp" android:height="380dp" android:left="-140dp" android:bottom="-160dp">
+        <shape android:shape="oval">
+            <gradient android:type="radial" android:gradientRadius="190dp"
+                android:startColor="#5921D4C2" android:endColor="#0021D4C2" />
+        </shape>
+    </item>
+</layer-list>

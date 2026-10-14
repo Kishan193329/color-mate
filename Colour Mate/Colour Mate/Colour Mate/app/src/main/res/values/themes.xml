@@ -1,0 +1,165 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Theme.ColourMate" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
+        <!-- Primary brand color. -->
+        <item name="colorPrimary">@color/purple_500</item>
+        <item name="colorPrimaryVariant">@color/purple_700</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <!-- Secondary brand color. -->
+        <item name="colorSecondary">@color/teal_200</item>
+        <item name="colorSecondaryVariant">@color/teal_700</item>
+        <item name="colorOnSecondary">@color/black</item>
+        <!-- Status bar color. -->
+        <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
+        <!-- Customize your theme here. -->
+    </style>
+
+    <style name="DialogAnimation">
+        <item name="android:windowEnterAnimation">@anim/anim_zoomin</item>
+        <item name="android:windowExitAnimation">@anim/anim_zoomout</item>
+    </style>
+
+
+    <style name="draw_d" parent="@android:style/Theme.Dialog">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowIsFloating">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowAnimationStyle">@style/draw_d_anim</item>
+        <item name="android:windowFullscreen">false</item>
+        <item name="android:windowSoftInputMode">adjustUnspecified|stateVisible</item>
+    </style>
+
+    <style name="draw_d_anim" parent="@android:style/Animation.Activity">
+        <item name="android:windowEnterAnimation">@anim/dialog_zoom_in</item>
+        <item name="android:windowExitAnimation">@anim/dialog_zoom_out</item>
+    </style>
+
+
+    <style name="default_d">
+        <item name="android:backgroundDimAmount">0.85</item>
+        <item name="android:windowBackground">@drawable/rounded_corner_dlg_no_margins</item>
+        <item name="android:windowFrame">@null</item>
+        <item name="android:windowIsFloating">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowTitleStyle">@null</item>
+        <item name="android:windowAnimationStyle">@style/default_d_anim</item>
+        <item name="android:background">@android:color/transparent</item>
+        <item name="android:backgroundDimEnabled">true</item>
+        <item name="android:windowSoftInputMode">adjustUnspecified|stateVisible|adjustResize</item>
+    </style>
+
+    <style name="default_d_anim" parent="@android:style/Animation.Activity">
+        <item name="android:windowEnterAnimation">@anim/dialog_zoom_in</item>
+        <item name="android:windowExitAnimation">@anim/dialog_zoom_out</item>
+    </style>
+
+
+    <!-- Base application theme. -->
+    <style name="Base.Theme.ColorByNumber" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="android:windowBackground">@color/background</item>
+        <item name="android:windowAnimationStyle">@style/SmoothActivityAnimation</item>
+    </style>
+
+    <style name="SmoothActivityAnimation" parent="@android:style/Animation.Activity">
+        <item name="android:activityOpenEnterAnimation">@anim/slide_from_right</item>
+        <item name="android:activityOpenExitAnimation">@anim/slide_to_left</item>
+        <item name="android:activityCloseEnterAnimation">@anim/slide_from_left</item>
+        <item name="android:activityCloseExitAnimation">@anim/slide_to_right</item>
+    </style>
+
+    <style name="Theme.ColorByNumber" parent="Base.Theme.ColorByNumber" />
+
+    <!--
+      windowBackground is what the system paints the instant the process starts, before a single
+      line of app code runs. It was solid black, so every cold start showed ~2.4s of black screen
+      and only then the splash. Pointing it at the splash gradient means the brand is on screen
+      almost immediately and the activity's own content fades in over an identical background —
+      the same total work, but the wait stops looking like a broken app.
+    -->
+    <style name="Theme.Splash" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Painted before any app code runs, so it must match the layout exactly. -->
+        <item name="android:windowBackground">@drawable/cm_splash_bg</item>
+        <item name="android:windowFullscreen">false</item>
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+    </style>
+
+    <style name="Theme.Game.FullScreen" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowActionBar">false</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
+    </style>
+
+    <style name="TabTextStyle">
+        <item name="android:fontFamily">@font/quicksand_bold</item>
+        <item name="android:textSize">@dimen/menu_text_size_small</item>
+    </style>
+
+    <style name="BottomNavTextStyle" parent="TextAppearance.MaterialComponents.Caption">
+        <item name="android:fontFamily">@font/quicksand_semibold</item>
+        <item name="android:textSize">11sp</item>
+    </style>
+
+    <style name="BottomNavIndicator" parent="Widget.Material3.BottomNavigationView.ActiveIndicator">
+        <item name="android:color">#FDE4EC</item>
+        <item name="android:width">48dp</item>
+        <item name="android:height">48dp</item>
+        <item name="shapeAppearance">@style/BottomNavIndicatorShape</item>
+    </style>
+
+    <style name="BottomNavIndicatorShape" parent="ShapeAppearance.Material3.Corner.Full">
+        <item name="cornerSize">50%</item>
+    </style>
+
+    <style name="RoundedCornersDialog_High" parent="@style/Theme.MaterialComponents.Dialog">
+        <item name="dialogCornerRadius">25dp</item>
+    </style>
+    <style name="RoundedCornersDialog_Low" parent="@style/Theme.MaterialComponents.Dialog">
+        <item name="dialogCornerRadius">5dp</item>
+    </style>
+    <style name="RoundedCornersDialog_Mid" parent="@style/Theme.MaterialComponents.Dialog">
+        <item name="dialogCornerRadius">15dp</item>
+    </style>
+    <style name="RoundedCornersDialog_Ultra_High" parent="@style/Theme.MaterialComponents.Dialog">
+        <item name="dialogCornerRadius">35dp</item>
+    </style>
+
+    <style name="FullWidthDialog" parent="@style/Theme.AppCompat.DayNight.Dialog">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowFrame">@null</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowIsFloating">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowAnimationStyle">@style/DialogAnimationAds</item>
+        <item name="android:background">@null</item>
+        <item name="android:windowFullscreen">false</item>
+        <item name="android:windowSoftInputMode">adjustPan</item>
+        <item name="android:windowMinWidthMajor">100%</item>
+        <item name="android:windowMinWidthMinor">100%</item>
+    </style>
+    <style name="DialogAnimationAds" parent="@android:style/Animation.Dialog">
+        <item name="android:windowEnterAnimation">@anim/slide_up_dialog</item>
+        <item name="android:windowExitAnimation">@anim/slide_out_down</item>
+    </style>
+
+    <!--
+      Full-screen ad sheets ("Loading Ads…"). The window background is the app ground, and the
+      layout is pushed behind the system bars by AdController.makeFullScreen() — without that a
+      Dialog stops at the status bar and the screen behind it shows through above the sheet.
+    -->
+    <style name="FullScreenDialogTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="android:windowFullscreen">false</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowBackground">@drawable/cm_bg_paper</item>
+        <item name="android:windowIsFloating">false</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:backgroundDimEnabled">false</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLayoutInDisplayCutoutMode" tools:targetApi="27">shortEdges</item>
+    </style>
+
+</resources>

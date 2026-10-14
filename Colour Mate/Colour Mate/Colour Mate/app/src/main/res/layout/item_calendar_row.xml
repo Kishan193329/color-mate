@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- One date in the list under the calendar: the date, the picture it will show, and its source. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/row_root"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="?android:attr/selectableItemBackground"
+    android:gravity="center_vertical"
+    android:minHeight="60dp"
+    android:orientation="horizontal"
+    android:paddingHorizontal="@dimen/cm_space_4"
+    android:paddingVertical="@dimen/cm_space_2">
+
+    <TextView
+        android:id="@+id/row_date"
+        android:layout_width="46dp"
+        android:layout_height="46dp"
+        android:background="@drawable/cm_cal_cell"
+        android:fontFamily="@font/quicksand_bold"
+        android:fontFeatureSettings="tnum"
+        android:gravity="center"
+        android:includeFontPadding="false"
+        android:textColor="@color/cm_ink"
+        android:textSize="15sp" />
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/cm_space_3"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/row_image"
+            style="@style/CmText.Card"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxLines="1" />
+
+        <TextView
+            android:id="@+id/row_weekday"
+            style="@style/CmText.Caption"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="1dp" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/row_tag"
+        style="@style/CmChip"
+        android:layout_marginStart="@dimen/cm_space_2" />
+
+</LinearLayout>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:padding="6dp">
+
+    <View
+        android:id="@+id/v_color_preview"
+        android:layout_width="72dp"
+        android:layout_height="72dp"
+        android:background="@drawable/bg_theme_item_default" />
+
+    <ImageView
+        android:id="@+id/iv_check"
+        android:layout_width="22dp"
+        android:layout_height="22dp"
+        android:layout_gravity="bottom|end"
+        android:layout_marginEnd="2dp"
+        android:layout_marginBottom="2dp"
+        android:contentDescription="@null"
+        android:src="@drawable/ic_theme_check"
+        android:visibility="gone" />
+
+</FrameLayout>

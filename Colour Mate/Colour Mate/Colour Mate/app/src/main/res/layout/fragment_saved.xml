@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    >
+
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/book_myworks_tabs"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/tab_layout_height"
+        android:background="@android:color/transparent"
+        android:overScrollMode="always"
+        android:paddingHorizontal="@dimen/tab_padding_h"
+        android:theme="@style/ThemeOverlay.AppCompat.Light"
+        app:tabBackground="?attr/selectableItemBackgroundBorderless"
+        app:tabGravity="fill"
+        app:tabIndicatorColor="@color/cm_violet"
+        app:tabIndicatorHeight="@dimen/tab_indicator_height"
+        app:tabMode="scrollable"
+        app:tabPaddingEnd="@dimen/tab_item_padding_h"
+        app:tabPaddingStart="@dimen/tab_item_padding_h"
+        app:tabSelectedTextColor="@color/cm_ink"
+        app:tabTextAppearance="@style/TabTextStyle"
+        app:tabTextColor="#171717" />
+
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/vp_book_myworks"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/book_myworks_tabs"
+        android:background="@null"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+
+</RelativeLayout>

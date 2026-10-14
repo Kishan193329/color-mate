@@ -1,0 +1,36 @@
+{
+    "filter": "gradients",
+    "bg_color" : "0x80000026",
+    "colors" :
+    [
+     {"color" : "0x80000024"},
+     {"color" : "0x80000069"},
+     {"color" : "0x80000028"},
+     {"color" : "0x8000002b"},
+     {"color" : "0x8000002a"},
+     
+     {"color" : "0x80000025"},
+     {"color" : "0x80000026"},
+     {"color" : "0x80000027"},
+     {"color" : "0x80000068"},
+     {"color" : "0x80000029"},
+     {"color" : "0x8000002c"}
+     ],
+    "colors_ipad" :
+    [
+     {"color" : "0x80000024"},
+     {"color" : "0x80000069"},
+     {"color" : "0x80000028"},
+     {"color" : "0x8000002b"},
+     {"color" : "0x8000002a"},
+     
+     {"color" : "0x8000002c"},
+     {"color" : "0x80000029"},
+     {"color" : "0x80000068"},
+     {"color" : "0x80000027"},
+     {"color" : "0x80000026"},
+     {"color" : "0x80000025"}
+     ],
+    "name" : "Browns",
+    "premium" : false
+}

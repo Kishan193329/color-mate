@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/colorContainer"
+    android:layout_width="@dimen/color_item_size"
+    android:layout_height="@dimen/color_item_size"
+    android:layout_marginHorizontal="@dimen/color_item_spacing"
+    android:clipChildren="false"
+    android:clipToPadding="false">
+
+    <!-- Selection highlight ring (behind everything) -->
+    <View
+        android:id="@+id/colorSelectedRing"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center"
+        android:background="@drawable/bg_color_selected_ring"
+        android:visibility="gone" />
+
+    <!-- Color circle -->
+    <ImageView
+        android:id="@+id/colorBackground"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center"
+        android:layout_margin="@dimen/color_item_inner_margin"
+        android:background="@drawable/color_background"
+        android:contentDescription="@string/background"
+        android:padding="6dp"
+        android:scaleType="centerInside" />
+
+    <!-- Progress ring -->
+    <com.mikhaellopez.circularprogressbar.CircularProgressBar
+        android:id="@+id/colorProgress"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center"
+        android:layout_margin="@dimen/color_item_inner_margin"
+        app:cpb_background_progressbar_color="#00FFFFFF"
+        app:cpb_indeterminate_mode="false"
+        app:cpb_progress="50"
+        app:cpb_progress_direction="to_right"
+        app:cpb_progress_max="100"
+        android:visibility="gone"
+        app:cpb_progressbar_color="#66FFFFFF"
+        app:cpb_progressbar_width="@dimen/color_item_progress_width"
+        app:cpb_round_border="true" />
+
+    <!-- Color number -->
+    <TextView
+        android:id="@+id/colorNumber"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center"
+        android:fontFamily="@font/quicksand_bold"
+        android:gravity="center"
+        android:includeFontPadding="false"
+        android:text=""
+        android:textColor="@color/white"
+        android:textSize="@dimen/color_item_number_text_size" />
+
+    <!-- Badge for remaining count -->
+    <TextView
+        android:id="@+id/colorBadge"
+        android:layout_width="18dp"
+        android:layout_height="18dp"
+        android:layout_gravity="top|end"
+        android:background="@drawable/bg_color_badge"
+        android:fontFamily="@font/quicksand_bold"
+        android:gravity="center"
+        android:includeFontPadding="false"
+        android:text="0"
+        android:textColor="@color/cm_violet"
+        android:textSize="9sp"
+       android:visibility="gone"  />
+
+</FrameLayout>

@@ -1,0 +1,38 @@
+{
+    "sprite" : "repal7.png",
+    "filter": "recolorpalettes",
+    "bg_color" : "ff7a9072",
+    "colors" :
+    [
+     {"color" : "0xe03f5969"},
+     {"color" : "0xe054492c"},
+     {"color" : "0xe072907a"},
+     {"color" : "0xe094d2eb"},
+     {"color" : "0xe0cedfe1"},
+
+     {"color" : "0xe05f5abe"},
+     {"color" : "0xe07f1d80"},
+     {"color" : "0xe05c2b26"},
+     {"color" : "0xe09c5369"},
+     {"color" : "0xe0cfacb7"},
+     {"color" : "0xe0dbd6fb"}
+     ],
+    "colors_ipad" :
+    [
+     {"color" : "0xe03f5969"},
+     {"color" : "0xe054492c"},
+     {"color" : "0xe072907a"},
+     {"color" : "0xe094d2eb"},
+     {"color" : "0xe0cedfe1"},
+     {"color" : "0xe0dbd6fb"},
+
+     {"color" : "0xe05f5abe"},
+     {"color" : "0xe07f1d80"},
+     {"color" : "0xe05c2b26"},
+     {"color" : "0xe09c5369"},
+     {"color" : "0xe0cfacb7"}
+     ],
+    "name" : "Paradise",
+    "premium" : false
+}
+

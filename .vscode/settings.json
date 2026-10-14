@@ -1,0 +1,35 @@
+{
+    // ------------------------------------------------------------------
+    // Which Java the IDE uses for this Android project.
+    //
+    // The Red Hat Java extension ships its own *JRE* and falls back to it when
+    // nothing is configured. A JRE has no `jlink` (and no `jmods`), which is why
+    // Gradle failed with:
+    //
+    //   Cause: jlink executable ...\redhat.java-...\jre\...\bin\jlink.exe does not exist.
+    //
+    // Point every Java integration at a real JDK instead. This is the same
+    // Temurin 21 that gradle.properties pins via org.gradle.java.home, so the
+    // IDE and the command line compile with one JVM and cannot disagree.
+    //
+    // NOTE: machine-specific path, like local.properties. Update it on another PC.
+    // ------------------------------------------------------------------
+    "java.jdt.ls.java.home": "C:/Users/User/.gradle/jdks/eclipse_adoptium-21-amd64-windows.2",
+    "java.import.gradle.java.home": "C:/Users/User/.gradle/jdks/eclipse_adoptium-21-amd64-windows.2",
+    "java.configuration.runtimes": [
+        {
+            "name": "JavaSE-21",
+            "path": "C:/Users/User/.gradle/jdks/eclipse_adoptium-21-amd64-windows.2",
+            "default": true
+        }
+    ],
+
+    // The project builds through the wrapper (Gradle 8.13), never a system Gradle.
+    "java.import.gradle.wrapper.enabled": true,
+
+    // Build output and IDE caches are not worth indexing.
+    "files.exclude": {
+        "**/build": true,
+        "**/.gradle": true
+    }
+}

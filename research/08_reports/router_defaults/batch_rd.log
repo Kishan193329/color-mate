@@ -1,9 +1,0 @@
-[09:46:56] router-driven-defaults batch: 27 images
-[09:46:56] chunk 1..6
-[09:48:29] rd_01 status=done PASS=True type=Landscape start=medium chosen=easy revealDE=0.0 leak=0 t=92.5s
-[09:49:15] rd_02 status=done PASS=True type=Landscape start=medium chosen=easy revealDE=0.0 leak=0 t=46.0s
-[09:49:34] rd_03 status=done PASS=True type=Mandala start=easy chosen=easy revealDE=0.0 leak=0 t=19.3s
-[09:50:43] rd_04 status=done PASS=True type=Portrait start=medium chosen=medium revealDE=0.0 leak=0 t=68.8s
-[09:52:06] rd_05 status=done PASS=True type=Portrait start=medium chosen=easy revealDE=0.0 leak=0 t=82.5s
-[09:52:40] rd_06 status=done PASS=True type=Sketch start=easy chosen=hard revealDE=0.0 leak=0 t=33.1s
-[09:52:40] batch complete

@@ -1,0 +1,37 @@
+{
+    "sprite" : "repal19.png",
+    "filter" : "solidcolors",
+    "bg_color" : "ff71cdda",
+    "colors" :
+    [
+     {"color" : "0xe0525a00"},
+     {"color" : "0xe0717800"},
+     {"color" : "0xe08a8800"},
+     {"color" : "0xe09eab00"},
+     {"color" : "0xe0b2bb17"},
+     {"color" : "0xe0cbc554"},
+     {"color" : "0xe0cad18c"},
+     {"color" : "0xe0d7d696"},
+     
+     {"color" : "0xe0dde7c9"},
+     {"color" : "0xe0dacd71"},
+     {"color" : "0xe0d7c028"}
+     ],
+    "colors_ipad" :
+    [
+     {"color" : "0xe0525a00"},
+     {"color" : "0xe0717800"},
+     {"color" : "0xe08a8800"},
+     {"color" : "0xe09eab00"},
+     {"color" : "0xe0b2bb17"},
+     {"color" : "0xe0cbc554"},
+     {"color" : "0xe0cad18c"},
+     {"color" : "0xe0d7d696"},
+
+     {"color" : "0xe0dde7c9"},
+     {"color" : "0xe0dacd71"},
+     {"color" : "0xe0d7c028"}
+     ],
+    "name" : "Cyans",
+    "premium" : false
+}

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+            <LinearLayout
+                android:id="@+id/toolbar"
+                android:layout_width="match_parent"
+                android:layout_height="?actionBarSize"
+                android:paddingHorizontal="@dimen/toolbar_padding_horizontal">
+
+                <RelativeLayout
+                    android:layout_width="@dimen/toolbar_back_btn_size"
+                    android:layout_height="@dimen/toolbar_back_btn_size"
+                android:layout_gravity="center_vertical"
+                android:background="@drawable/round_background">
+
+                <ImageView
+                    android:id="@+id/ivClose1GL"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true"
+                    android:contentDescription="@string/todo"
+                    android:src="@drawable/round_arrow_back_24" />
+
+            </RelativeLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_marginStart="@dimen/toolbar_title_margin_start"
+                android:fontFamily="@font/quicksand_semibold"
+                android:includeFontPadding="false"
+                android:text="Storage List"
+                android:textColor="#191919"
+                android:textSize="@dimen/toolbar_title_size" />
+
+        </LinearLayout>
+
+
+        <ListView
+            android:id="@+id/listMusiclibGL"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/music_dialog_list_margin"
+            android:layout_weight="1"
+            android:scrollbars="none"
+            tools:listitem="@layout/ietm_glcolor_music" />
+    </LinearLayout>
+</LinearLayout>

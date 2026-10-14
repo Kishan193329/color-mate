@@ -1,0 +1,8 @@
+{
+	"name": "plain", 
+	"shader": "shaders/bookexport.fsh",
+	
+	"inputs": {
+		"lut": { "global_lut": true }
+	}
+}

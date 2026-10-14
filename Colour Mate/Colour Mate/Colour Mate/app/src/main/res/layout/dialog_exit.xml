@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_gravity="bottom"
+    android:background="@drawable/charge_layout_background"
+    android:gravity="center"
+    android:orientation="vertical">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="@dimen/dialog_exit_title_margin_top"
+        android:fontFamily="@font/quicksand_semibold"
+        android:gravity="center"
+        android:includeFontPadding="false"
+        android:text="@string/do_you_want_to_exit"
+        android:textColor="@color/charcoal_gray"
+        android:textSize="@dimen/dialog_exit_title_text_size"
+        android:textStyle="bold" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <include
+            android:id="@+id/container_native_item"
+            layout="@layout/ads_native_container_item"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/dialog_exit_ad_margin_h"
+            android:layout_marginTop="@dimen/dialog_exit_ad_margin_top"
+            android:layout_marginEnd="@dimen/dialog_exit_ad_margin_h"
+            android:visibility="gone" />
+
+        <include
+            android:id="@+id/container_native_view"
+            layout="@layout/ads_native_container_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginStart="@dimen/dialog_exit_ad_margin_h"
+            android:layout_marginTop="@dimen/dialog_exit_ad_margin_top"
+            android:layout_marginEnd="@dimen/dialog_exit_ad_margin_h"
+            android:visibility="gone" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/dialog_exit_btn_margin_top"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="right"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/iv_yes"
+                android:layout_width="0dp"
+                android:layout_height="@dimen/dialog_exit_btn_height"
+                android:layout_gravity="center"
+                android:layout_weight="1"
+                android:adjustViewBounds="true"
+                android:background="@color/hint_text_color"
+                android:fontFamily="@font/quicksand_medium"
+                android:gravity="center"
+                android:includeFontPadding="false"
+                android:text="@string/tap_here_to_exit"
+                android:textColor="#ffffff"
+                android:textSize="@dimen/dialog_exit_btn_text_size"
+                android:textStyle="bold" />
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>

@@ -1,0 +1,26 @@
+{
+	"name": "hatching", 
+	"shader": "shaders/hatching2.fsh",
+	"autoblurmaps": true, 
+    
+    "inputs": {
+        "pattern": {
+        	"path": "assets/penciltesting10.jpg",
+			"mipmaps": false,
+			"repeat": true
+		},
+        "background": {
+        	"path": "assets/paper1.png",
+			"mipmaps": true,
+			"repeat": true
+		}
+    },
+    
+    "uvmatrix": {
+    	"type": "randomfree",
+    	"allowxflip": true,
+    	"allowyflip": true, 
+    	"scale": 2.75,
+    	"scale_random": 0.5
+    }
+}

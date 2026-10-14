@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Selected-tab pill. Deliberately flat: the old game_button_default had a drop shadow, an inner
+  border and a gloss gradient stacked in one layer-list, which is what made the bar look heavy.
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="@color/nav_pill" />
+    <corners android:radius="16dp" />
+</shape>

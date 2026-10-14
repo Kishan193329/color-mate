@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- App ground. A lilac paper with two faint paint blooms so white cards have something to float on. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <gradient android:angle="270" android:startColor="#FFEFE9FA" android:centerColor="#FFF6F3FC" android:endColor="#FFFBF9FF" android:type="linear" />
+        </shape>
+    </item>
+    <item android:gravity="top|left" android:width="320dp" android:height="320dp" android:left="-90dp" android:top="-110dp">
+        <shape android:shape="oval">
+            <gradient android:type="radial" android:gradientRadius="160dp" android:startColor="#387A5CFF" android:endColor="#007A5CFF" />
+        </shape>
+    </item>
+    <item android:gravity="top|right" android:width="300dp" android:height="300dp" android:right="-120dp" android:top="-70dp">
+        <shape android:shape="oval">
+            <gradient android:type="radial" android:gradientRadius="150dp" android:startColor="#30FF6BA9" android:endColor="#00FF6BA9" />
+        </shape>
+    </item>
+</layer-list>

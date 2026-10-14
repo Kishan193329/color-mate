@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  SELECTED plan chip in Settings, matched to the Premium screen's selected card.
+
+  Deliberately NOT bg_plan_selected: that one is white-on-violet and is also used by the Daily
+  streak chip, which still sits on a gradient. Redefining it would have fixed this card and broken
+  that one.
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <corners android:radius="@dimen/cm_radius_md" />
+    <gradient
+        android:angle="270"
+        android:startColor="#FFFFF6E2"
+        android:endColor="#FFFFFDF7"
+        android:type="linear" />
+    <stroke android:width="2dp" android:color="@color/cm_gold" />
+</shape>

@@ -1,0 +1,20 @@
+{
+  "bg_color" : "0xc30002b9",
+  "filter": "livecolors",
+  "colors" : [
+    {"color" : "0xc30002b1"},
+    {"color" : "0xc30002b3"},
+    {"color" : "0xc30002b9"},
+    {"color" : "0xc30002b7"},
+    {"color" : "0xc30002b5"},
+              
+    {"color" : "0xc30002b0"},
+    {"color" : "0xc30002b2"},
+    {"color" : "0xc30002ba"},
+    {"color" : "0xc30002b6"},
+    {"color" : "0xc30002b4"},
+    {"color" : "0xc30002b8"}
+  ],
+  "name" : "Metallic",
+  "premium" : true
+}

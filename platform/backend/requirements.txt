@@ -1,0 +1,9 @@
+# ColorForge platform backend — the whole dependency set.
+fastapi
+uvicorn[standard]
+python-multipart          # multipart file upload
+numpy
+opencv-python-headless    # server-side (no GUI libs)
+torch                     # CPU build; runs the line-art model. Omit -> pure-colour fallback.
+boto3                     # S3 storage backend (only used when STORAGE=s3)
+PyJWT                     # JWT access/refresh tokens for login/roles

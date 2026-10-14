@@ -1,0 +1,30 @@
+{
+	"shader": "shaders/bookexport_glasstiles2.fsh",
+	"autoblurmaps": true, 
+    
+    "inputs": {
+	     "bumpmap": {
+        	"path": "assets/glass_refract2.jpg",
+			"mipmaps": true,
+			"repeat": true
+		},
+        "specularMap": {
+        	"path": "assets/envmap2.jpg",
+			"mipmaps": false,
+			"repeat": false
+        },
+        "lut": {
+            "global_lut": true
+        }
+	},
+    
+    "uvmatrix": {
+    	"type": "random",
+    	"allowxflip": false,
+    	"allowyflip": false, 
+    	"allowxrandom": true, 
+    	"allowyrandom": true,
+    	"scale":1.0,
+    	"scale_random": 0.0
+    }
+}

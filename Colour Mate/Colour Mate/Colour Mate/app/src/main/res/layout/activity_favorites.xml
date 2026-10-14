@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Favourites (redesigned 2026-10-14): paper ground, design-system toolbar, a real empty state. -->
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/cm_bg_paper">
+
+    <LinearLayout
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="@dimen/cm_gutter"
+        android:paddingTop="@dimen/cm_space_3"
+        android:paddingBottom="@dimen/cm_space_3">
+
+        <RelativeLayout
+            android:id="@+id/RlBack"
+            android:layout_width="@dimen/cm_icon_btn"
+            android:layout_height="@dimen/cm_icon_btn"
+            android:background="@drawable/cm_icon_btn"
+            android:elevation="2dp">
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_centerInParent="true"
+                android:contentDescription="@string/todo"
+                android:src="@drawable/round_arrow_back_24"
+                app:tint="@color/cm_ink" />
+        </RelativeLayout>
+
+        <TextView
+            style="@style/CmText.Title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/cm_space_3"
+            android:layout_weight="1"
+            android:text="Favourites"
+            android:textSize="22sp" />
+    </LinearLayout>
+
+    <!-- Empty state: one glyph, one line of what to do. -->
+    <LinearLayout
+        android:id="@+id/ll_empty_favorites"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:paddingHorizontal="@dimen/cm_space_8">
+
+        <TextView
+            android:layout_width="72dp"
+            android:layout_height="72dp"
+            android:background="@drawable/cm_row_icon_blossom"
+            android:gravity="center"
+            android:includeFontPadding="false"
+            android:text="♡"
+            android:textColor="@color/cm_blossom"
+            android:textSize="34sp" />
+
+        <TextView
+            android:id="@+id/tv_empty_favorites"
+            style="@style/CmText.Body"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/cm_space_4"
+            android:gravity="center"
+            android:lineSpacingExtra="3dp"
+            android:text="No favourites yet.\nTap the heart on any picture to keep it here."
+            android:textColor="@color/cm_ink_2" />
+    </LinearLayout>
+
+    <ProgressBar
+        android:id="@+id/pb_fav_loading"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_centerInParent="true"
+        android:indeterminateTint="@color/cm_violet"
+        android:visibility="gone" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_favorites"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/ll_ads"
+        android:layout_below="@id/toolbar"
+        android:clipToPadding="false"
+        android:paddingHorizontal="@dimen/cm_space_2"
+        android:paddingBottom="@dimen/cm_space_4" />
+
+    <LinearLayout
+        android:id="@+id/ll_ads"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true">
+
+        <include
+            android:id="@+id/container_banner"
+            layout="@layout/ads_banner_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+
+</RelativeLayout>

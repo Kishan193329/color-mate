@@ -1,0 +1,36 @@
+{
+  "sprite" : "repal13.png",
+    "filter": "recolorpalettes",
+  "bg_color" : "ff3c8c99",
+  "colors" :
+    [
+    {"color" : "0xe0565023"},
+    {"color" : "0xe0695f2b"},
+    {"color" : "0xe07a712f"},
+    {"color" : "0xe0998c3c"},
+    {"color" : "0xe0cdc5ae"},
+    {"color" : "0xe0572223"},
+    {"color" : "0xe069282a"},
+    {"color" : "0xe07b2f2e"},
+    {"color" : "0xe09b433c"},
+    {"color" : "0xe0cf9fa1"},
+    {"color" : "0xe0f4e7e7"}
+  ],
+    "colors_ipad" :
+    [
+     {"color" : "0xe0572223"},
+     {"color" : "0xe069282a"},
+     {"color" : "0xe07b2f2e"},
+     {"color" : "0xe09b433c"},
+     {"color" : "0xe0cf9fa1"},
+     {"color" : "0xe0f4e7e7"},
+     
+     {"color" : "0xe0cdc5ae"},
+     {"color" : "0xe0998c3c"},
+     {"color" : "0xe07a712f"},
+     {"color" : "0xe0695f2b"},
+     {"color" : "0xe0565023"},
+     ],
+  "name" : "Starry",
+  "premium" : false
+}

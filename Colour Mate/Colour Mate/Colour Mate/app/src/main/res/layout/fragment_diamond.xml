@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <!--
+          Category pills. The indicator is off and the tabs carry custom views, so what reads is
+          a row of chips, not a text tab bar. Padding is asymmetric so the first chip lines up
+          with the screen gutter while the last one can still scroll clear of the edge.
+        -->
+        <com.google.android.material.tabs.TabLayout
+            android:id="@+id/tabs_diamond"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/cm_space_2"
+            android:background="@android:color/transparent"
+            android:clipToPadding="false"
+            android:paddingStart="@dimen/cm_gutter"
+            android:paddingEnd="@dimen/cm_space_2"
+            app:tabBackground="@android:color/transparent"
+            app:tabGravity="start"
+            app:tabIndicator="@null"
+            app:tabIndicatorHeight="0dp"
+            app:tabMinWidth="0dp"
+            app:tabMode="scrollable"
+            app:tabPaddingEnd="3dp"
+            app:tabPaddingStart="3dp"
+            app:tabRippleColor="@null" />
+
+        <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+            android:id="@+id/srl_diamond"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_diamond"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clipToPadding="false"
+                android:paddingHorizontal="@dimen/cm_space_3"
+                android:paddingTop="@dimen/cm_space_3"
+                android:paddingBottom="@dimen/cm_space_8"
+                android:scrollbars="none" />
+        </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+    </LinearLayout>
+
+    <ProgressBar
+        android:id="@+id/pb_diamond"
+        android:layout_width="@dimen/tab_loading_size"
+        android:layout_height="@dimen/tab_loading_size"
+        android:layout_gravity="center"
+        android:indeterminate="true"
+        android:indeterminateTint="@color/hint_text_color"
+        android:indeterminateTintMode="src_in"
+        android:visibility="gone" />
+
+    <LinearLayout
+        android:id="@+id/ll_diamond_message"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <ImageView
+            android:layout_width="@dimen/no_data_icon_size"
+            android:layout_height="@dimen/no_data_icon_size"
+            android:contentDescription="@string/todo"
+            android:src="@drawable/ic_no_data" />
+
+        <TextView
+            android:id="@+id/tv_diamond_message"
+            style="@style/CmText.Section"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="@dimen/cm_space_4"
+            android:gravity="center"
+            android:text="@string/diamond_loading" />
+
+        <TextView
+            android:id="@+id/btn_diamond_sample"
+            style="@style/CmButton"
+            android:layout_width="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="@dimen/cm_space_6"
+            android:text="@string/diamond_play_sample" />
+    </LinearLayout>
+
+</FrameLayout>

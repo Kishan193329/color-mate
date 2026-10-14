@@ -1,0 +1,38 @@
+{
+    "sprite" : "repal0.png",
+    "filter": "recolorpalettes",
+    "bg_color" : "ffe2257d",
+    "colors" :
+    [
+     {"color" : "0xe07d25e2"},
+     {"color" : "0xe09260E6"},
+     {"color" : "0xe03180ef"},
+     {"color" : "0xe019aff9"},
+     {"color" : "0xe008def7"},
+     
+     {"color" : "0xe083322a"},
+     {"color" : "0xe0deb800"},
+     {"color" : "0xe042c380"},
+     {"color" : "0xe0d4f0e3"},
+
+     {"color" : "0xe086C3ED"},
+     {"color" : "0xe0296b95"}
+     ],
+    "colors_ipad" :
+    [
+     {"color" : "0xe07d25e2"},
+     {"color" : "0xe09260E6"},
+     {"color" : "0xe03180ef"},
+     {"color" : "0xe019aff9"},
+     {"color" : "0xe008def7"},
+
+     {"color" : "0xe0d4f0e3"},
+     {"color" : "0xe042c380"},
+     {"color" : "0xe0deb800"},
+     {"color" : "0xe083322a"},
+     {"color" : "0xe0296b95"},
+     {"color" : "0xe086C3ED"}
+     ],
+    "name" : "Salamander",
+    "premium" : false
+}

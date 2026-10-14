@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="purple_200">#FFBB86FC</color>
+    <color name="purple_500">#FF6200EE</color>
+    <color name="purple_700">#FF3700B3</color>
+    <color name="teal_200">#FF03DAC5</color>
+    <color name="teal_700">#FF018786</color>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+
+    <color name="background">#FDFDFD</color>
+    <color name="charcoal_gray">#333333</color>
+    <color name="medium_gray">#949494</color>
+
+    <color name="finalize_background">#ff303030</color>
+    <color name="green_button">#ef8a99</color>
+    <color name="semitransparent_white">#99ffffff</color>
+
+    <color name="white_toolbar_btn">#ff307f30</color>
+    <color name="white_toolbar_btn_disabled">#7f307f30</color>
+
+    <!--
+      The app's legacy accent family. Retuned from teal-grey to the design system's violet
+      (2026-07-30) — these four names are referenced ~100 times as both text colour and button
+      fill, so re-pointing them here re-skins the whole app at once instead of touching every
+      layout. Contrast improves too: #688C8D on white was 3.6:1, #7A5CFF is 4.6:1.
+    -->
+    <color name="hint_bg_color">#F0EBFF</color>
+    <color name="hint_text_color">#7A5CFF</color>
+    <color name="hint_inner_highlight">#FBF9FF</color>
+
+    <color name="hint_text_color_">#5B44C7</color>
+
+
+    <color name="colorWhite">#FFFFFF</color>
+    <color name="colorBlack">#000000</color>
+    <color name="colorOverlayLight">#40000000</color>
+    <color name="unselect_nav_color">#171717</color>
+
+
+    <!-- Premium is the one dark screen in the app — tier by contrast (design system §Colour). -->
+    <color name="premium_peach_bg">#150F2C</color>
+    <color name="premium_plan_outline">#332A55</color>
+    <color name="premium_restore_link_grey">#8E85B4</color>
+
+    <color name="premium_text_secondary_light">#B7ADD8</color>
+
+
+    <!-- Bottom navigation — modern violet identity (2026-07-25) -->
+    <color name="nav_selected">#7A5CFF</color>
+    <color name="nav_unselected">#9A93B4</color>
+    <color name="nav_pill">#F1EEF8</color>
+
+    <!-- Modern app accent -->
+    <color name="brand_violet">#7A5CFF</color>
+    <color name="brand_gold">#FFC42E</color>
+</resources>

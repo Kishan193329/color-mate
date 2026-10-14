@@ -1,0 +1,319 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Premium — rebuilt 2026-08-12.
+
+  What changed and why:
+
+  * The 300dp photo hero is gone. It was premium_hero_art.png (1024x1536, 2.1MB of the APK and a
+    documented decode landmine, CLAUDE.md §8.5aj) and it said nothing about the offer. In its place
+    is a drawn emblem on a glow — a few kB, sharp at any density, and made of the app's own paints.
+
+  * The two plans now sit SIDE BY SIDE instead of stacked as full-width rows. A paywall is a
+    comparison, and two columns is how a comparison reads; stacked rows made the buyer scroll
+    between the things they were meant to weigh against each other.
+
+  * The buy button, terms and restore are pinned to the bottom in their own bar, with everything
+    above scrolling. Previously the whole screen was one fixed column, which is what produced the
+    dead void this file was rebuilt to fix once already — the pin removes that failure mode for
+    good, at any screen height.
+
+  Every id PremiumActivity binds is preserved: btn_close, iv_premium_hero, premium_features,
+  card_yearly, card_monthly, tv_yearly_price, tv_yearly_note, tv_monthly_price, tv_popular_badge,
+  btn_continue, tv_restore_footer.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/cm_bg_paper"
+    android:orientation="vertical">
+
+    <!-- ── Top bar ──────────────────────────────────────────────────────── -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingHorizontal="@dimen/cm_gutter"
+        android:paddingTop="@dimen/cm_space_4">
+
+        <ImageView
+            android:id="@+id/btn_close"
+            android:layout_width="38dp"
+            android:layout_height="38dp"
+            android:layout_gravity="top|start"
+            android:background="@drawable/cm_glass_circle"
+            android:contentDescription="@string/todo"
+            android:padding="10dp"
+            android:src="@drawable/round_close_24"
+            app:tint="@color/cm_ink" />
+    </FrameLayout>
+
+    <!-- ── Scrolling body ───────────────────────────────────────────────── -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:clipChildren="false"
+        android:clipToPadding="false"
+        android:fillViewport="true"
+        android:overScrollMode="never"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:clipChildren="false"
+            android:clipToPadding="false"
+            android:orientation="vertical"
+            android:paddingHorizontal="@dimen/cm_gutter"
+            android:paddingBottom="@dimen/cm_space_3">
+
+            <!-- Emblem on its halo -->
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <View
+                    android:layout_width="150dp"
+                    android:layout_height="150dp"
+                    android:layout_gravity="center"
+                    android:background="@drawable/cm_premium_emblem_halo" />
+
+                <ImageView
+                    android:id="@+id/iv_premium_hero"
+                    android:layout_width="88dp"
+                    android:layout_height="88dp"
+                    android:layout_gravity="center"
+                    android:layout_margin="@dimen/cm_space_4"
+                    android:contentDescription="@string/todo"
+                    android:src="@drawable/cm_premium_emblem" />
+            </FrameLayout>
+
+            <TextView
+                android:id="@+id/premium_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/quicksand_bold"
+                android:gravity="center"
+                android:includeFontPadding="false"
+                android:letterSpacing="-0.02"
+                android:text="@string/premium_title"
+                android:textColor="@color/cm_ink"
+                android:textSize="23sp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/cm_space_2"
+                android:fontFamily="@font/quicksand_regular"
+                android:gravity="center"
+                android:lineSpacingExtra="2dp"
+                android:text="@string/premium_subtitle"
+                android:textColor="@color/cm_ink_2"
+                android:textSize="13.5sp" />
+
+            <!-- Benefits. PremiumActivity fills this container; the plate is layout only. -->
+            <LinearLayout
+                android:id="@+id/premium_features"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/cm_space_4"
+                android:background="@drawable/cm_premium_feature_card"
+                android:orientation="vertical"
+                android:paddingHorizontal="16dp"
+                android:paddingVertical="14dp" />
+
+            <!-- ── Plans, side by side ── -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/cm_space_4"
+                android:baselineAligned="false"
+                android:clipChildren="false"
+                android:clipToPadding="false"
+                android:orientation="horizontal">
+
+                <!-- Yearly leads: it is the recommendation, and it carries the badge. -->
+                <FrameLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:clipChildren="false"
+                    android:clipToPadding="false">
+
+                    <LinearLayout
+                        android:id="@+id/card_yearly"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:background="@drawable/bg_premium_plan_row_peach"
+                        android:gravity="center_horizontal"
+                        android:minHeight="132dp"
+                        android:orientation="vertical"
+                        android:paddingHorizontal="10dp"
+                        android:paddingVertical="18dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/quicksand_semibold"
+                            android:includeFontPadding="false"
+                            android:letterSpacing="0.06"
+                            android:text="@string/premium_plan_yearly"
+                            android:textAllCaps="true"
+                            android:textColor="@color/cm_gold_ink"
+                            android:textSize="11sp" />
+
+                        <TextView
+                            android:id="@+id/tv_yearly_price"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:fontFamily="@font/quicksand_bold"
+                            android:fontFeatureSettings="tnum"
+                            android:gravity="center"
+                            android:includeFontPadding="false"
+                            android:maxLines="1"
+                            android:text="@string/premium_price_placeholder"
+                            android:textColor="@color/cm_ink"
+                            android:textSize="20sp"
+                            app:autoSizeMaxTextSize="20sp"
+                            app:autoSizeMinTextSize="13sp"
+                            app:autoSizeTextType="uniform" />
+
+                        <!-- Filled at runtime with the per-month equivalent, so nobody has to
+                             divide a yearly price in their head to compare the two. -->
+                        <TextView
+                            android:id="@+id/tv_yearly_note"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="6dp"
+                            android:fontFamily="@font/quicksand_regular"
+                            android:gravity="center"
+                            android:includeFontPadding="false"
+                            android:textColor="@color/cm_ink_2"
+                            android:textSize="11.5sp" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/tv_popular_badge"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="top|center_horizontal"
+                        android:background="@drawable/bg_premium_badge_popular"
+                        android:elevation="2dp"
+                        android:fontFamily="@font/quicksand_bold"
+                        android:includeFontPadding="false"
+                        android:letterSpacing="0.04"
+                        android:paddingHorizontal="10dp"
+                        android:paddingVertical="4dp"
+                        android:text="@string/premium_best_value"
+                        android:textColor="@color/cm_gold_ink"
+                        android:textSize="10sp" />
+                </FrameLayout>
+
+                <!-- Monthly -->
+                <LinearLayout
+                    android:id="@+id/card_monthly"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/cm_space_3"
+                    android:layout_marginTop="10dp"
+                    android:background="@drawable/bg_premium_plan_row_outline"
+                    android:gravity="center_horizontal"
+                    android:minHeight="132dp"
+                    android:orientation="vertical"
+                    android:paddingHorizontal="10dp"
+                    android:paddingVertical="18dp"
+                    android:layout_weight="1">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/quicksand_semibold"
+                        android:includeFontPadding="false"
+                        android:letterSpacing="0.06"
+                        android:text="@string/premium_plan_monthly"
+                        android:textAllCaps="true"
+                        android:textColor="@color/cm_ink_3"
+                        android:textSize="11sp" />
+
+                    <TextView
+                        android:id="@+id/tv_monthly_price"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:fontFamily="@font/quicksand_bold"
+                        android:fontFeatureSettings="tnum"
+                        android:gravity="center"
+                        android:includeFontPadding="false"
+                        android:maxLines="1"
+                        android:text="@string/premium_price_placeholder"
+                        android:textColor="@color/cm_ink"
+                        android:textSize="20sp"
+                        app:autoSizeMaxTextSize="20sp"
+                        app:autoSizeMinTextSize="13sp"
+                        app:autoSizeTextType="uniform" />
+
+                    <TextView
+                        android:id="@+id/tv_monthly_note"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:fontFamily="@font/quicksand_regular"
+                        android:gravity="center"
+                        android:includeFontPadding="false"
+                        android:text="@string/premium_cancel_anytime"
+                        android:textColor="@color/cm_ink_2"
+                        android:textSize="11.5sp" />
+                </LinearLayout>
+            </LinearLayout>
+
+        </LinearLayout>
+    </ScrollView>
+
+    <!-- ── Pinned action bar ────────────────────────────────────────────── -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingHorizontal="@dimen/cm_gutter"
+        android:paddingTop="@dimen/cm_space_3"
+        android:paddingBottom="@dimen/cm_space_5">
+
+        <TextView
+            android:id="@+id/btn_continue"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:background="@drawable/cm_premium_cta"
+            android:fontFamily="@font/quicksand_bold"
+            android:gravity="center"
+            android:includeFontPadding="false"
+            android:text="@string/premium_continue"
+            android:textColor="@color/cm_gold_ink"
+            android:textSize="16sp" />
+
+        <TextView
+            android:id="@+id/tv_premium_terms"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/cm_space_3"
+            android:fontFamily="@font/quicksand_regular"
+            android:gravity="center"
+            android:text="@string/premium_terms"
+            android:textColor="@color/cm_ink_3"
+            android:textSize="10.5sp" />
+
+        <TextView
+            android:id="@+id/tv_restore_footer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/cm_space_2"
+            android:fontFamily="@font/quicksand_semibold"
+            android:gravity="center"
+            android:padding="@dimen/cm_space_1"
+            android:text="@string/premium_restore"
+            android:textColor="@color/premium_restore_link_grey"
+            android:textSize="12.5sp" />
+    </LinearLayout>
+
+</LinearLayout>

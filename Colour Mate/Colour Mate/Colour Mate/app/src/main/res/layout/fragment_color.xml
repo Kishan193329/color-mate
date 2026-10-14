@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/main_content"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    >
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/tab_blur_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/main_content_padding_h"
+        app:cardBackgroundColor="@android:color/transparent"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="0dp">
+
+        <eightbitlab.com.blurview.BlurView
+            android:id="@+id/tab_blur_view"
+            android:visibility="invisible"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:blurOverlayColor="#B3FFFFFF" />
+
+        <com.google.android.material.tabs.TabLayout
+            android:id="@+id/book_all_tab"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/tab_layout_height"
+            android:background="@android:color/transparent"
+            android:overScrollMode="always"
+            android:paddingHorizontal="@dimen/tab_padding_h"
+            android:theme="@style/ThemeOverlay.AppCompat.Light"
+            app:tabGravity="fill"
+            app:tabIndicatorColor="@color/cm_violet"
+            app:tabIndicatorHeight="@dimen/tab_indicator_height"
+            app:tabMode="scrollable"
+            app:tabPaddingEnd="@dimen/tab_item_padding_h"
+            app:tabPaddingStart="@dimen/tab_item_padding_h"
+            app:tabSelectedTextColor="@color/cm_ink"
+            app:tabTextAppearance="@style/TabTextStyle"
+            app:tabTextColor="#171717" />
+    </androidx.cardview.widget.CardView>
+
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/viewPager_allbook"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/tab_blur_container"
+        android:background="@null"
+        android:clipToPadding="false"
+        android:padding="@dimen/fragment_main_content_padding"
+        android:saveEnabled="false" />
+
+    <ProgressBar
+        android:id="@+id/loading_view"
+        android:layout_width="@dimen/tab_loading_size"
+        android:layout_height="@dimen/tab_loading_size"
+        android:layout_centerInParent="true"
+        android:layout_gravity="center"
+        android:indeterminate="true"
+        android:indeterminateTint="@color/hint_text_color"
+        android:indeterminateTintMode="src_in"
+        android:visibility="gone" />
+
+</RelativeLayout>

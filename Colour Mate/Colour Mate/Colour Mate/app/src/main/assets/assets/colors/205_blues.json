@@ -1,0 +1,39 @@
+{
+    "sprite" : "repal19.png",
+    "filter" : "solidcolors",
+    "bg_color" : "ff00aeef",
+    "colors" :
+    [
+     {"color" : "0xe04d2216"},
+     {"color" : "0xe0923b27"},
+     {"color" : "0xe0ae632a"},
+     {"color" : "0xe0c68648"},
+     {"color" : "0xe0cb916d"},
+
+     {"color" : "0xe0efae00"},
+     {"color" : "0xe0ecbb40"},
+     {"color" : "0xe0ffd383"},
+
+     {"color" : "0xe0f0e6bf"},
+     {"color" : "0xe0e9bf7f"},
+     {"color" : "0xe0d59a3b"}
+     ],
+    "colors_ipad" :
+    [
+     {"color" : "0xe04d2216"},
+     {"color" : "0xe0923b27"},
+     {"color" : "0xe0ae632a"},
+     {"color" : "0xe0c68648"},
+     {"color" : "0xe0cb916d"},
+     
+     {"color" : "0xe0efae00"},
+     {"color" : "0xe0ecbb40"},
+     {"color" : "0xe0ffd383"},
+     
+     {"color" : "0xe0f0e6bf"},
+     {"color" : "0xe0e9bf7f"},
+     {"color" : "0xe0d59a3b"}
+     ],
+    "name" : "Blues",
+    "premium" : false
+}

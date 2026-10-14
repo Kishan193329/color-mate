@@ -1,0 +1,51 @@
+{
+	loop: "true",
+	
+	images: {
+		prefix: "assets/animations/frames/lpress_",
+		decimals: 5,
+		end: ".png",
+		first: 0,
+		last: 69,
+		xmul: 1,
+		ymul: 1,
+		xoffset: 0.2,
+		yoffset: 0.5
+	},
+	
+	
+	keys: [
+		{
+			subs: "Tap and hold to pick a color",
+			pos: "hand_start",
+			scale: 2.0, 
+			frame: 0,
+			alpha: 0,
+			speed: 2.0
+		},
+		{
+			alpha: 5.0,
+			x: 0.7,
+			y: 0.3,
+			scale: 1.5,
+		},
+		{
+			x: 0.5,
+			y: 0.4,
+			speed: 0.6
+		},
+		{
+			shake: 0.25
+			speed: 0.6,
+			frame: 69
+		},
+		{
+			shake: 1.0,
+			subs: "off",
+			speed: 2.0, pos: "hand_start", scale: 2.0, alpha: 0
+		},
+		{
+			speed: 0.25
+		},
+	]
+}

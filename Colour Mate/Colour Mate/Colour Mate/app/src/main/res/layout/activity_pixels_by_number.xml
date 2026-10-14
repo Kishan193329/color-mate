@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Pixel game (chrome redesigned 2026-10-14 to match the reveal/diamond screens): glass back
+  button top-left, glass done button top-right, a glass tool rail (eraser · wand) sitting on a
+  glass palette strip, banner below. Every id, onClick and the colour RecyclerView are unchanged —
+  only the dressing around the canvas moved.
+-->
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/pixel_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/ll_ads">
+
+        <FrameLayout
+            android:id="@+id/fl_paintingContainer"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <ImageView
+            android:id="@+id/iv_imageViewPreview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#ffffffff"
+            android:clickable="true"
+            android:contentDescription="@null"
+            android:focusable="true" />
+
+        <!-- Back -->
+        <RelativeLayout
+            android:id="@+id/iv_imageViewBack"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginStart="@dimen/main_content_padding_h"
+            android:layout_marginTop="@dimen/main_top_bar_margin_top"
+            android:background="@drawable/cm_glass_panel_strong"
+            android:elevation="@dimen/cm_elev_card"
+            android:onClick="onBackImage"
+            android:padding="14dp">
+
+            <ImageView
+                android:layout_width="@dimen/main_nav_icon_size"
+                android:layout_height="@dimen/main_nav_icon_size"
+                android:layout_centerInParent="true"
+                android:contentDescription="@string/todo"
+                android:src="@drawable/round_arrow_back_24"
+                app:tint="@color/cm_ink" />
+        </RelativeLayout>
+
+        <!-- Done / preview -->
+        <FrameLayout
+            android:id="@+id/fl_imageViewShareHolder"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignTop="@id/iv_imageViewBack"
+            android:layout_alignBottom="@id/iv_imageViewBack"
+            android:layout_alignParentEnd="true"
+            android:layout_marginEnd="@dimen/main_content_padding_h"
+            android:background="@drawable/cm_glass_panel_strong"
+            android:elevation="@dimen/cm_elev_card">
+
+            <ImageView
+                android:id="@+id/fl_imageViewShareRipple"
+                android:layout_width="@dimen/main_nav_icon_size"
+                android:layout_height="@dimen/main_nav_icon_size"
+                android:layout_gravity="center"
+                android:layout_margin="14dp"
+                android:contentDescription="@null"
+                android:onClick="onClickScannerEraser"
+                android:src="@drawable/ic_done"
+                app:tint="@color/cm_violet" />
+        </FrameLayout>
+
+        <!-- Palette strip (glass) with the tool rail sitting on top of it -->
+        <LinearLayout
+            android:id="@+id/ll_pixel_tools"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/fl_pixel_palette"
+            android:layout_alignParentStart="true"
+            android:layout_marginStart="@dimen/main_content_padding_h"
+            android:layout_marginBottom="@dimen/cm_space_2"
+            android:background="@drawable/cm_glass_panel_strong"
+            android:elevation="@dimen/cm_elev_card"
+            android:orientation="horizontal"
+            android:padding="4dp">
+
+            <FrameLayout
+                android:id="@+id/fl_imageViewEraserHolder"
+                android:layout_width="44dp"
+                android:layout_height="44dp">
+
+                <ImageView
+                    android:id="@+id/fl_imageViewEraserRipple"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/cm_tool_bg"
+                    android:contentDescription="@null"
+                    android:padding="10dp"
+                    android:src="@drawable/ic_eraser_s"
+                    app:tint="@color/cm_ink" />
+            </FrameLayout>
+
+            <RelativeLayout
+                android:id="@+id/fl_imageViewMagicWandHolder"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:layout_marginStart="4dp">
+
+                <ImageView
+                    android:id="@+id/fl_imageViewMagicWandRipple"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/cm_tool_bg"
+                    android:contentDescription="@null"
+                    android:padding="10dp"
+                    android:src="@drawable/outline_colors_24"
+                    app:tint="@color/cm_ink" />
+            </RelativeLayout>
+        </LinearLayout>
+
+        <FrameLayout
+            android:id="@+id/fl_pixel_palette"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_marginHorizontal="@dimen/main_content_padding_h"
+            android:layout_marginBottom="@dimen/cm_space_3"
+            android:background="@drawable/cm_glass_panel_strong"
+            android:elevation="@dimen/cm_elev_raised">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_colors"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:clipToPadding="false"
+                android:orientation="horizontal"
+                android:paddingHorizontal="@dimen/color_row_rv_padding_h"
+                android:paddingVertical="@dimen/cm_space_2"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+        </FrameLayout>
+
+        <ImageView
+            android:id="@+id/iv_imageViewAim"
+            android:layout_width="@dimen/pixel_aim_size"
+            android:layout_height="@dimen/pixel_aim_size"
+            android:contentDescription="@null"
+            android:src="@drawable/magnifire"
+            android:visibility="gone" />
+
+        <ImageView
+            android:id="@+id/iv_imageViewRipple"
+            android:layout_width="@dimen/pixel_aim_size"
+            android:layout_height="@dimen/pixel_aim_size"
+            android:background="?android:attr/selectableItemBackground"
+            android:contentDescription="@null"
+            android:foreground="?android:attr/selectableItemBackground"
+            android:visibility="gone" />
+    </RelativeLayout>
+
+    <LinearLayout
+        android:id="@+id/ll_ads"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true">
+
+        <include
+            android:id="@+id/container_banner"
+            layout="@layout/ads_banner_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+
+</RelativeLayout>

@@ -1,0 +1,41 @@
+{
+	looptimes: 0,
+	
+	images: {
+		prefix: "assets/animations/frames/touchtofillcolor_",
+		decimals: 5,
+		end: ".png",
+		first: 0,
+		last: 1,
+		xmul: 1,
+		ymul: 1,
+		xoffset: 0.183,
+		yoffset: 0.3416
+	},
+	
+	
+	keys: [
+		{
+			shake: 1.0,
+			pos: "hand_start",
+			scale: 2.0, 
+			frame: 0,
+			alpha: 0,
+			speed: 1.0,
+			subs: "Great! Now color the rest and tap done",
+		},
+		{},
+		{},
+		{},
+		{},
+		{},
+		{
+			zangle: 0.0,
+			subs: "off",
+			speed: 1.0, 
+			scale: 2.0, 
+			alpha: 0
+		},
+		{}
+	]
+}

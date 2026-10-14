@@ -1,0 +1,20 @@
+{
+  "filter": "livecolors",
+  "bg_color" : "0xc3000265",
+  "colors" : [
+    {"color" : "0xc3000263"},
+    {"color" : "0xc3000264"},
+    {"color" : "0xc3000265"},
+    {"color" : "0xc3000266"},
+    {"color" : "0xc3000267"},
+              
+    {"color" : "0xc3000268"},
+    {"color" : "0xc3000269"},
+    {"color" : "0xc300026a"},
+    {"color" : "0xc300026b"},
+    {"color" : "0xc300026c"},
+    {"color" : "0xc300026d"}
+  ],
+  "name" : "Violets",
+  "premium" : true
+}

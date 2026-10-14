@@ -1,0 +1,20 @@
+{
+  "filter": "livecolors",
+  "bg_color" : "0xc300024c",
+  "colors" : [
+    {"color" : "0xc3000261"},
+    {"color" : "0xc3000249"},
+    {"color" : "0xc300024b"},
+    {"color" : "0xc300024d"},
+    {"color" : "0xc300024f"},
+              
+    {"color" : "0xc3000248"},
+    {"color" : "0xc300024a"},
+    {"color" : "0xc300024c"},
+    {"color" : "0xc300024e"},
+    {"color" : "0xc3000262"},
+    {"color" : "0xc3000250"}
+  ],
+  "name" : "Cyans",
+  "premium" : true
+}

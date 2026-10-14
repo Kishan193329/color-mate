@@ -1,0 +1,713 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/cm_bg_paper">
+
+    <!-- Toolbar -->
+    <LinearLayout
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="@dimen/cm_gutter"
+        android:paddingTop="@dimen/cm_space_3"
+        android:paddingBottom="@dimen/cm_space_3">
+
+        <RelativeLayout
+            android:id="@+id/rl_back"
+            android:layout_width="@dimen/cm_icon_btn"
+            android:layout_height="@dimen/cm_icon_btn"
+            android:elevation="2dp"
+            android:layout_gravity="center_vertical"
+            android:background="@drawable/cm_icon_btn">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:contentDescription="Back"
+                android:src="@drawable/round_arrow_back_24"
+                app:tint="@color/cm_ink" />
+        </RelativeLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginStart="@dimen/toolbar_title_margin_start"
+            android:fontFamily="@font/quicksand_semibold"
+            android:includeFontPadding="false"
+            android:text="How to play"
+            android:textColor="@color/cm_ink"
+            android:textSize="22sp" />
+    </LinearLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/toolbar"
+        android:clipToPadding="false"
+        android:paddingBottom="24dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="@dimen/settings_content_padding_h">
+
+            <!-- ═══════════════════════════════ -->
+            <!-- PAINTING TOOLS SECTION          -->
+            <!-- ═══════════════════════════════ -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="@dimen/toolbar_padding_horizontal"
+                android:background="@drawable/cm_card"
+                android:elevation="@dimen/cm_elev_card"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/quicksand_bold"
+                    android:includeFontPadding="false"
+                    android:text="🎨 Painting Tools"
+                    android:textColor="@color/cm_ink"
+                    android:textSize="@dimen/toolbar_title_size" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:fontFamily="@font/quicksand_semibold"
+                    android:includeFontPadding="false"
+                    android:text="Premium tools to speed up your coloring"
+                    android:textColor="@color/cm_ink_2"
+                    android:textSize="12sp" />
+
+                <!-- Brush -->
+                <include layout="@layout/item_tool_info_divider" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:visibility="gone"
+                    android:paddingVertical="10dp">
+
+                    <ImageView
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:background="@drawable/bg_tool_info_icon"
+                        android:padding="7dp"
+                        android:src="@drawable/ic_paint_brush_24"
+                        app:tint="@color/white" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="12dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/quicksand_bold"
+                            android:includeFontPadding="false"
+                            android:text="Turbo Brush"
+                            android:textColor="@color/cm_ink"
+                            android:textSize="14sp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:fontFamily="@font/quicksand_semibold"
+                            android:includeFontPadding="false"
+                            android:text="Swipe to paint multiple pixels at once. Long-press the tool to adjust brush size. Great for large areas!"
+                            android:textColor="@color/cm_ink_2"
+                            android:textSize="12sp" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <!-- Bomb -->
+
+                <LinearLayout
+                    android:visibility="gone"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingVertical="10dp">
+
+                    <ImageView
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:background="@drawable/bg_tool_info_icon"
+                        android:padding="7dp"
+                        android:src="@drawable/ic_bomb_24"
+                        app:tint="@color/white" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="12dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/quicksand_bold"
+                            android:includeFontPadding="false"
+                            android:text="Color Bomb"
+                            android:textColor="@color/cm_ink"
+                            android:textSize="14sp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:fontFamily="@font/quicksand_semibold"
+                            android:includeFontPadding="false"
+                            android:text="Tap anywhere to auto-fill all colors within a blast radius. Fills every color correctly regardless of selection."
+                            android:textColor="@color/cm_ink_2"
+                            android:textSize="12sp" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <!-- Bucket -->
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingVertical="10dp">
+
+                    <ImageView
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:backgroundTint="@color/hint_text_color"
+                        android:background="@drawable/bg_tool_info_icon"
+                        android:padding="7dp"
+                        android:src="@drawable/ic_paint_bucket_24"
+                        app:tint="@color/white" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="12dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/quicksand_bold"
+                            android:includeFontPadding="false"
+                            android:text="Paint Bucket"
+                            android:textColor="@color/cm_ink"
+                            android:textSize="14sp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:fontFamily="@font/quicksand_semibold"
+                            android:includeFontPadding="false"
+                            android:text="Tap any area to flood-fill the entire connected region with its correct color. Works like a paint bucket in an editor."
+                            android:textColor="@color/cm_ink_2"
+                            android:textSize="12sp" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <!-- Loupe -->
+<!--                <include layout="@layout/item_tool_info_divider" />-->
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:visibility="gone"
+                    android:orientation="horizontal"
+                    android:paddingVertical="10dp">
+
+                    <ImageView
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:background="@drawable/bg_tool_info_icon"
+                        android:padding="7dp"
+                        android:src="@drawable/ic_magnifier_24"
+                        app:tint="@color/white" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="12dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/quicksand_bold"
+                            android:includeFontPadding="false"
+                            android:text="Magnifier"
+                            android:textColor="@color/cm_ink"
+                            android:textSize="14sp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:fontFamily="@font/quicksand_semibold"
+                            android:includeFontPadding="false"
+                            android:text="Press and drag to see a zoomed-in magnifying glass view. Perfect for finding tiny numbered areas in complex images."
+                            android:textColor="@color/cm_ink_2"
+                            android:textSize="12sp" />
+                    </LinearLayout>
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- ═══════════════════════════════ -->
+            <!-- POWER-UP TOOLS SECTION          -->
+            <!-- ═══════════════════════════════ -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="@dimen/toolbar_padding_horizontal"
+                android:layout_marginTop="@dimen/settings_section_margin_top"
+                android:background="@drawable/cm_card"
+                android:elevation="@dimen/cm_elev_card"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/quicksand_bold"
+                    android:includeFontPadding="false"
+                    android:text="⚡ Power-Up Tools"
+                    android:textColor="@color/cm_ink"
+                    android:textSize="@dimen/toolbar_title_size" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:fontFamily="@font/quicksand_semibold"
+                    android:includeFontPadding="false"
+                    android:text="One-tap actions for quick progress"
+                    android:textColor="@color/cm_ink_2"
+                    android:textSize="12sp" />
+
+                <!-- Radar -->
+                <include layout="@layout/item_tool_info_divider" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingVertical="10dp">
+
+                    <ImageView
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:background="@drawable/bg_tool_info_icon"
+                        android:backgroundTint="#00897B"
+                        android:padding="7dp"
+                        android:src="@drawable/ic_radar_24"
+                        app:tint="@color/white" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="12dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/quicksand_bold"
+                            android:includeFontPadding="false"
+                            android:text="Radar Scanner"
+                            android:textColor="@color/cm_ink"
+                            android:textSize="14sp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:fontFamily="@font/quicksand_semibold"
+                            android:includeFontPadding="false"
+                            android:text="Highlights all unfilled areas of the currently selected color with animated cyan pulses. Helps you find hidden spots you might have missed."
+                            android:textColor="@color/cm_ink_2"
+                            android:textSize="12sp" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <!-- Surge -->
+                <include layout="@layout/item_tool_info_divider" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingVertical="10dp">
+
+                    <ImageView
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:background="@drawable/bg_tool_info_icon"
+                        android:backgroundTint="#E91E63"
+                        android:padding="7dp"
+                        android:src="@drawable/ic_surge_24"
+                        app:tint="@color/white" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="12dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/quicksand_bold"
+                            android:includeFontPadding="false"
+                            android:text="Chroma Surge"
+                            android:textColor="@color/cm_ink"
+                            android:textSize="14sp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:fontFamily="@font/quicksand_semibold"
+                            android:includeFontPadding="false"
+                            android:text="Activates a timed rush mode with a glowing border. During surge, tap ANY area and it auto-fills with its correct color — regardless of which color is selected. Expires after 15 seconds."
+                            android:textColor="@color/cm_ink_2"
+                            android:textSize="12sp" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <!-- Magic Wand -->
+                <include layout="@layout/item_tool_info_divider" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingVertical="10dp">
+
+                    <ImageView
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:background="@drawable/bg_tool_info_icon"
+                        android:backgroundTint="#7B1FA2"
+                        android:padding="7dp"
+                        android:src="@drawable/ic_magic_wand"
+                        app:tint="@color/white" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="12dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/quicksand_bold"
+                            android:includeFontPadding="false"
+                            android:text="Magic Wand"
+                            android:textColor="@color/cm_ink"
+                            android:textSize="14sp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:fontFamily="@font/quicksand_semibold"
+                            android:includeFontPadding="false"
+                            android:text="Instantly fills ALL remaining areas of the currently selected color in one tap. Completes an entire color at once! Select a color first."
+                            android:textColor="@color/cm_ink_2"
+                            android:textSize="12sp" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <!-- Magnet -->
+<!--                <include layout="@layout/item_tool_info_divider" />-->
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:visibility="gone"
+                    android:paddingVertical="10dp">
+
+                    <ImageView
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:background="@drawable/bg_tool_info_icon"
+                        android:backgroundTint="#1565C0"
+                        android:padding="7dp"
+                        android:src="@drawable/ic_magnet"
+                        app:tint="@color/white" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="12dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/quicksand_bold"
+                            android:includeFontPadding="false"
+                            android:text="Smart Magnet"
+                            android:textColor="@color/cm_ink"
+                            android:textSize="14sp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:fontFamily="@font/quicksand_semibold"
+                            android:includeFontPadding="false"
+                            android:text="Automatically finds and zooms to the next unfilled area of the selected color. Saves you from scrolling and searching manually."
+                            android:textColor="@color/cm_ink_2"
+                            android:textSize="12sp" />
+                    </LinearLayout>
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- ═══════════════════════════════ -->
+            <!-- GAME MODES SECTION              -->
+            <!-- ═══════════════════════════════ -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="@dimen/toolbar_padding_horizontal"
+                android:layout_marginTop="@dimen/settings_section_margin_top"
+                android:background="@drawable/cm_card"
+                android:elevation="@dimen/cm_elev_card"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/quicksand_bold"
+                    android:includeFontPadding="false"
+                    android:text="🧘 Game Modes"
+                    android:textColor="@color/cm_ink"
+                    android:textSize="@dimen/toolbar_title_size" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:fontFamily="@font/quicksand_semibold"
+                    android:includeFontPadding="false"
+                    android:text="Switch how you play"
+                    android:textColor="@color/cm_ink_2"
+                    android:textSize="12sp" />
+
+                <!-- Zen Mode -->
+                <include layout="@layout/item_tool_info_divider" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingVertical="10dp">
+
+                    <ImageView
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:background="@drawable/bg_tool_info_icon"
+                        android:backgroundTint="#43A047"
+                        android:padding="7dp"
+                        android:src="@drawable/ic_animation"
+                        app:tint="@color/white" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="12dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/quicksand_bold"
+                            android:includeFontPadding="false"
+                            android:text="Zen Mode"
+                            android:textColor="@color/cm_ink"
+                            android:textSize="14sp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:fontFamily="@font/quicksand_semibold"
+                            android:includeFontPadding="false"
+                            android:text="Hides the number labels from the canvas for a cleaner, distraction-free coloring experience. Tap the Zen icon in the game toolbar to toggle. The color palette still works normally."
+                            android:textColor="@color/cm_ink_2"
+                            android:textSize="12sp" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <!-- Auto Fill -->
+                <include layout="@layout/item_tool_info_divider" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingVertical="10dp">
+
+                    <ImageView
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:background="@drawable/bg_tool_info_icon"
+                        android:backgroundTint="#FF6F00"
+                        android:padding="7dp"
+                        android:src="@drawable/ic_color_icon"
+                        app:tint="@color/white" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="12dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/quicksand_bold"
+                            android:includeFontPadding="false"
+                            android:text="Auto-Fill Mode"
+                            android:textColor="@color/cm_ink"
+                            android:textSize="14sp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:fontFamily="@font/quicksand_semibold"
+                            android:includeFontPadding="false"
+                            android:text="When ON, tapping any single area will automatically fill ALL areas of that color at once. Great for quickly completing simple colors. Toggle via the auto-fill button in the game toolbar."
+                            android:textColor="@color/cm_ink_2"
+                            android:textSize="12sp" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <!-- Background Theme -->
+                <include layout="@layout/item_tool_info_divider" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingVertical="10dp">
+
+                    <ImageView
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:background="@drawable/bg_tool_info_icon"
+                        android:backgroundTint="#5E35B1"
+                        android:padding="7dp"
+                        android:src="@drawable/ic_palette"
+                        app:tint="@color/white" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="12dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/quicksand_bold"
+                            android:includeFontPadding="false"
+                            android:text="Background Theme"
+                            android:textColor="@color/cm_ink"
+                            android:textSize="14sp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:fontFamily="@font/quicksand_semibold"
+                            android:includeFontPadding="false"
+                            android:text="Change the canvas background color or pattern. Choose from light, dark, or custom themes to reduce eye strain and customize your workspace."
+                            android:textColor="@color/cm_ink_2"
+                            android:textSize="12sp" />
+                    </LinearLayout>
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- ═══════════════════════════════ -->
+            <!-- TIPS SECTION                    -->
+            <!-- ═══════════════════════════════ -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="@dimen/toolbar_padding_horizontal"
+                android:layout_marginTop="@dimen/settings_section_margin_top"
+                android:layout_marginBottom="16dp"
+                android:background="@drawable/cm_card"
+                android:elevation="@dimen/cm_elev_card"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/quicksand_bold"
+                    android:includeFontPadding="false"
+                    android:text="💡 Tips"
+                    android:textColor="@color/cm_ink"
+                    android:textSize="@dimen/toolbar_title_size" />
+
+                <include layout="@layout/item_tool_info_divider" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/quicksand_semibold"
+                    android:includeFontPadding="false"
+                    android:lineSpacingExtra="6dp"
+                    android:text="• Long-press any area on the canvas to quickly switch to that color.\n• Pinch to zoom in/out on detailed areas.\n• The badge on the selected color shows how many areas are left.\n• The progress ring around the color shows completion percentage.\n• Use Hint (💡) to auto-scroll to the next unfilled area of the current color.\n• All painting tools are available for Premium users."
+                    android:textColor="@color/cm_ink_2"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+        </LinearLayout>
+    </ScrollView>
+
+</RelativeLayout>

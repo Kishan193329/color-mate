@@ -1,0 +1,24 @@
+{
+	"name": "wall", 
+	"shader": "shaders/booklinearLight.fsh",
+    "autoblurmaps": true,
+    
+    "inputs": {
+        "overlay": {
+        	"path": ["assets/wall1.jpg","assets/wall2.jpg","assets/wall3.jpg"],
+			"mipmaps": true,
+			"repeat": true
+        },
+        "lut": {
+            "global_lut": true
+        }
+    },
+    
+    "uvmatrix": {
+    	"type": "random",
+    	"allowyflip": false, 
+    	"allowxflip": true,
+    	"scale": 1.0,
+    	"scale_random": 0.0
+    }
+}

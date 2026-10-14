@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Mirrors the .sw card in diamond_builder's web player: glossy dot, number, beads left. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:paddingHorizontal="5dp"
+    android:paddingVertical="6dp">
+
+    <LinearLayout
+        android:id="@+id/ll_swatch"
+        android:layout_width="58dp"
+        android:layout_height="70dp"
+        android:background="@drawable/bg_diamond_swatch"
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <ImageView
+            android:id="@+id/iv_swatch_dot"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:contentDescription="@string/todo" />
+
+        <TextView
+            android:id="@+id/tv_swatch_number"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="3dp"
+            android:fontFamily="@font/quicksand_bold"
+            android:textColor="@color/unselect_nav_color"
+            android:textSize="12sp"
+            />
+
+        <TextView
+            android:id="@+id/tv_swatch_left"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/quicksand_regular"
+            android:textColor="@color/medium_gray"
+            android:textSize="10sp" />
+    </LinearLayout>
+
+</FrameLayout>

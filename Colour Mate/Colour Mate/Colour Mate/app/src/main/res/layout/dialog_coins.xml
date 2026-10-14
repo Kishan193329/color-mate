@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Coins sheet (2026-10-14): balance, earn (rewarded video), or remove the need (Premium). -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_coins_sheet"
+    android:orientation="vertical"
+    android:paddingHorizontal="@dimen/cm_space_5"
+    android:paddingTop="@dimen/cm_space_4"
+    android:paddingBottom="@dimen/cm_space_5">
+
+    <View
+        android:layout_width="40dp"
+        android:layout_height="4dp"
+        android:layout_gravity="center_horizontal"
+        android:background="@color/cm_line" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/cm_space_4"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:contentDescription="@string/todo"
+            android:src="@drawable/cm_ic_coin" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/cm_space_3"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tv_coins_balance"
+                style="@style/CmText.Title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0" />
+
+            <TextView
+                style="@style/CmText.Caption"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Your coins · a hint costs 20" />
+        </LinearLayout>
+
+        <ImageView
+            android:id="@+id/btn_coins_close"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:background="@drawable/cm_icon_btn"
+            android:contentDescription="Close"
+            android:padding="8dp"
+            android:src="@android:drawable/ic_menu_close_clear_cancel"
+            app:tint="@color/cm_ink_2" />
+    </LinearLayout>
+
+    <TextView
+        style="@style/CmText.Body"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/cm_space_4"
+        android:text="Come back every day for +50 coins. Spend them on hints when you're stuck." />
+
+    <TextView
+        android:id="@+id/btn_coins_watch"
+        style="@style/CmButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/cm_space_4"
+        android:text="Watch a short video  ·  +30 coins" />
+
+    <TextView
+        android:id="@+id/btn_coins_premium"
+        style="@style/CmButton.Ghost"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/cm_space_2"
+        android:text="Go Premium — unlimited hints, no ads" />
+
+</LinearLayout>

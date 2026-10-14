@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Gold disc behind the crown glyph, tying this card to the Premium screen's emblem. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="oval">
+    <gradient
+        android:angle="315"
+        android:startColor="#FFFFD167"
+        android:endColor="#FFF2A11F"
+        android:type="linear" />
+</shape>

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center"
+    android:gravity="center"
+    android:paddingVertical="@dimen/music_item_padding_v"
+    android:paddingHorizontal="@dimen/music_item_padding_h"
+    android:orientation="horizontal">
+
+
+    <RelativeLayout
+        android:layout_width="@dimen/music_item_play_btn_size"
+        android:layout_height="@dimen/music_item_play_btn_size"
+        android:layout_gravity="center_vertical"
+        android:background="@drawable/round_background"
+        android:backgroundTint="#F63657"
+        android:padding="@dimen/music_item_play_btn_padding">
+
+        <ImageView
+            android:id="@+id/ivPlayGL"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:contentDescription="@string/todo"
+            android:src="@drawable/icon_play"
+            android:tint="@color/white" />
+
+    </RelativeLayout>
+
+
+    <TextView
+        android:id="@+id/tvTitleGL"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:textSize="@dimen/music_item_title_text_size"
+        android:layout_marginLeft="@dimen/music_item_title_margin_h"
+        android:layout_marginRight="@dimen/music_item_title_margin_h"
+        android:layout_weight="1"
+        android:fontFamily="@font/quicksand_semibold"
+        android:includeFontPadding="false"
+        android:maxLines="2"
+        android:text="Tum hi ho.........."
+        android:textColor="@color/charcoal_gray" />
+
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:background="@drawable/round_button"
+        android:paddingVertical="@dimen/music_item_choose_padding_v"
+        android:paddingHorizontal="@dimen/music_item_choose_padding_h"
+        android:layout_height="wrap_content">
+
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginLeft="@dimen/music_item_title_margin_h"
+            android:layout_marginRight="@dimen/music_item_title_margin_h"
+            android:layout_weight="1"
+            android:id="@+id/ivChooseGL"
+            android:textSize="@dimen/music_item_choose_text_size"
+            android:fontFamily="@font/quicksand_semibold"
+            android:includeFontPadding="false"
+            android:maxLines="2"
+            android:text="Choose"
+            android:textColor="@color/white" />
+
+
+    </RelativeLayout>
+
+
+</LinearLayout>

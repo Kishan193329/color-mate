@@ -1,0 +1,68 @@
+{
+	"name": "watercolor", 
+	"shader": "shaders/booknewwatercolor.fsh",
+    "combine_program": "shaders/bookcombine_reduce_grays.fsh",
+	"autoblurmaps": true,
+    
+    "inputs": {
+        "displace": {
+            "shader": "shaders/booknewwatercolor_displace.fsh",
+            "autoblurmaps": true,
+            "runonce": true,
+            "inputs": {
+                "om": {
+                    "path": "assets/smears_gradian.jpg",
+                    "mipmaps": true,
+                    "repeat": true
+                },
+                "noisemap": {
+                    "path": "assets/noise3.jpg",
+                    "mipmaps": true,
+                    "repeat": true
+                }
+            },
+            "uvmatrix": {
+                "type": "free",
+                "allowxflip": true,
+                "allowyflip": true,                                                                                                                                                      
+                "allowxrandom": true,
+                "allowyrandom": true,
+                "scale": 0.50,
+                "scale_random": 0.25
+            }
+        },
+        "noisetex": {
+            "path": "assets/noise2.jpg",
+            "mipmaps": true,
+            "repeat": true
+        },
+        "grungetex": {
+            "path": ["assets/aquablue3.jpg","assets/aquablue4.jpg"],
+            "mipmaps": true,
+            "repeat": true
+        },
+        "papertex": {
+            "path": ["assets/booksheet_art4.jpg", "assets/booksheet_art5.jpg"],
+            "mipmaps": true,
+            "repeat": true
+        },
+        "lut": {
+            "global_lut": true
+        }
+	},
+    
+    "uniforms": {
+        "effectType": "r3",
+        "outlineType": "r2"
+    },
+    
+    "uvmatrix": {
+    	"type": "free",
+    	"allowxflip": true,
+    	"allowyflip": true,
+        "allowxrandom": true,
+        "allowyrandom": true,
+    	"scale": 1.00,
+    	"scale_random": 0.00
+    }
+}

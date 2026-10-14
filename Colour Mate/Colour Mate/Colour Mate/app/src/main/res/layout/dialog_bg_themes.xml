@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_theme_dialog"
+    android:orientation="vertical"
+    android:paddingBottom="24dp">
+
+    <!-- Close button -->
+    <ImageView
+        android:id="@+id/iv_theme_close"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_gravity="end"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="16dp"
+        android:contentDescription="@null"
+        android:padding="4dp"
+        android:src="@drawable/round_close_24"
+        app:tint="#FF9E8E8E" />
+
+    <!-- Title -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:fontFamily="@font/quicksand_bold"
+        android:includeFontPadding="false"
+        android:text="Canvas Background"
+        android:textColor="#FF2D2D2D"
+        android:textSize="20sp" />
+
+    <!-- Theme grid -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_themes"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:clipToPadding="false"
+        android:paddingHorizontal="20dp" />
+
+    <!-- Confirm button -->
+    <TextView
+        android:id="@+id/tv_theme_confirm"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:layout_marginHorizontal="24dp"
+        android:layout_marginTop="24dp"
+        android:background="@drawable/bg_btn_primary"
+        android:fontFamily="@font/quicksand_bold"
+        android:gravity="center"
+        android:includeFontPadding="false"
+        android:text="Confirm"
+        android:textColor="@color/white"
+        android:textSize="17sp" />
+
+</LinearLayout>
