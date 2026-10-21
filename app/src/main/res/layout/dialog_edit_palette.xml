@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="24dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/quicksand_bold"
+        android:includeFontPadding="false"
+        android:text="Palette Name"
+        android:textColor="#2D2250"
+        android:textSize="14sp" />
+
+    <EditText
+        android:id="@+id/et_palette_name"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/bg_search_bar"
+        android:fontFamily="@font/quicksand_semibold"
+        android:hint="My Palette"
+        android:inputType="text"
+        android:maxLength="30"
+        android:paddingHorizontal="16dp"
+        android:textColor="#2D2250"
+        android:textColorHint="#BDBDBD"
+        android:textSize="14sp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:fontFamily="@font/quicksand_bold"
+        android:includeFontPadding="false"
+        android:text="Pick Colors (tap to change)"
+        android:textColor="#2D2250"
+        android:textSize="14sp" />
+
+    <LinearLayout
+        android:id="@+id/ll_color_pickers"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:gravity="center"
+        android:orientation="horizontal" />
+
+    <LinearLayout
+        android:id="@+id/ll_color_pickers_row2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:gravity="center"
+        android:orientation="horizontal" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:fontFamily="@font/quicksand_bold"
+        android:includeFontPadding="false"
+        android:text="Quick Presets"
+        android:textColor="#2D2250"
+        android:textSize="14sp" />
+
+    <LinearLayout
+        android:id="@+id/ll_presets"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:gravity="center"
+        android:orientation="horizontal" />
+</LinearLayout>

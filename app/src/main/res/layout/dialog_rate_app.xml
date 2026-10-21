@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  The rating prompt. Asks once, three days in, and takes "not now" for an answer.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="@dimen/cm_space_6"
+    android:background="@drawable/cm_sheet"
+    android:orientation="vertical"
+    android:padding="@dimen/cm_space_6">
+
+    <ImageView
+        android:id="@+id/iv_rate_mark"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:layout_gravity="center_horizontal"
+        android:background="@drawable/cm_rate_mark_bg"
+        android:contentDescription="@null"
+        android:padding="14dp"
+        android:src="@drawable/ic_cm_mark" />
+
+    <TextView
+        android:id="@+id/tv_rate_title"
+        style="@style/CmText.Title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/cm_space_4"
+        android:gravity="center"
+        android:text="@string/rate_title"
+        android:textSize="21sp" />
+
+    <TextView
+        style="@style/CmText.Body"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/cm_space_2"
+        android:gravity="center"
+        android:text="@string/rate_message" />
+
+    <LinearLayout
+        android:id="@+id/ll_rate_stars"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="@dimen/cm_space_4"
+        android:orientation="horizontal" />
+
+    <Button
+        android:id="@+id/btn_rate_now"
+        style="@style/CmButton"
+        android:layout_width="match_parent"
+        android:layout_marginTop="@dimen/cm_space_6"
+        android:text="@string/rate_action" />
+
+    <Button
+        android:id="@+id/btn_rate_later"
+        style="@style/CmButton.Ghost"
+        android:layout_width="match_parent"
+        android:layout_marginTop="@dimen/cm_space_2"
+        android:text="@string/rate_later" />
+
+</LinearLayout>

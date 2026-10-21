@@ -1,0 +1,17 @@
+{
+	"shader": "shaders/bookcandy_main.fsh",
+    "inputs": {
+    	"normalMap": {
+    		"shader": "shaders/bookcandy_normalmaps.fsh",
+    		"autoblurmaps": true,
+    		"runonce": true
+    	},
+    	
+        "specularMap": {
+        	"path": "assets/envmap3.jpg",
+			"mipmaps": false,
+			"repeat": false
+		},
+		"lut": { "global_lut": true }
+	}
+}

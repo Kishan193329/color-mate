@@ -1,0 +1,23 @@
+{
+	"shader": "shaders/bookoverlay2.fsh",
+	"autoblurmaps": false, 
+    
+    "inputs": {
+        "overlay": {
+        	"path": ["assets/soft_wooden1.jpg","assets/soft_wooden2.jpg","assets/soft_wooden3.jpg"],
+			"mipmaps": true,
+			"repeat": true
+        },
+        "lut": {
+            "global_lut": true
+        }
+	},
+    
+    "uvmatrix": {
+    	"type": "diagonal",
+    	"allowxflip": true,
+    	"allowyflip": true, 
+    	"scale": 1.0,
+    	"scale_random": 0.0
+    }
+}

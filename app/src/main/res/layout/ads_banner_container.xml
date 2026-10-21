@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/layoutAds"
+    android:background="#ffffff"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:minHeight="@dimen/ad_banner_min_height">
+    <LinearLayout
+        android:gravity="center"
+        android:layout_gravity="center"
+        android:orientation="vertical"
+        android:padding="@dimen/ad_loading_padding"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:minHeight="@dimen/ad_banner_min_height">
+        <ProgressBar
+            android:layout_gravity="center_horizontal"
+            android:layout_width="@dimen/ad_loading_progress_size"
+            android:layout_height="@dimen/ad_loading_progress_size"
+            android:indeterminateTint="#000000"/>
+        <TextView
+            android:textSize="@dimen/ad_loading_text_size"
+            android:textColor="#000000"
+            android:layout_gravity="center"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/ad_loading_text_margin_top"
+            android:text="Loading Ads"/>
+    </LinearLayout>
+</FrameLayout>

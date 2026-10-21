@@ -1,0 +1,36 @@
+{
+    "filter": "gradients",
+    "bg_color" : "0x8000004c",
+    "colors" :
+    [
+     {"color" : "0x80000049"},
+     {"color" : "0x8000004b"},
+     {"color" : "0x8000004d"},
+     {"color" : "0x8000004f"},
+     {"color" : "0x8000005f"},
+     
+     {"color" : "0x80000048"},
+     {"color" : "0x8000004a"},
+     {"color" : "0x8000004c"},
+     {"color" : "0x8000005e"},
+     {"color" : "0x8000004e"},
+     {"color" : "0x80000050"}
+     ],
+    "colors_ipad" :
+    [
+     {"color" : "0x80000048"},
+     {"color" : "0x8000004a"},
+     {"color" : "0x8000004c"},
+     {"color" : "0x8000005e"},
+     {"color" : "0x8000004e"},
+     {"color" : "0x80000050"},
+     {"color" : "0x8000005f"},
+     
+     {"color" : "0x80000049"},
+     {"color" : "0x8000004b"},
+     {"color" : "0x8000004d"},
+     {"color" : "0x8000004f"}
+     ],
+    "name" : "Yellows",
+    "premium" : false
+}

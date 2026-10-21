@@ -1,0 +1,36 @@
+{
+  "sprite" : "repal3.png",
+    "filter": "recolorpalettes",
+  "bg_color" : "ff9a3594",
+  "colors" :
+    [
+     {"color" : "0xe02233a3"},
+     {"color" : "0xe02727d8"},
+     {"color" : "0xe094359a"},
+     {"color" : "0xe0a272c3"},
+     {"color" : "0xe0dfc5e0"},
+
+     {"color" : "0xe059555c"},
+     {"color" : "0xe02b262e"},
+     {"color" : "0xe0354519"},
+     {"color" : "0xe03fa079"},
+     {"color" : "0xe056adb5"},
+     {"color" : "0xe0c8e5e8"}
+  ],
+    "colors_ipad" :
+    [
+     {"color" : "0xe02233a3"},
+     {"color" : "0xe02727d8"},
+     {"color" : "0xe059555c"},
+     {"color" : "0xe02b262e"},
+     {"color" : "0xe0354519"},
+     {"color" : "0xe03fa079"},
+     {"color" : "0xe056adb5"},
+     {"color" : "0xe0c8e5e8"},
+     {"color" : "0xe0dfc5e0"},
+     {"color" : "0xe0a272c3"},
+     {"color" : "0xe094359a"}
+     ],
+  "name" : "Dreams",
+  "premium" : false
+}

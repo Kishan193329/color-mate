@@ -1,0 +1,37 @@
+{
+    "sprite" : "repal5.png",
+    "filter": "recolorpalettes",
+    "bg_color" : "ffa800ff",
+    "colors" :
+    [
+     {"color" : "0xe0ff00a8"},
+     {"color" : "0xe08b0df9"},
+     {"color" : "0xe00000ff"},
+     {"color" : "0xe00ba5ff"},
+     {"color" : "0xe000f8ff"},
+     
+     {"color" : "0xe027062c"},
+     {"color" : "0xe0ff2400"},
+     {"color" : "0xe0ff9e00"},
+     {"color" : "0xe0d6ff09"},
+     {"color" : "0xe000ff0c"},
+     {"color" : "0xe005ffd5"}
+     ],
+    "colors_ipad" :
+    [
+     {"color" : "0xe0ff00a8"},
+     {"color" : "0xe08b0df9"},
+     {"color" : "0xe00000ff"},
+     {"color" : "0xe00ba5ff"},
+     {"color" : "0xe000f8ff"},
+     
+     {"color" : "0xe005ffd5"},
+     {"color" : "0xe000ff0c"},
+     {"color" : "0xe0d6ff09"},
+     {"color" : "0xe0ff9e00"},
+     {"color" : "0xe0ff2400"},
+     {"color" : "0xe027062c"}
+     ],
+    "name" : "Electric",
+    "premium" : false
+}

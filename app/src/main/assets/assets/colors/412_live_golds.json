@@ -1,0 +1,20 @@
+{
+  "bg_color" : "0xc3000279",
+  "filter": "livecolors",
+  "colors" : [
+    {"color" : "0xc300027f"},
+    {"color" : "0xc3000280"},
+    {"color" : "0xc3000282"},
+    {"color" : "0xc3000281"},
+    {"color" : "0xc300027c"},
+              
+    {"color" : "0xc300027e"},
+    {"color" : "0xc300027d"},
+    {"color" : "0xc3000279"},
+    {"color" : "0xc300027b"},
+    {"color" : "0xc300027a"},
+    {"color" : "0xc3000283"}
+  ],
+  "name" : "Golds",
+  "premium" : true
+}

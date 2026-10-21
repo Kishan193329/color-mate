@@ -1,0 +1,35 @@
+{
+    "sprite" : "repal4.png",
+    "filter" : "solidcolors",
+    "bg_color" : "ffb46b31",
+    "colors" :
+    [
+     {"color" : "0xe0193a75"},
+     {"color" : "0xe0316bb4"},
+     {"color" : "0xe0768eef"},
+     {"color" : "0xe0cbd7fc"},
+     {"color" : "0xe0d8e5fe"},
+     {"color" : "0xe0152957"},
+     {"color" : "0xe03c5c87"},
+     {"color" : "0xe0669ce8"},
+     {"color" : "0xe089a2db"},
+     {"color" : "0xe0c1d8fd"},
+     {"color" : "0xe0e9f1ff"}
+     ],
+    "colors_ipad" :
+    [
+     {"color" : "0xe0152957"},
+     {"color" : "0xe0193a75"},
+     {"color" : "0xe03c5c87"},
+     {"color" : "0xe0316bb4"},
+     {"color" : "0xe0669ce8"},
+     {"color" : "0xe0768eef"},
+     {"color" : "0xe089a2db"},
+     {"color" : "0xe0cbd7fc"},
+     {"color" : "0xe0c1d8fd"},
+     {"color" : "0xe0d8e5fe"},
+     {"color" : "0xe0e9f1ff"}
+     ],
+    "name" : "Skin Tones",
+    "premium" : false
+}

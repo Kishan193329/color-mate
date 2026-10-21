@@ -1,0 +1,20 @@
+{
+  "bg_color" : "0xc3000228",
+  "filter": "livecolors",
+  "colors" : [
+    {"color" : "0xc3000224"},
+    {"color" : "0xc3000226"},
+    {"color" : "0xc3000259"},
+    {"color" : "0xc300022a"},
+    {"color" : "0xc300022c"},
+              
+    {"color" : "0xc3000225"},
+    {"color" : "0xc300025a"},
+    {"color" : "0xc3000228"},
+    {"color" : "0xc3000227"},
+    {"color" : "0xc3000229"},
+    {"color" : "0xc300022b"}
+  ],
+  "name" : "Oranges",
+  "premium" : false
+}

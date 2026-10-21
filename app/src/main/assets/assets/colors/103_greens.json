@@ -1,0 +1,36 @@
+{
+    "filter": "gradients",
+    "bg_color" : "0x8000001d",
+    "colors" :
+    [
+     {"color" : "0x8000001c"},
+     {"color" : "0x8000001e"},
+     {"color" : "0x80000020"},
+     {"color" : "0x80000022"},
+     {"color" : "0x80000061"},
+     
+     {"color" : "0x8000001b"},
+     {"color" : "0x80000060"},
+     {"color" : "0x8000001d"},
+     {"color" : "0x8000001f"},
+     {"color" : "0x80000021"},
+     {"color" : "0x80000023"}
+     ],
+    "colors_ipad" :
+    [
+     {"color" : "0x8000001c"},
+     {"color" : "0x8000001e"},
+     {"color" : "0x80000020"},
+     {"color" : "0x80000022"},
+     {"color" : "0x80000061"},
+     
+     {"color" : "0x80000023"},
+     {"color" : "0x80000021"},
+     {"color" : "0x8000001f"},
+     {"color" : "0x8000001d"},
+     {"color" : "0x80000060"},
+     {"color" : "0x8000001b"}
+     ],
+    "name" : "Greens",
+    "premium" : false
+}

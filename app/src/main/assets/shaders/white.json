@@ -1,0 +1,8 @@
+{
+	"name": "white", 
+	"shader": "shaders/white.fsh",
+    
+    "inputs": {
+        "lut": { "global_lut": true }
+    }
+}

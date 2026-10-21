@@ -1,0 +1,41 @@
+{
+    "sprite" : "repal23.png",
+    "filter" : "brushes",
+    "brush" : "true",
+    "premium": "true",
+    "bg_color" : "ff7056a4",
+    "colors" :
+    [
+     {"color" : "0xe042212a"},
+     {"color" : "0xe0742842"},
+     {"color" : "0xe0a45670"},
+     {"color" : "0xe0b7778a"},
+     {"color" : "0xe0af6d94"},
+     
+     {"color" : "0xe076286f"},
+     {"color" : "0xe09e4e9e"},
+     {"color" : "0xe0b57bbc"},
+
+     {"color" : "0xe0cbabeb"},
+     {"color" : "0xe09a50ef"},
+     {"color" : "0xe08c4cc5"}
+     ],
+    "colors_ipad" :
+    [
+     {"color" : "0xe042212a"},
+     {"color" : "0xe0742842"},
+     {"color" : "0xe0a45670"},
+     {"color" : "0xe0b7778a"},
+     {"color" : "0xe0af6d94"},
+
+     {"color" : "0xe0b57bbc"},
+     {"color" : "0xe09e4e9e"},
+     {"color" : "0xe076286f"},
+     
+     {"color" : "0xe08c4cc5"},
+     {"color" : "0xe09a50ef"},
+     {"color" : "0xe0cbabeb"}
+     ],
+    "name" : "Purples",
+    "premium" : false
+}

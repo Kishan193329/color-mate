@@ -1,0 +1,36 @@
+{
+    "sprite" : "repal8.png",
+    "filter": "recolorpalettes",
+    "bg_color" : "fffbb03b",
+    "colors" :
+    [
+     {"color" : "0xe02f104e"},
+     {"color" : "0xe05d36ba"},
+     {"color" : "0xe02752d2"},
+     {"color" : "0xe03bb0fb"},
+     {"color" : "0xe069c286"},
+     
+     {"color" : "0xe0020202"},
+     {"color" : "0xe03a544b"},
+     {"color" : "0xe0487496"},
+     {"color" : "0xe0a8a8a9"},
+     {"color" : "0xe0b68550"},
+     {"color" : "0xe0c1c146"}
+     ],
+    "colors_ipad" :
+    [
+     {"color" : "0xe02f104e"},
+     {"color" : "0xe05d36ba"},
+     {"color" : "0xe02752d2"},
+     {"color" : "0xe03bb0fb"},
+     {"color" : "0xe069c286"},
+     {"color" : "0xe0c1c146"},
+     {"color" : "0xe0b68550"},
+     {"color" : "0xe0a8a8a9"},
+     {"color" : "0xe0487496"},
+     {"color" : "0xe03a544b"},
+     {"color" : "0xe0020202"}
+     ],
+    "name" : "Glass",
+    "premium" : false
+}

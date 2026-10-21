@@ -1,0 +1,846 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Settings, on the design system.
+
+  Rows are grouped into white cards on the paper ground, each with a soft washed icon tile, so the
+  screen scans as three short lists instead of one long ladder of identical rows. Every id the
+  activity binds is preserved — this is a re-skin, not a re-plumb.
+
+  Icon tint: the ic_* drawables are single-colour vectors (#171717), so tinting them to the paint
+  set is safe and makes each row identifiable at a glance.
+-->
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/cm_bg_paper">
+
+    <!-- ── Top bar ─────────────────────────────────────────────────────── -->
+    <LinearLayout
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="@dimen/cm_gutter"
+        android:paddingTop="@dimen/cm_space_4"
+        android:paddingBottom="@dimen/cm_space_3">
+
+        <RelativeLayout
+            android:id="@+id/RlBack"
+            android:layout_width="@dimen/cm_icon_btn"
+            android:layout_height="@dimen/cm_icon_btn"
+            android:background="@drawable/cm_icon_btn">
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_centerInParent="true"
+                android:contentDescription="@string/todo"
+                android:src="@drawable/round_arrow_back_24"
+                app:tint="@color/cm_ink" />
+        </RelativeLayout>
+
+        <TextView
+            style="@style/CmText.Title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/cm_space_3"
+            android:text="@string/book_set_title"
+            android:textSize="22sp" />
+    </LinearLayout>
+
+    <ScrollView
+        android:id="@+id/sv_settings"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/ll_ads"
+        android:layout_below="@id/toolbar"
+        android:clipToPadding="false"
+        android:overScrollMode="never"
+        android:paddingHorizontal="@dimen/cm_gutter"
+        android:paddingBottom="@dimen/cm_space_6"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- ══ In the game ══ -->
+            <TextView
+                style="@style/CmText.Label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/cm_space_1"
+                android:layout_marginBottom="@dimen/cm_space_2"
+                android:text="@string/book_set_general" />
+
+            <LinearLayout
+                android:id="@+id/ll_general"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/cm_card"
+                android:elevation="@dimen/cm_elev_card"
+                android:orientation="vertical"
+                android:paddingHorizontal="@dimen/cm_space_4">
+
+                <!-- Music -->
+                <LinearLayout
+                    android:id="@+id/ll_general_music"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:minHeight="56dp"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:layout_width="34dp"
+                        android:layout_height="34dp"
+                        android:background="@drawable/cm_row_icon_violet"
+                        android:contentDescription="@string/todo"
+                        android:padding="8dp"
+                        android:src="@drawable/ic_music_background"
+                        app:tint="@color/cm_violet" />
+
+                    <TextView
+                        style="@style/CmText.Card"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/cm_space_3"
+                        android:layout_weight="1"
+                        android:text="@string/book_set_music" />
+
+                    <com.codersroute.flexiblewidgets.FlexibleSwitch
+                        android:id="@+id/sb_btn_music"
+                        android:layout_width="40dp"
+                        android:layout_height="20dp"
+                        android:layout_gravity="center_vertical"
+                        app:backgroundColorOnSwitchOn="@color/cm_violet"
+                        app:strokeColorOnSwitchOff="@color/cm_ink_3"
+                        app:strokeColorOnSwitchOn="@color/cm_violet"
+                        app:thumbColorOnSwitchOff="@color/cm_ink_3"
+                        app:thumbColorOnSwitchOn="@color/white" />
+                </LinearLayout>
+
+                <View style="@style/CmRowDivider" />
+
+                <!-- Select music -->
+                <LinearLayout
+                    android:id="@+id/ll_select_music"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:minHeight="56dp"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:layout_width="34dp"
+                        android:layout_height="34dp"
+                        android:background="@drawable/cm_row_icon_sky"
+                        android:contentDescription="@string/todo"
+                        android:padding="8dp"
+                        android:src="@drawable/ic_music"
+                        app:tint="@color/cm_sky" />
+
+                    <TextView
+                        style="@style/CmText.Card"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/cm_space_3"
+                        android:layout_weight="1"
+                        android:text="@string/settings_select_music" />
+
+                    <ImageView
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:contentDescription="@string/todo"
+                        android:src="@drawable/right_arrow"
+                        app:tint="@color/cm_ink_3" />
+                </LinearLayout>
+
+                <View style="@style/CmRowDivider" />
+
+                <!-- Tap sound -->
+                <LinearLayout
+                    android:id="@+id/ll_general_sound"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:minHeight="56dp"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:layout_width="34dp"
+                        android:layout_height="34dp"
+                        android:background="@drawable/cm_row_icon_blossom"
+                        android:contentDescription="@string/todo"
+                        android:padding="8dp"
+                        android:src="@drawable/ic_tap_sound"
+                        app:tint="@color/cm_blossom" />
+
+                    <TextView
+                        style="@style/CmText.Card"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/cm_space_3"
+                        android:layout_weight="1"
+                        android:text="@string/book_set_sound" />
+
+                    <com.codersroute.flexiblewidgets.FlexibleSwitch
+                        android:id="@+id/sb_btn_sound"
+                        android:layout_width="40dp"
+                        android:layout_height="20dp"
+                        android:layout_gravity="center_vertical"
+                        app:backgroundColorOnSwitchOn="@color/cm_violet"
+                        app:strokeColorOnSwitchOff="@color/cm_ink_3"
+                        app:strokeColorOnSwitchOn="@color/cm_violet"
+                        app:thumbColorOnSwitchOff="@color/cm_ink_3"
+                        app:thumbColorOnSwitchOn="@color/white" />
+                </LinearLayout>
+
+                <View style="@style/CmRowDivider" />
+
+                <!-- Long-press to switch colour -->
+                <LinearLayout
+                    android:id="@+id/ll_general_long_click"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:minHeight="56dp"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:layout_width="34dp"
+                        android:layout_height="34dp"
+                        android:background="@drawable/cm_row_icon_turquoise"
+                        android:contentDescription="@string/todo"
+                        android:padding="8dp"
+                        android:src="@drawable/ic_long_click"
+                        app:tint="@color/cm_turquoise" />
+
+                    <TextView
+                        style="@style/CmText.Card"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/cm_space_3"
+                        android:layout_weight="1"
+                        android:text="@string/settings_long_press" />
+
+                    <com.codersroute.flexiblewidgets.FlexibleSwitch
+                        android:id="@+id/sb_btn_long_click"
+                        android:layout_width="40dp"
+                        android:layout_height="20dp"
+                        android:layout_gravity="center_vertical"
+                        app:backgroundColorOnSwitchOn="@color/cm_violet"
+                        app:strokeColorOnSwitchOff="@color/cm_ink_3"
+                        app:strokeColorOnSwitchOn="@color/cm_violet"
+                        app:thumbColorOnSwitchOff="@color/cm_ink_3"
+                        app:thumbColorOnSwitchOn="@color/white" />
+                </LinearLayout>
+
+                <View style="@style/CmRowDivider" />
+
+                <!-- Colour progress ring -->
+                <LinearLayout
+                    android:id="@+id/ll_general_color_progress"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:minHeight="56dp"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:layout_width="34dp"
+                        android:layout_height="34dp"
+                        android:background="@drawable/cm_row_icon_gold"
+                        android:contentDescription="@string/todo"
+                        android:padding="8dp"
+                        android:src="@drawable/ic_color_ring"
+                        app:tint="@color/cm_gold_deep" />
+
+                    <TextView
+                        style="@style/CmText.Card"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/cm_space_3"
+                        android:layout_weight="1"
+                        android:text="@string/settings_progress_ring" />
+
+                    <com.codersroute.flexiblewidgets.FlexibleSwitch
+                        android:id="@+id/sb_btn_color_progress"
+                        android:layout_width="40dp"
+                        android:layout_height="20dp"
+                        android:layout_gravity="center_vertical"
+                        app:backgroundColorOnSwitchOn="@color/cm_violet"
+                        app:strokeColorOnSwitchOff="@color/cm_ink_3"
+                        app:strokeColorOnSwitchOn="@color/cm_violet"
+                        app:thumbColorOnSwitchOff="@color/cm_ink_3"
+                        app:thumbColorOnSwitchOn="@color/white" />
+                </LinearLayout>
+
+                <View style="@style/CmRowDivider" />
+
+                <!-- Smart zoom -->
+                <LinearLayout
+                    android:id="@+id/ll_general_smart_zoom"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:minHeight="56dp"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:layout_width="34dp"
+                        android:layout_height="34dp"
+                        android:background="@drawable/cm_row_icon_violet"
+                        android:contentDescription="@string/todo"
+                        android:padding="8dp"
+                        android:src="@drawable/ic_smart_zoom"
+                        app:tint="@color/cm_violet" />
+
+                    <TextView
+                        style="@style/CmText.Card"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/cm_space_3"
+                        android:layout_weight="1"
+                        android:text="@string/settings_smart_zoom" />
+
+                    <com.codersroute.flexiblewidgets.FlexibleSwitch
+                        android:id="@+id/sb_btn_smart_zoom"
+                        android:layout_width="40dp"
+                        android:layout_height="20dp"
+                        android:layout_gravity="center_vertical"
+                        app:backgroundColorOnSwitchOn="@color/cm_violet"
+                        app:strokeColorOnSwitchOff="@color/cm_ink_3"
+                        app:strokeColorOnSwitchOn="@color/cm_violet"
+                        app:thumbColorOnSwitchOff="@color/cm_ink_3"
+                        app:thumbColorOnSwitchOn="@color/white" />
+                </LinearLayout>
+
+                <View style="@style/CmRowDivider" />
+
+                <!-- Notifications. The old layout had a switch with no label at all. -->
+                <LinearLayout
+                    android:id="@+id/ll_general_notifications"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:minHeight="56dp"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:layout_width="34dp"
+                        android:layout_height="34dp"
+                        android:background="@drawable/cm_row_icon_sky"
+                        android:contentDescription="@string/todo"
+                        android:padding="8dp"
+                        android:src="@drawable/ic_notification"
+                        app:tint="@color/cm_sky" />
+
+                    <TextView
+                        style="@style/CmText.Card"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/cm_space_3"
+                        android:layout_weight="1"
+                        android:text="@string/settings_notifications" />
+
+                    <com.codersroute.flexiblewidgets.FlexibleSwitch
+                        android:id="@+id/sb_btn"
+                        android:layout_width="40dp"
+                        android:layout_height="20dp"
+                        android:layout_gravity="center_vertical"
+                        app:backgroundColorOnSwitchOn="@color/cm_violet"
+                        app:strokeColorOnSwitchOff="@color/cm_ink_3"
+                        app:strokeColorOnSwitchOn="@color/cm_violet"
+                        app:thumbColorOnSwitchOff="@color/cm_ink_3"
+                        app:thumbColorOnSwitchOn="@color/white" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Premium -->
+            <!--
+              Rebuilt 2026-08-12 to match the redesigned Premium screen.
+
+              The previous block was the dark tier: a near-black violet card dropped into an
+              otherwise light settings page, so it read as a foreign object rather than a section.
+              Premium itself has since moved to the app's paper ground, and this follows it — same
+              white card as every other settings group, same gold crown, same two plans side by
+              side, same gold button. The two surfaces are now one offer in two places.
+
+              Ids are load-bearing: SettingsActivity binds ll_premium_section, yearly_ll,
+              tv_yearly_sub, yearly_price, tv_settings_save_badge, monthly_ll, monthly_price,
+              purchase_ll, price and selected_plan_info. All are preserved.
+            -->
+            <LinearLayout
+                android:id="@+id/ll_premium_section"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    style="@style/CmText.Label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/cm_space_1"
+                    android:layout_marginTop="@dimen/cm_space_6"
+                    android:layout_marginBottom="@dimen/cm_space_2"
+                    android:text="@string/settings_section_premium" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/cm_card"
+                    android:elevation="@dimen/cm_elev_card"
+                    android:orientation="vertical"
+                    android:padding="@dimen/cm_space_5">
+
+                    <!-- Crown + pitch -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            android:layout_width="38dp"
+                            android:layout_height="38dp"
+                            android:background="@drawable/cm_premium_crown_chip"
+                            android:contentDescription="@string/todo"
+                            android:padding="9dp"
+                            android:src="@drawable/ic_cm_crown"
+                            app:tint="@color/cm_surface" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/cm_space_3"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="@font/quicksand_bold"
+                                android:includeFontPadding="false"
+                                android:text="@string/premium_title"
+                                android:textColor="@color/cm_ink"
+                                android:textSize="16sp" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="3dp"
+                                android:fontFamily="@font/quicksand_regular"
+                                android:includeFontPadding="false"
+                                android:text="@string/premium_subtitle"
+                                android:textColor="@color/cm_ink_2"
+                                android:textSize="12sp" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <!-- Plans, side by side — the same shape as the Premium screen -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/cm_space_5"
+                        android:baselineAligned="false"
+                        android:clipChildren="false"
+                        android:clipToPadding="false"
+                        android:orientation="horizontal">
+
+                        <FrameLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:clipChildren="false"
+                            android:clipToPadding="false">
+
+                            <LinearLayout
+                                android:id="@+id/yearly_ll"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="9dp"
+                                android:background="@drawable/cm_plan_chip_selected"
+                                android:gravity="center_horizontal"
+                                android:minHeight="104dp"
+                                android:orientation="vertical"
+                                android:paddingHorizontal="8dp"
+                                android:paddingVertical="14dp">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:fontFamily="@font/quicksand_semibold"
+                                    android:includeFontPadding="false"
+                                    android:letterSpacing="0.06"
+                                    android:text="@string/premium_plan_yearly"
+                                    android:textAllCaps="true"
+                                    android:textColor="@color/cm_gold_ink"
+                                    android:textSize="10.5sp" />
+
+                                <TextView
+                                    android:id="@+id/yearly_price"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="7dp"
+                                    android:fontFamily="@font/quicksand_bold"
+                                    android:fontFeatureSettings="tnum"
+                                    android:gravity="center"
+                                    android:includeFontPadding="false"
+                                    android:maxLines="1"
+                                    android:text="@string/premium_price_placeholder"
+                                    android:textColor="@color/cm_ink"
+                                    android:textSize="17sp"
+                                    app:autoSizeMaxTextSize="17sp"
+                                    app:autoSizeMinTextSize="12sp"
+                                    app:autoSizeTextType="uniform" />
+
+                                <TextView
+                                    android:id="@+id/tv_yearly_sub"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="5dp"
+                                    android:fontFamily="@font/quicksand_regular"
+                                    android:gravity="center"
+                                    android:includeFontPadding="false"
+                                    android:textColor="@color/cm_ink_2"
+                                    android:textSize="11sp" />
+                            </LinearLayout>
+
+                            <TextView
+                                android:id="@+id/tv_settings_save_badge"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="top|center_horizontal"
+                                android:background="@drawable/bg_premium_badge_popular"
+                                android:elevation="2dp"
+                                android:fontFamily="@font/quicksand_bold"
+                                android:includeFontPadding="false"
+                                android:letterSpacing="0.04"
+                                android:paddingHorizontal="9dp"
+                                android:paddingVertical="3dp"
+                                android:textColor="@color/cm_gold_ink"
+                                android:textSize="9.5sp" />
+                        </FrameLayout>
+
+                        <LinearLayout
+                            android:id="@+id/monthly_ll"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/cm_space_3"
+                            android:layout_marginTop="9dp"
+                            android:layout_weight="1"
+                            android:background="@drawable/cm_plan_chip_unselected"
+                            android:gravity="center_horizontal"
+                            android:minHeight="104dp"
+                            android:orientation="vertical"
+                            android:paddingHorizontal="8dp"
+                            android:paddingVertical="14dp">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="@font/quicksand_semibold"
+                                android:includeFontPadding="false"
+                                android:letterSpacing="0.06"
+                                android:text="@string/premium_plan_monthly"
+                                android:textAllCaps="true"
+                                android:textColor="@color/cm_ink_3"
+                                android:textSize="10.5sp" />
+
+                            <TextView
+                                android:id="@+id/monthly_price"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="7dp"
+                                android:fontFamily="@font/quicksand_bold"
+                                android:fontFeatureSettings="tnum"
+                                android:gravity="center"
+                                android:includeFontPadding="false"
+                                android:maxLines="1"
+                                android:text="@string/premium_price_placeholder"
+                                android:textColor="@color/cm_ink"
+                                android:textSize="17sp"
+                                app:autoSizeMaxTextSize="17sp"
+                                app:autoSizeMinTextSize="12sp"
+                                app:autoSizeTextType="uniform" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="5dp"
+                                android:fontFamily="@font/quicksand_regular"
+                                android:gravity="center"
+                                android:includeFontPadding="false"
+                                android:text="@string/premium_cancel_anytime"
+                                android:textColor="@color/cm_ink_2"
+                                android:textSize="11sp" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <!-- CTA: the same gold button as the Premium screen -->
+                    <LinearLayout
+                        android:id="@+id/purchase_ll"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:layout_marginTop="@dimen/cm_space_5"
+                        android:background="@drawable/cm_premium_cta"
+                        android:gravity="center"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/price"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/quicksand_bold"
+                            android:includeFontPadding="false"
+                            android:text="@string/premium_continue"
+                            android:textColor="@color/cm_gold_ink"
+                            android:textSize="15sp" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/selected_plan_info"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/cm_space_3"
+                        android:fontFamily="@font/quicksand_regular"
+                        android:gravity="center"
+                        android:text="@string/premium_terms"
+                        android:textColor="@color/cm_ink_3"
+                        android:textSize="10.5sp" />
+                </LinearLayout>
+            </LinearLayout>
+
+
+            <!-- ══ More ══ -->
+            <TextView
+                style="@style/CmText.Label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/cm_space_1"
+                android:layout_marginTop="@dimen/cm_space_6"
+                android:layout_marginBottom="@dimen/cm_space_2"
+                android:text="@string/settings_section_more" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/cm_card"
+                android:elevation="@dimen/cm_elev_card"
+                android:orientation="vertical"
+                android:paddingHorizontal="@dimen/cm_space_4">
+
+                <LinearLayout
+                    android:id="@+id/btnFavorites"
+                    style="@style/CmSettingsRow">
+
+                    <ImageView
+                        android:layout_width="34dp"
+                        android:layout_height="34dp"
+                        android:background="@drawable/cm_row_icon_blossom"
+                        android:contentDescription="@string/todo"
+                        android:padding="8dp"
+                        android:src="@drawable/ic_favorite_setting"
+                        app:tint="@color/cm_blossom" />
+
+                    <TextView
+                        style="@style/CmText.Card"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/cm_space_3"
+                        android:layout_weight="1"
+                        android:text="@string/settings_favorites" />
+
+                    <ImageView
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:contentDescription="@string/todo"
+                        android:src="@drawable/right_arrow"
+                        app:tint="@color/cm_ink_3" />
+                </LinearLayout>
+
+                <View style="@style/CmRowDivider" />
+
+                <LinearLayout
+                    android:id="@+id/btnGameGuide"
+                    style="@style/CmSettingsRow">
+
+                    <ImageView
+                        android:layout_width="34dp"
+                        android:layout_height="34dp"
+                        android:background="@drawable/cm_row_icon_violet"
+                        android:contentDescription="@string/todo"
+                        android:padding="8dp"
+                        android:src="@drawable/ic_game_guide"
+                        app:tint="@color/cm_violet" />
+
+                    <TextView
+                        style="@style/CmText.Card"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/cm_space_3"
+                        android:layout_weight="1"
+                        android:text="@string/settings_guide" />
+
+                    <ImageView
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:contentDescription="@string/todo"
+                        android:src="@drawable/right_arrow"
+                        app:tint="@color/cm_ink_3" />
+                </LinearLayout>
+
+                <View style="@style/CmRowDivider" />
+
+                <LinearLayout
+                    android:id="@+id/btnRate"
+                    style="@style/CmSettingsRow">
+
+                    <ImageView
+                        android:layout_width="34dp"
+                        android:layout_height="34dp"
+                        android:background="@drawable/cm_row_icon_gold"
+                        android:contentDescription="@string/todo"
+                        android:padding="8dp"
+                        android:src="@drawable/ic_rate"
+                        app:tint="@color/cm_gold_deep" />
+
+                    <TextView
+                        style="@style/CmText.Card"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/cm_space_3"
+                        android:layout_weight="1"
+                        android:text="@string/settings_rate" />
+
+                    <ImageView
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:contentDescription="@string/todo"
+                        android:src="@drawable/right_arrow"
+                        app:tint="@color/cm_ink_3" />
+                </LinearLayout>
+
+                <View style="@style/CmRowDivider" />
+
+                <LinearLayout
+                    android:id="@+id/btnShare"
+                    style="@style/CmSettingsRow">
+
+                    <ImageView
+                        android:layout_width="34dp"
+                        android:layout_height="34dp"
+                        android:background="@drawable/cm_row_icon_turquoise"
+                        android:contentDescription="@string/todo"
+                        android:padding="8dp"
+                        android:src="@drawable/ic_share_s"
+                        app:tint="@color/cm_turquoise" />
+
+                    <TextView
+                        style="@style/CmText.Card"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/cm_space_3"
+                        android:layout_weight="1"
+                        android:text="@string/settings_share" />
+
+                    <ImageView
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:contentDescription="@string/todo"
+                        android:src="@drawable/right_arrow"
+                        app:tint="@color/cm_ink_3" />
+                </LinearLayout>
+
+                <View style="@style/CmRowDivider" />
+
+                <LinearLayout
+                    android:id="@+id/btnFeedback"
+                    style="@style/CmSettingsRow">
+
+                    <ImageView
+                        android:layout_width="34dp"
+                        android:layout_height="34dp"
+                        android:background="@drawable/cm_row_icon_sky"
+                        android:contentDescription="@string/todo"
+                        android:padding="8dp"
+                        android:src="@drawable/ic_feedback"
+                        app:tint="@color/cm_sky" />
+
+                    <TextView
+                        style="@style/CmText.Card"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/cm_space_3"
+                        android:layout_weight="1"
+                        android:text="@string/settings_feedback" />
+
+                    <ImageView
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:contentDescription="@string/todo"
+                        android:src="@drawable/right_arrow"
+                        app:tint="@color/cm_ink_3" />
+                </LinearLayout>
+
+                <View style="@style/CmRowDivider" />
+
+                <LinearLayout
+                    android:id="@+id/btnPrivacy"
+                    style="@style/CmSettingsRow">
+
+                    <ImageView
+                        android:layout_width="34dp"
+                        android:layout_height="34dp"
+                        android:background="@drawable/cm_row_icon_neutral"
+                        android:contentDescription="@string/todo"
+                        android:padding="8dp"
+                        android:src="@drawable/ic_policy"
+                        app:tint="@color/cm_ink_2" />
+
+                    <TextView
+                        style="@style/CmText.Card"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/cm_space_3"
+                        android:layout_weight="1"
+                        android:text="@string/settings_privacy" />
+
+                    <ImageView
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:contentDescription="@string/todo"
+                        android:src="@drawable/right_arrow"
+                        app:tint="@color/cm_ink_3" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <TextView
+                style="@style/CmText.Caption"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/cm_space_5"
+                android:gravity="center"
+                android:text="@string/settings_footer" />
+
+        </LinearLayout>
+    </ScrollView>
+
+    <LinearLayout
+        android:id="@+id/ll_ads"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:orientation="vertical">
+
+        <include
+            android:id="@+id/container_banner"
+            layout="@layout/ads_banner_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+
+</RelativeLayout>

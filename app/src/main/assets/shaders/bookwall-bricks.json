@@ -1,0 +1,26 @@
+{
+	"name": "wall", 
+	"shader": "shaders/bookwall-bricks.fsh",
+    "autoblurmaps": true,
+    
+    "inputs": {
+        "overlay": {
+        	"path": ["assets/w_brick1.jpg","assets/w_brick2.jpg"],
+			"mipmaps": true,
+			"repeat": true
+		},
+        "lut": {
+            "global_lut": true
+        }
+    },
+    
+    "uvmatrix": {
+    	"type": "null",
+    	"allowyflip": false, 
+    	"allowxflip": true,
+        "allowxrandom": true,
+        "allowyrandom": true,
+    	"scale": 1.65,
+    	"scale_random": 0.70
+    }
+}

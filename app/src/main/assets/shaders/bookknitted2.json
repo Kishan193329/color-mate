@@ -1,0 +1,26 @@
+{
+    "name": "Fabric",
+    "shader": "shaders/bookknitted.fsh",
+    "autoblurmaps": true,
+    
+    "inputs": {
+        "overlay": {
+            "path": ["assets/garments_knitted1.jpg","assets/garments_knitted2.jpg"],
+            "mipmaps": true,
+            "repeat": true
+        },
+        "lut": {
+            "global_lut": true
+        }
+    },
+    
+    "uvmatrix": {
+        "type": "diagonal",
+        "allowyflip": true,
+        "allowxflip": false,
+        "allowxrandom": true,
+        "allowyrandom": true,
+        "scale": 2.5,
+        "scale_random": 0.75
+    }
+}

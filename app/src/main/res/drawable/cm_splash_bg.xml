@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Splash ground.
+
+  Was a saturated violet-to-blossom gradient, which meant launching the app jolted from a bright
+  poster into the pastel product behind it. This is the app's own lilac paper with the paint blooms
+  turned up — so the splash reads as the first frame of Colour Mate rather than a separate advert
+  for it, and the handover to Home is continuous.
+-->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:angle="270"
+                android:startColor="#FFEFE8FB"
+                android:centerColor="#FFF6F3FC"
+                android:endColor="#FFFDFBFF"
+                android:type="linear" />
+        </shape>
+    </item>
+
+    <!-- Violet bloom, upper left -->
+    <item android:gravity="top|left" android:width="420dp" android:height="420dp"
+        android:left="-150dp" android:top="-170dp">
+        <shape android:shape="oval">
+            <gradient android:type="radial" android:gradientRadius="210dp"
+                android:startColor="#4D7A5CFF" android:endColor="#007A5CFF" />
+        </shape>
+    </item>
+
+    <!-- Blossom bloom, lower right -->
+    <item android:gravity="bottom|right" android:width="400dp" android:height="400dp"
+        android:right="-160dp" android:bottom="-150dp">
+        <shape android:shape="oval">
+            <gradient android:type="radial" android:gradientRadius="200dp"
+                android:startColor="#42FF6BA9" android:endColor="#00FF6BA9" />
+        </shape>
+    </item>
+
+    <!-- Turquoise, low left: keeps it from reading as a stock purple-pink wash -->
+    <item android:gravity="bottom|left" android:width="300dp" android:height="300dp"
+        android:left="-120dp" android:bottom="-90dp">
+        <shape android:shape="oval">
+            <gradient android:type="radial" android:gradientRadius="150dp"
+                android:startColor="#3321D4C2" android:endColor="#0021D4C2" />
+        </shape>
+    </item>
+</layer-list>

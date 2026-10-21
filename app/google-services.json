@@ -1,0 +1,49 @@
+{
+  "project_info": {
+    "project_number": "460272404708",
+    "firebase_url": "https://color-by-number-f7f38-default-rtdb.firebaseio.com",
+    "project_id": "color-by-number-f7f38",
+    "storage_bucket": "color-by-number-f7f38.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:460272404708:android:f20164329f98662cf384f1",
+        "android_client_info": {
+          "package_name": "com.example.colorbynumber"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBpABgYd-gsyCYm29YBHCrvgChHcl3iERs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:460272404708:android:87254f16b69d9401f384f1",
+        "android_client_info": {
+          "package_name": "com.pixel.art.coloring.color.number.paint"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBpABgYd-gsyCYm29YBHCrvgChHcl3iERs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

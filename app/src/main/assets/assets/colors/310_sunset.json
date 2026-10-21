@@ -1,0 +1,37 @@
+{
+  "sprite" : "repal10.png",
+    "filter": "recolorpalettes",
+  "bg_color" : "ffc77851",
+  "colors" :
+    [
+     {"color" : "0xe0624d4d"}
+     {"color" : "0xe07a6953"},
+     {"color" : "0xe0667900"},
+     {"color" : "0xe0799800"},
+     {"color" : "0xe0f2d29f"},
+     
+     {"color" : "0xe09666bd"},
+     {"color" : "0xe05178c7"},
+     {"color" : "0xe02c8ef7"},
+     {"color" : "0xe023c7ff"},
+     {"color" : "0xe090e5f6"},
+     {"color" : "0xe03ed1d8"},
+  ],
+    "colors_ipad" :
+    [
+     {"color" : "0xe0f2d29f"},
+     {"color" : "0xe09666bd"},
+     {"color" : "0xe05178c7"},
+     {"color" : "0xe02c8ef7"},
+     {"color" : "0xe023c7ff"},
+     {"color" : "0xe090e5f6"},
+     {"color" : "0xe03ed1d8"},
+
+     {"color" : "0xe0799800"},
+     {"color" : "0xe0667900"},
+     {"color" : "0xe07a6953"},
+     {"color" : "0xe0624d4d"}
+     ],
+  "name" : "Sunset",
+  "premium" : false
+}

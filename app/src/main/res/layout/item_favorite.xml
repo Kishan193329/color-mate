@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="@dimen/grid_item_margins">
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:outlineAmbientShadowColor="@android:color/transparent"
+        android:outlineSpotShadowColor="@android:color/transparent"
+        app:cardCornerRadius="@dimen/cm_radius_md"
+        app:cardBackgroundColor="@color/cm_surface"
+        app:cardElevation="0dp">
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:id="@+id/iv_fav_thumb"
+                android:layout_width="match_parent"
+                android:layout_height="160dp"
+                android:scaleType="centerCrop" />
+
+            <ProgressBar
+                android:id="@+id/pb_fav_loading"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_gravity="center"
+                android:visibility="gone" />
+
+            <ImageView
+                android:id="@+id/iv_fav_icon"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_gravity="top|end"
+                android:layout_margin="8dp"
+                android:background="@drawable/cm_fav_circle"
+                android:padding="6dp"
+                android:src="@drawable/ic_favorite_fill"
+                app:tint="#EF4444" />
+        </FrameLayout>
+    </androidx.cardview.widget.CardView>
+
+</FrameLayout>

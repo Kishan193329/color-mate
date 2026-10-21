@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/number_coordintor"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@null">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/app_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@null"
+        app:elevation="0dp"
+        app:liftOnScroll="false"
+        app:statusBarForeground="@android:color/transparent">
+
+        <!-- Scrollable Header: Search + Daily Banner -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_scrollFlags="scroll|enterAlways">
+
+            <LinearLayout
+                android:id="@+id/ll_search_bar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="@dimen/main_content_padding_h"
+                android:layout_marginTop="4dp"
+                android:layout_marginBottom="4dp"
+                android:background="@drawable/bg_daily_banner"
+                android:gravity="center_vertical"
+                android:paddingHorizontal="@dimen/main_content_padding_h"
+                android:paddingVertical="8dp"
+                android:visibility="gone">
+
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:contentDescription="@string/todo"
+                    android:src="@drawable/ic_search" />
+
+                <EditText
+                    android:id="@+id/et_search"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_weight="1"
+                    android:background="@null"
+                    android:fontFamily="@font/quicksand_semibold"
+                    android:hint="Search categories..."
+                    android:imeOptions="actionSearch"
+                    android:includeFontPadding="false"
+                    android:inputType="text"
+                    android:maxLines="1"
+                    android:textColor="#2D2250"
+                    android:textColorHint="#B0A3C9"
+                    android:textSize="14sp" />
+
+                <ImageView
+                    android:id="@+id/iv_search_clear"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:contentDescription="@string/todo"
+                    android:src="@drawable/round_arrow_back_24"
+                    android:visibility="gone"
+                    app:tint="#9A90B0" />
+            </LinearLayout>
+
+            <include
+                android:id="@+id/daily_banner"
+                layout="@layout/include_daily_banner"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+        </LinearLayout>
+
+        <!-- Scrollable Tab Bar -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/tab_blur_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="@dimen/main_content_padding_h"
+            android:paddingHorizontal="10dp"
+            app:cardBackgroundColor="@android:color/transparent"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="0dp"
+            app:layout_scrollFlags="scroll|enterAlways">
+
+            <eightbitlab.com.blurview.BlurView
+                android:id="@+id/tab_blur_view"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:visibility="invisible"
+                app:blurOverlayColor="#B3FFFFFF" />
+
+            <com.google.android.material.tabs.TabLayout
+                android:id="@+id/book_all_tab"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/tab_layout_height"
+                android:background="@android:color/transparent"
+                android:overScrollMode="always"
+                android:paddingHorizontal="@dimen/tab_padding_h"
+                app:tabGravity="center"
+                app:tabIndicatorColor="@color/cm_violet"
+                app:tabIndicatorHeight="@dimen/tab_indicator_height"
+                app:tabMode="scrollable"
+                app:tabPaddingEnd="@dimen/tab_item_padding_h"
+                app:tabPaddingStart="@dimen/tab_item_padding_h"
+                app:tabSelectedTextColor="@color/cm_ink"
+                app:tabTextAppearance="@style/TabTextStyle"
+                app:tabTextColor="#171717" />
+        </androidx.cardview.widget.CardView>
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <!-- Main Content Area -->
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/swiperefresh"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <androidx.viewpager2.widget.ViewPager2
+            android:id="@+id/viewPager_allbook"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@null"
+            android:clipToPadding="false"
+            android:padding="@dimen/fragment_main_content_padding" />
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+    <!-- Center Messages & Loaders -->
+    <LinearLayout
+        android:id="@+id/ll_msg_refresh"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <ImageView
+            android:layout_width="@dimen/no_data_icon_size"
+            android:layout_height="@dimen/no_data_icon_size"
+            android:contentDescription="@string/todo"
+            android:src="@drawable/ic_no_data" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="@dimen/tab_no_data_margin_top"
+            android:fontFamily="@font/quicksand_bold"
+            android:includeFontPadding="false"
+            android:text="No Data Found"
+            android:textColor="@color/medium_gray"
+            android:textSize="@dimen/tab_no_data_text_size" />
+    </LinearLayout>
+
+    <ProgressBar
+        android:id="@+id/loading_view"
+        android:layout_width="@dimen/tab_loading_size"
+        android:layout_height="@dimen/tab_loading_size"
+        android:layout_gravity="center"
+        android:indeterminate="true"
+        android:indeterminateTint="@color/hint_text_color"
+        android:indeterminateTintMode="src_in" />
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

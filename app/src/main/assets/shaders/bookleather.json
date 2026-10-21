@@ -1,0 +1,44 @@
+{
+	"name": "Leather",
+	"shader": "shaders/bookleather.fsh",
+	"autoblurmaps": true, 
+    "inputs": {
+        "bevel": {
+            "shader": "shaders/bookleather_bevel.fsh",
+            "autoblurmaps": true,
+            "runonce": true,
+            "uniforms": {
+                "lightDir": "r2"
+            }
+        },
+        "overlay": {
+            "shader": "shaders/bookmix_fromoutlines.fsh",
+            "autoblurmaps": true,
+            "runonce": true,
+            "inputs": {
+                "tex1": {
+                    "path": "assets/leather2.jpg",
+                    "mipmaps": true,
+                    "repeat": true
+                },
+                "tex2": {
+                    "path": ["assets/leather1.jpg","assets/leather2.jpg"],
+                    "mipmaps": true,
+                    "repeat": true
+                }
+            },
+            "uvmatrix": {
+                "type": false,
+                "allowyflip": false,
+                "allowxflip": true,
+                "allowxrandom": true,
+                "allowyrandom": true,
+                "scale": 2.25,
+                "scale_random": 0.65
+            }
+        },
+        "lut": {
+            "global_lut": true
+        }
+	}
+}

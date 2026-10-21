@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  SELECTED plan card, on the light ground.
+
+  Name kept from the old peach-tier design on purpose: PremiumActivity swaps this drawable in
+  updatePlanSelection(), so redefining it restyles selection with no Java change.
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <corners android:radius="@dimen/cm_radius_lg" />
+    <gradient
+        android:angle="270"
+        android:startColor="#FFFFF6E2"
+        android:endColor="#FFFFFDF7"
+        android:type="linear" />
+    <stroke android:width="2dp" android:color="@color/cm_gold" />
+</shape>

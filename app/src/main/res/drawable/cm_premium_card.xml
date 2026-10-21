@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  The premium upsell surface inside Settings. Deep aubergine with a violet lift, matching the
+  Premium screen's tier rather than shouting over the pastel settings page with a bright gradient.
+-->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <corners android:radius="@dimen/cm_radius_lg" />
+            <gradient android:angle="315" android:startColor="#FF1E1636" android:endColor="#FF33235E" android:type="linear" />
+        </shape>
+    </item>
+    <item android:gravity="top|right" android:width="260dp" android:height="260dp" android:right="-110dp" android:top="-120dp">
+        <shape android:shape="oval">
+            <gradient android:type="radial" android:gradientRadius="130dp"
+                android:startColor="#597A5CFF" android:endColor="#007A5CFF" />
+        </shape>
+    </item>
+</layer-list>

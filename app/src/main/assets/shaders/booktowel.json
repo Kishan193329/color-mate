@@ -1,0 +1,31 @@
+{
+    "name": "Towel",
+    "shader": "shaders/booktowel.fsh",
+    "autoblurmaps": true,
+    
+    "inputs": {
+        "overlay": {
+            "path": "assets/fabric-towel1.jpg",
+            "mipmaps": true,
+            "repeat": true
+        },
+        "displacement": {
+            "path": "assets/fabric-towel11.jpg",
+            "mipmaps": true,
+            "repeat": true
+        },
+        "lut": {
+            "global_lut": true
+        }
+    },
+    
+    "uvmatrix": {
+        "type": false,
+        "allowyflip": false,
+        "allowxflip": true,
+        "allowxrandom": true,
+        "allowyrandom": true,
+        "scale": 1.1,
+        "scale_random": 0.1
+    }
+}

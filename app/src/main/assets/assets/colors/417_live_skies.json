@@ -1,0 +1,20 @@
+{
+  "bg_color" : "0xc3000294",
+  "filter": "livecolors",
+  "colors" : [
+    {"color" : "0xc3000290"},
+    {"color" : "0xc3000292"},
+    {"color" : "0xc3000294"},
+    {"color" : "0xc3000299"},
+    {"color" : "0xc3000296"},
+              
+    {"color" : "0xc300028f"},
+    {"color" : "0xc3000291"},
+    {"color" : "0xc3000293"},
+    {"color" : "0xc3000295"},
+    {"color" : "0xc3000298"},
+    {"color" : "0xc3000297"}
+  ],
+  "name" : "Skies",
+  "premium" : true
+}

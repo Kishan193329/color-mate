@@ -1,0 +1,26 @@
+{
+	"name": "silk", 
+	"shader": "shaders/booklinearLight.fsh",
+	"autoblurmaps": false, 
+    
+    "inputs": {
+        "overlay": {
+        	"path": ["assets/silk1.jpg","assets/silk2.jpg","assets/silk3.jpg"],
+			"mipmaps": true,
+			"repeat": true
+        },
+        "lut": {
+            "global_lut": true
+        }
+	},
+    
+    "uvmatrix": {
+    	"type": "straight",
+    	"allowxflip": true,
+    	"allowyflip": false, 
+    	"allowxrandom": false, 
+    	"allowyrandom": false,
+    	"scale": 0.975,
+    	"scale_random": 0.025
+    }
+}

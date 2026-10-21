@@ -1,0 +1,36 @@
+{
+    "filter": "gradients",
+    "bg_color" : "0x80000037",
+    "colors" :
+    [
+     {"color" : "0x80000037"},
+     {"color" : "0x80000039"},
+     {"color" : "0x8000003b"},
+     {"color" : "0x8000003d"},
+     {"color" : "0x8000006a"},
+     
+     {"color" : "0x80000036"},
+     {"color" : "0x80000038"},
+     {"color" : "0x8000003a"},
+     {"color" : "0x8000003c"},
+     {"color" : "0x8000003e"},
+     {"color" : "0x8000006b"}
+     ],
+    "colors_ipad" :
+    [
+     {"color" : "0x80000036"},
+     {"color" : "0x80000037"},
+     {"color" : "0x80000038"},
+     {"color" : "0x80000039"},
+     {"color" : "0x8000003a"},
+     
+     {"color" : "0x8000003b"},
+     {"color" : "0x8000003c"},
+     {"color" : "0x8000003d"},
+     {"color" : "0x8000003e"},
+     {"color" : "0x8000006a"},
+     {"color" : "0x8000006b"}
+     ],
+    "name" : "Blacks",
+    "premium" : false
+}

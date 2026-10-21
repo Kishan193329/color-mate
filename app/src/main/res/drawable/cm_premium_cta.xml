@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The buy button: the brightest object on the darkest screen. -->
+<ripple xmlns:android="http://schemas.android.com/apk/res/android" android:color="#33FFFFFF">
+    <item>
+        <shape android:shape="rectangle">
+            <corners android:radius="@dimen/cm_radius_pill" />
+            <gradient
+                android:angle="0"
+                android:startColor="#FFFFD167"
+                android:centerColor="#FFFFC24B"
+                android:endColor="#FFF2A11F"
+                android:type="linear" />
+        </shape>
+    </item>
+</ripple>

@@ -1,0 +1,20 @@
+{
+  "bg_color" : "0xc3000271",
+  "filter": "livecolors",
+  "colors" : [
+    {"color" : "0xc300026f"},
+    {"color" : "0xc3000277"},
+    {"color" : "0xc3000275"},
+    {"color" : "0xc3000271"},
+    {"color" : "0xc3000273"},
+              
+    {"color" : "0xc300026e"},
+    {"color" : "0xc3000270"},
+    {"color" : "0xc3000278"},
+    {"color" : "0xc3000276"},
+    {"color" : "0xc3000274"},
+    {"color" : "0xc3000272"}
+  ],
+  "name" : "Vibrant",
+  "premium" : true
+}

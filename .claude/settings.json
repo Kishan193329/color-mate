@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(./gradlew.bat --version)",
+      "Bash(./gradlew.bat assembleDebug)",
+      "Bash(cat)",
+      "Bash(/c/Users/User/AppData/Local/Android/Sdk/platform-tools/adb.exe -s f1ee3f17 shell input tap 835 185)",
+      "Bash(/c/Users/User/AppData/Local/Android/Sdk/platform-tools/adb.exe -s f1ee3f17 shell dumpsys activity activities)",
+      "Read(//tmp/**)",
+      "Bash(awk -F/ '$1==\"platform\"{print $1\"/\"$2\"/\"$3} $1!=\"platform\"{print $1\"/.../\"$5\"/\"$6}')"
+    ],
+    "additionalDirectories": [
+      "C:\\Users\\User\\Downloads\\colour mate\\colour mate\\colorforge-ai-20260720T075539Z-1-001\\colorforge-ai",
+      "\\tmp"
+    ]
+  }
+}

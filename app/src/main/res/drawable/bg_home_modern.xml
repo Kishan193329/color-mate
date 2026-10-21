@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Modern home background: a soft violet wash up top fading to light lavender for the grid. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:type="linear"
+                android:angle="270"
+                android:startColor="#6E5EE4"
+                android:centerColor="#B4AAF2"
+                android:endColor="#F1EFF8" />
+        </shape>
+    </item>
+
+    <!-- lighter watercolour glow, top-left -->
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:type="radial"
+                android:gradientRadius="55%p"
+                android:centerX="0.16"
+                android:centerY="0.0"
+                android:startColor="#40FFFFFF"
+                android:endColor="#00FFFFFF" />
+        </shape>
+    </item>
+
+    <!-- soft pink glow, upper-right -->
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:type="radial"
+                android:gradientRadius="42%p"
+                android:centerX="1.0"
+                android:centerY="0.10"
+                android:startColor="#33FF9CC8"
+                android:endColor="#00FF9CC8" />
+        </shape>
+    </item>
+
+</layer-list>

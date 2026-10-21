@@ -1,0 +1,20 @@
+{
+  "bg_color" : "0xc300020d",
+  "filter": "livecolors",
+  "colors" : [
+    {"color" : "0xc300020a"},
+    {"color" : "0xc300020c"},
+    {"color" : "0xc300020e"},
+    {"color" : "0xc3000210"},
+    {"color" : "0xc3000254"},
+              
+    {"color" : "0xc3000209"},
+    {"color" : "0xc300020b"},
+    {"color" : "0xc300020d"},
+    {"color" : "0xc3000253"},
+    {"color" : "0xc300020f"},
+    {"color" : "0xc3000211"}
+  ],
+  "name" : "Yellows",
+  "premium" : false
+}

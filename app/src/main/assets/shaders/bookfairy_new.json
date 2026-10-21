@@ -1,0 +1,35 @@
+{
+	"name": "fairy", 
+	"shader": "shaders/bookfairy_new.fsh",
+	"autoblurmaps": true, 
+    "uniforms": {
+        "effectLevel": "r2",
+        "hazeLevel": "r1"
+    },
+    
+    "inputs": {
+        "overlay": {
+        	"path": ["assets/bookfairy_new1.jpg","assets/bookfairy_new2.jpg","assets/bookfairy_new3.jpg"],
+			"mipmaps": true,
+			"repeat": true
+		},
+        "overlay2": {
+            "path": ["assets/bookfairy_new4.jpg"],
+            "mipmaps": true,
+            "repeat": true
+        },
+        "lut": {
+            "global_lut": true
+        }
+	},
+    
+    "uvmatrix": {
+    	"type": "randomfree",
+    	"allowxflip": true,
+    	"allowyflip": true,
+    	"allowxrandom": true,
+    	"allowyrandom": true,
+    	"scale": 1.0,
+    	"scale_random": 0.25
+    }
+}

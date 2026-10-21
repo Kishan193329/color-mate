@@ -1,0 +1,20 @@
+{
+  "bg_color" : "0xc300028d",
+  "filter": "livecolors",
+  "colors" : [
+    {"color" : "0xc3000286"},
+    {"color" : "0xc3000284"},
+    {"color" : "0xc300028c"},
+    {"color" : "0xc300028e"},
+    {"color" : "0xc300028b"},
+              
+    {"color" : "0xc3000285"},
+    {"color" : "0xc3000287"},
+    {"color" : "0xc300028a"},
+    {"color" : "0xc3000288"},
+    {"color" : "0xc300028d"},
+    {"color" : "0xc3000289"}
+  ],
+  "name" : "Sunsets",
+  "premium" : true
+}

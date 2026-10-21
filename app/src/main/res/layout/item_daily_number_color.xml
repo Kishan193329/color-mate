@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Daily-category tile. Kept deliberately identical to item_coloring.xml so the two grids in the
+  By Number tab do not look like two different apps.
+
+  What changed and why:
+  * cardElevation was 4dp with cardUseCompatPadding — that is the ~20px grey halo the owner
+    called a shadow. Elevation is now 0 and the platform shadow colours are cleared, because a
+    tile sitting on a soft lavender page reads better as a clean plate than a floating card.
+  * The BlurView is gone. It was frosting the window behind every visible tile (the same cost
+    that made this tab janky), and with no shadow there is nothing left for it to soften.
+  * Every ionicsolutions thumbnail carries a 1px frame baked into its ALPHA channel (~196 top and
+    left, ~55 bottom and right, clear from the second pixel in). Their files cannot be changed, so
+    the image is scaled a hair past its bounds and clipped, which crops that pixel away.
+-->
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/ll_item_container"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="@dimen/grid_item_margins"
+    android:foreground="@drawable/white_ripple"
+    android:outlineAmbientShadowColor="@android:color/transparent"
+    android:outlineSpotShadowColor="@android:color/transparent"
+    app:cardBackgroundColor="@color/cm_surface"
+    app:cardCornerRadius="@dimen/cm_radius_md"
+    app:cardElevation="0dp"
+    app:cardPreventCornerOverlap="false"
+    app:cardUseCompatPadding="false">
+
+    <com.colourmate.paintbynumber.views.AspectRatioImageView
+        android:id="@+id/imageViewResult"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:adjustViewBounds="true"
+        android:clipToOutline="true"
+        android:contentDescription="@null"
+        android:elevation="0dp"
+        android:outlineAmbientShadowColor="@android:color/transparent"
+        android:outlineSpotShadowColor="@android:color/transparent"
+        android:scaleType="centerCrop"
+        android:scaleX="1.008"
+        android:scaleY="1.008" />
+
+    <ProgressBar
+        android:id="@+id/loading_view"
+        android:layout_width="@dimen/grid_progress_size"
+        android:layout_height="@dimen/grid_progress_size"
+        android:layout_gravity="center"
+        android:indeterminate="true"
+        android:indeterminateTint="@color/hint_text_color"
+        android:indeterminateTintMode="src_in"
+        android:visibility="gone" />
+
+    <ImageView
+        android:id="@+id/iv_favorite"
+        android:layout_width="28dp"
+        android:layout_height="28dp"
+        android:layout_gravity="top|end"
+        android:layout_margin="@dimen/cm_space_2"
+        android:background="@drawable/cm_fav_circle"
+        android:contentDescription="@string/todo"
+        android:padding="6dp"
+        android:src="@drawable/ic_favorite_border"
+        app:tint="#8A8A8A" />
+
+</androidx.cardview.widget.CardView>

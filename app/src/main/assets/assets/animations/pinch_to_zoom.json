@@ -1,0 +1,59 @@
+{
+	loop: "true",
+	
+	images: {
+		prefix: "assets/animations/frames/zoom_",
+		decimals: 5,
+		end: ".png",
+		first: 0,
+		last: 63,
+		xmul: 1,
+		ymul: 1,
+		xoffset: 0.2,
+		yoffset: 0.5
+	},
+	
+	
+	keys: [
+		{
+			pos: "hand_start",
+			scale: 2.0, 
+			frame: 0,
+			alpha: 0,
+			speed: 2.5
+		},
+		{
+			alpha: 5.0,
+			x: 0.7,
+			y: 0.3,
+			scale: 1.5,
+		},
+		{
+			subs: "Pinch to zoom",
+			speed: 1.0,
+			x: 0.5,
+			y: 0.4,
+		},
+		{
+			frame: 45
+		},
+		{
+			speed: 1.5
+		},
+		{
+			frame: 63,
+			pos: "hand_start", 
+		},
+		{
+			speed: 1.0, 
+			alpha: 0
+		},
+		{
+			subs: "off",
+			speed: 0.5
+		},
+		{ 
+			frame: 0 
+		}
+	]
+}

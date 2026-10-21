@@ -1,0 +1,33 @@
+{
+  "name": "carving", 
+  "shader": "shaders/bookcarving2.fsh",
+  "combine_program": "shaders/bookcombine_reduce_grays.fsh",
+  "shader_android": "shaders/bookexport_carving.fsh",
+  "autoblurmaps": true, 
+  "inputs": {
+        "bevel": {
+            "shader": "shaders/bookcarving_bevel.fsh",
+            "shader_android": "shaders/bookexport.fsh",
+            "autoblurmaps": true,
+            "runonce": true,
+            "uniforms": {
+                "lightDir": "r2"
+            }
+        },
+        "basetex": {
+            "path": ["assets/soft_wooden1.jpg","assets/soft_wooden2.jpg","assets/soft_wooden3.jpg"],
+            "mipmaps": true,
+            "repeat": true
+        },
+        "lut": {
+            "global_lut": true
+        }
+    },
+    "uvmatrix": {
+        "type": "diagonal",
+        "allowxflip": true,
+        "allowyflip": true,
+        "allowxrandom": true,
+        "allowyrandom": true
+    }
+}

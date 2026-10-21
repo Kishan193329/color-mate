@@ -1,0 +1,23 @@
+{
+	"name": "knitted", 
+	"shader": "shaders/overlay_displace.fsh",
+	"autoblurmaps": false, 
+    
+    "inputs": {
+        "overlay": {
+        	"path": "assets/knitted1.jpg",
+			"mipmaps": true,
+			"repeat": true
+		}
+	},
+    
+    "uvmatrix": {
+    	"type": "random",
+    	"allowxflip": true,
+    	"allowyflip": true, 
+    	"allowxrandom": true, 
+    	"allowyrandom": true,
+    	"scale":0.8,
+    	"scale_random": 0.2
+    }
+}

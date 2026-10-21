@@ -1,0 +1,20 @@
+{
+  "bg_color" : "0xc3000216",
+  "filter": "livecolors",
+  "colors" : [
+    {"color" : "0xc3000256"},
+    {"color" : "0xc3000214"},
+    {"color" : "0xc3000215"},
+    {"color" : "0xc3000217"},
+    {"color" : "0xc3000218"},
+              
+    {"color" : "0xc3000212"},
+    {"color" : "0xc3000255"},
+    {"color" : "0xc3000213"},
+    {"color" : "0xc3000216"},
+    {"color" : "0xc3000219"},
+    {"color" : "0xc300021a"}
+  ],
+  "name" : "Blues",
+  "premium" : true
+}

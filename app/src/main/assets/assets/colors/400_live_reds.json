@@ -1,0 +1,21 @@
+{
+  "bg_color" : "0xc3000204",
+  "filter": "livecolors",
+  "colors" : [
+    {"color" : "0xc3000201"},
+    {"color" : "0xc3000203"},
+    {"color" : "0xc3000205"},
+    {"color" : "0xc3000207"},
+    {"color" : "0xc3000208"},
+    
+    {"color" : "0xc3000251"},
+    {"color" : "0xc3000200"},
+    {"color" : "0xc3000202"},
+    {"color" : "0xc3000204"},
+    {"color" : "0xc3000206"},
+    {"color" : "0xc3000252"}
+
+  ],
+  "name" : "Reds",
+  "premium" : false
+}

@@ -1,0 +1,36 @@
+{
+    "sprite" : "repal15.png",
+    "filter": "recolorpalettes",
+    "bg_color" : "ff523866",
+    "colors" :
+    [
+     {"color" : "0xe07b3e66"},
+     {"color" : "0xe08d607e"},
+     {"color" : "0xe0a1829a"},
+     {"color" : "0xe0baacbb"},
+     {"color" : "0xe0d8dee4"},
+
+     {"color" : "0xe0663852"},
+     {"color" : "0xe0844f72"},
+     {"color" : "0xe097708c"},
+     {"color" : "0xe0ad96aa"},
+     {"color" : "0xe0c9c4ce"},
+     {"color" : "0xe0e8ebef"}
+     ],
+    "colors_ipad" :
+    [
+     {"color" : "0xe0663852"},
+     {"color" : "0xe07b3e66"},
+     {"color" : "0xe0844f72"},
+     {"color" : "0xe08d607e"},
+     {"color" : "0xe097708c"},
+     {"color" : "0xe0a1829a"},
+     {"color" : "0xe0ad96aa"},
+     {"color" : "0xe0baacbb"},
+     {"color" : "0xe0c9c4ce"},
+     {"color" : "0xe0d8dee4"},
+     {"color" : "0xe0e8ebef"}
+     ],
+    "name" : "Mono",
+    "premium" : false
+}

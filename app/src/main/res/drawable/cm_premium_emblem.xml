@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  The premium mark: a crown whose three points are paint drops, sitting on a gem.
+
+  Drawn rather than photographed. The screen used to open with premium_hero_art.png — 1024x1536,
+  2.1MB of the APK, and a documented decode landmine (CLAUDE.md §8.5aj). A vector costs a couple of
+  kilobytes, is sharp on every screen, and ties the tier to the app's own paint language instead of
+  a stock image.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="120dp"
+    android:height="120dp"
+    android:viewportWidth="120"
+    android:viewportHeight="120">
+
+    <!-- Crown body -->
+    <path
+        android:fillType="nonZero"
+        android:pathData="M24,78 L20,40 L42,56 L60,26 L78,56 L100,40 L96,78 Z">
+        <aapt:attr xmlns:aapt="http://schemas.android.com/aapt" name="android:fillColor">
+            <gradient
+                android:type="linear"
+                android:startX="20" android:startY="26"
+                android:endX="100" android:endY="78">
+                <item android:offset="0" android:color="#FFFFE9B0" />
+                <item android:offset="0.45" android:color="#FFFFC24B" />
+                <item android:offset="1" android:color="#FFE8971C" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Base bar -->
+    <path
+        android:fillColor="#FFE8971C"
+        android:pathData="M24,84 L96,84 A5,5 0 0,1 96,94 L24,94 A5,5 0 0,1 24,84 Z" />
+
+    <!-- Highlight along the crown's left face, so the gold reads as metal and not a flat shape -->
+    <path
+        android:fillColor="#59FFFFFF"
+        android:pathData="M24,78 L20,40 L42,56 L34,78 Z" />
+
+    <!-- The three jewels: the app's own paints -->
+    <path android:fillColor="#FF7A5CFF" android:pathData="M60,44 m-7,0 a7,7 0 1,0 14,0 a7,7 0 1,0 -14,0" />
+    <path android:fillColor="#FF37A9FF" android:pathData="M22,40 m-5,0 a5,5 0 1,0 10,0 a5,5 0 1,0 -10,0" />
+    <path android:fillColor="#FFFF6BA9" android:pathData="M98,40 m-5,0 a5,5 0 1,0 10,0 a5,5 0 1,0 -10,0" />
+
+    <!-- A glint sitting ON the crown's right point, not floating beside it -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M100,34 L102,39.6 L107.6,41.6 L102,43.6 L100,49.2 L98,43.6 L92.4,41.6 L98,39.6 Z" />
+
+</vector>

@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  First-run welcome (redesigned 2026-10-14). On the app's own paper ground with the brand mark,
+  instead of a washed-out stock meadow — so the first screen already looks like the app.
+  Ids are unchanged: WelcomeActivity springs these four views in, in order.
+-->
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/cm_bg_paper">
+
+    <com.colourmate.paintbynumber.widget.PaintParticleView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:alpha="0.55" />
+
+    <LinearLayout
+        android:id="@+id/ll_welcome"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:paddingHorizontal="32dp">
+
+        <FrameLayout
+            android:layout_width="96dp"
+            android:layout_height="96dp"
+            android:background="@drawable/cm_splash_mark_bg"
+            android:elevation="@dimen/cm_elev_card">
+
+            <ImageView
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:layout_gravity="center"
+                android:contentDescription="@string/todo"
+                android:src="@drawable/ic_cm_mark" />
+        </FrameLayout>
+
+        <TextView
+            android:id="@+id/tv_welcome_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/cm_space_5"
+            android:fontFamily="@font/quicksand_bold"
+            android:includeFontPadding="false"
+            android:letterSpacing="-0.02"
+            android:text="Colour Mate"
+            android:textColor="@color/cm_ink"
+            android:textSize="36sp" />
+
+        <TextView
+            android:id="@+id/tv_welcome_line1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/cm_space_3"
+            android:fontFamily="@font/quicksand_bold"
+            android:gravity="center"
+            android:text="Colour by number. Relax."
+            android:textColor="@color/cm_violet"
+            android:textSize="18sp" />
+
+        <TextView
+            android:id="@+id/tv_welcome_line2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/cm_space_2"
+            android:fontFamily="@font/quicksand_regular"
+            android:gravity="center"
+            android:lineSpacingExtra="4dp"
+            android:text="Pick a colour, tap the matching areas,\nand watch the picture come alive."
+            android:textColor="@color/cm_ink_2"
+            android:textSize="15sp" />
+
+        <TextView
+            android:id="@+id/btn_welcome_start"
+            android:layout_width="240dp"
+            android:layout_height="52dp"
+            android:layout_marginTop="@dimen/cm_space_7"
+            android:background="@drawable/cm_btn_primary"
+            android:fontFamily="@font/quicksand_bold"
+            android:gravity="center"
+            android:includeFontPadding="false"
+            android:text="Start colouring"
+            android:textColor="@color/white"
+            android:textSize="16sp" />
+    </LinearLayout>
+
+</RelativeLayout>

@@ -1,0 +1,4 @@
+{
+	"name": "Exposure",
+	"shader": "shaders/exposure.fsh"
+}

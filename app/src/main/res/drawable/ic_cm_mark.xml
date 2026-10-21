@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Colour Mate mark: one brush stroke closing into a C, with a paint drop counter-form. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="64dp"
+    android:height="64dp"
+    android:viewportWidth="64"
+    android:viewportHeight="64">
+    <path
+        android:pathData="M42,21c-9,-6 -21,-1 -21,10c0,8 7,13 14,11c4,-1 4,-6 1,-7c-3,-1 -4,-4 -2,-6c3,-3 9,-2 10,3"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="5"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+    <path
+        android:pathData="M43.5,34a4.6,4.6 0 1,0 0.01,0z"
+        android:fillColor="#FFFFFFFF" />
+</vector>

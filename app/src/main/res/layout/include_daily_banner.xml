@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    >
+
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/ll_daily_banner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:cardBackgroundColor="@android:color/transparent"
+        app:cardCornerRadius="@dimen/daily_banner_corner_radius"
+        app:cardElevation="0dp"
+        android:layout_marginHorizontal="@dimen/main_content_padding_h"
+        app:cardPreventCornerOverlap="true"
+        app:cardUseCompatPadding="true">
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:clipChildren="true">
+
+            <androidx.viewpager2.widget.ViewPager2
+                android:id="@+id/banner_view_pager"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/daily_banner_height" />
+
+
+        </FrameLayout>
+
+    </androidx.cardview.widget.CardView>
+
+    <com.tbuonomo.viewpagerdotsindicator.DotsIndicator
+        android:id="@+id/banner_indicator"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center_horizontal"
+        android:contentDescription="@string/todo"
+        android:paddingHorizontal="@dimen/banner_indicator_track_padding_h"
+        android:paddingVertical="@dimen/banner_indicator_track_padding_v"
+        app:dotsColor="@color/hint_bg_color"
+        app:dotsCornerRadius="12dp"
+        app:dotsSize="10dp"
+        app:dotsSpacing="4dp"
+        app:dotsWidthFactor="3.2"
+        app:progressMode="false"
+        app:selectedDotColor="@color/hint_text_color" />
+
+
+</LinearLayout>

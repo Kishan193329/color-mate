@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 18+ content gate (redesigned 2026-10-14): paper ground, one card, one primary action. Ids unchanged. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/cm_bg_paper">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center_horizontal"
+            android:orientation="vertical"
+            android:paddingHorizontal="@dimen/cm_gutter"
+            android:paddingVertical="40dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/cm_space_5"
+                android:fontFamily="@font/quicksand_bold"
+                android:letterSpacing="-0.02"
+                android:text="Colour Mate"
+                android:textColor="@color/cm_ink"
+                android:textSize="24sp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/cm_card"
+                android:elevation="@dimen/cm_elev_card"
+                android:gravity="center_horizontal"
+                android:orientation="vertical"
+                android:paddingHorizontal="@dimen/cm_space_5"
+                android:paddingVertical="@dimen/cm_space_6">
+
+                <TextView
+                    android:layout_width="72dp"
+                    android:layout_height="72dp"
+                    android:background="@drawable/cm_row_icon_blossom"
+                    android:fontFamily="@font/quicksand_bold"
+                    android:gravity="center"
+                    android:includeFontPadding="false"
+                    android:text="18+"
+                    android:textColor="@color/cm_blossom"
+                    android:textSize="22sp" />
+
+                <TextView
+                    style="@style/CmText.Title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/cm_space_4"
+                    android:text="Mature content notice" />
+
+                <TextView
+                    style="@style/CmText.Body"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/cm_space_3"
+                    android:gravity="center"
+                    android:lineSpacingExtra="3dp"
+                    android:text="Colour Mate can include mature themes, horror imagery and other content intended for adults. Please confirm you are 18 or older to continue."
+                    android:textColor="@color/cm_ink_2" />
+
+                <TextView
+                    style="@style/CmText.Caption"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/cm_space_4"
+                    android:gravity="center"
+                    android:text="By continuing, you confirm you are 18+ and accept the content guidelines." />
+
+                <TextView
+                    android:id="@+id/btn_consent_agree"
+                    android:layout_width="match_parent"
+                    android:layout_height="52dp"
+                    android:layout_marginTop="@dimen/cm_space_5"
+                    android:background="@drawable/cm_btn_primary"
+                    android:fontFamily="@font/quicksand_bold"
+                    android:gravity="center"
+                    android:includeFontPadding="false"
+                    android:text="I'm 18+  ·  Agree &amp; continue"
+                    android:textColor="@color/white"
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:id="@+id/btn_consent_exit"
+                    style="@style/CmText.Label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/cm_space_3"
+                    android:padding="10dp"
+                    android:text="Exit app"
+                    android:textColor="@color/cm_ink_3" />
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
+
+</FrameLayout>

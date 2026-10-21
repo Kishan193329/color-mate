@@ -1,0 +1,55 @@
+{
+	"shader": "shaders/bookneon_graffiti.fsh",
+    "combine_program": "shaders/bookcombine_reduce_grays.fsh",
+    "autoblurmaps": true,
+
+    "inputs": {
+		"bevel": {
+			"shader": "shaders/bookneon_graffiti_bevel.fsh",
+			"autoblurmaps": true,
+			"runonce": true,
+            "uniforms": {
+                "lightDir": "r2"
+            }
+		},
+        "overlay": {
+			"shader": "shaders/bookmix_fromoutlines.fsh",
+			"autoblurmaps": true,
+			"runonce": true,
+			"inputs": {
+				"tex1": {
+        			"path": "assets/wall2.jpg",
+					"mipmaps": true,
+					"repeat": true
+				},
+        		"tex2": {
+        			"path": "assets/wall1.jpg",
+					"mipmaps": true,
+					"repeat": true
+				}
+			},
+			"uvmatrix": {
+		    	"type": false,
+    			"allowyflip": false, 
+		    	"allowxflip": true,
+        		"allowxrandom": true,
+		        "allowyrandom": true,
+		    	"scale": 1.1,
+		    	"scale_random": 0.1
+		    }
+        },
+        "lut": {
+            "global_lut": true
+        }
+    },
+    
+    "uvmatrix": {
+    	"type": false,
+    	"allowyflip": false, 
+    	"allowxflip": true,
+        "allowxrandom": true,
+        "allowyrandom": true,
+    	"scale": 1.1,
+    	"scale_random": 0.1
+    }
+}

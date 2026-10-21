@@ -1,0 +1,293 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Daily Challenge as a HOME TAB (2026-10-14, owner: "fragment ma j ly lee"). Sits inside
+  MainActivity's fragment container under the shared top bar, so there is no toolbar here and
+  the bottom nav stays visible. Simple colour, no gradient: the hero is a white card with the
+  streak in ink and violet accents — the same language as the rest of Home.
+-->
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/cal_scroll"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:clipToPadding="false"
+    android:overScrollMode="never"
+    android:paddingHorizontal="@dimen/cm_gutter"
+    android:paddingTop="@dimen/cm_space_2"
+    android:paddingBottom="110dp"
+    android:scrollbars="none">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- ───── Hero: streak (white card, violet accents) ───── -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/cm_card"
+            android:elevation="@dimen/cm_elev_card"
+            android:orientation="vertical"
+            android:padding="@dimen/cm_space_5">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="60dp"
+                    android:layout_height="60dp"
+                    android:background="@drawable/cm_row_icon_violet"
+                    android:gravity="center"
+                    android:includeFontPadding="false"
+                    android:text="@string/daily_flame"
+                    android:textSize="28sp" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/cm_space_4"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/cal_streak"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/quicksand_bold"
+                        android:fontFeatureSettings="tnum"
+                        android:includeFontPadding="false"
+                        android:letterSpacing="-0.02"
+                        android:textColor="@color/cm_ink"
+                        android:textSize="26sp" />
+
+                    <TextView
+                        android:id="@+id/cal_streak_sub"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:fontFamily="@font/quicksand_regular"
+                        android:includeFontPadding="false"
+                        android:textColor="@color/cm_ink_2"
+                        android:textSize="13sp" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Two quiet stats -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/cm_space_4"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:background="@drawable/cm_btn_soft"
+                    android:orientation="vertical"
+                    android:paddingHorizontal="@dimen/cm_space_4"
+                    android:paddingVertical="@dimen/cm_space_3">
+
+                    <TextView
+                        style="@style/CmText.Label"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/daily_today"
+                        android:textColor="@color/cm_violet" />
+
+                    <TextView
+                        android:id="@+id/cal_countdown"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:fontFamily="@font/quicksand_bold"
+                        android:fontFeatureSettings="tnum"
+                        android:includeFontPadding="false"
+                        android:textColor="@color/cm_ink"
+                        android:textSize="17sp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/cm_space_3"
+                    android:layout_weight="1"
+                    android:background="@drawable/cm_btn_soft"
+                    android:orientation="vertical"
+                    android:paddingHorizontal="@dimen/cm_space_4"
+                    android:paddingVertical="@dimen/cm_space_3">
+
+                    <TextView
+                        style="@style/CmText.Label"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/daily_total_label"
+                        android:textColor="@color/cm_violet" />
+
+                    <TextView
+                        android:id="@+id/cal_total"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:fontFamily="@font/quicksand_bold"
+                        android:fontFeatureSettings="tnum"
+                        android:includeFontPadding="false"
+                        android:textColor="@color/cm_ink"
+                        android:textSize="17sp" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/cal_play_today"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_marginTop="@dimen/cm_space_4"
+                android:background="@drawable/cm_btn_primary"
+                android:fontFamily="@font/quicksand_bold"
+                android:gravity="center"
+                android:includeFontPadding="false"
+                android:text="@string/daily_play_today"
+                android:textColor="@color/white"
+                android:textSize="15sp" />
+        </LinearLayout>
+
+        <!-- ───── Calendar card ───── -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/cm_space_4"
+            android:background="@drawable/cm_card"
+            android:elevation="@dimen/cm_elev_card"
+            android:orientation="vertical"
+            android:paddingHorizontal="@dimen/cm_space_3"
+            android:paddingTop="@dimen/cm_space_4"
+            android:paddingBottom="@dimen/cm_space_3">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingHorizontal="@dimen/cm_space_1">
+
+                <TextView
+                    android:id="@+id/cal_month"
+                    style="@style/CmText.Section"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1" />
+
+                <ImageView
+                    android:id="@+id/cal_prev"
+                    android:layout_width="34dp"
+                    android:layout_height="34dp"
+                    android:background="@drawable/cm_btn_soft"
+                    android:contentDescription="@string/todo"
+                    android:padding="9dp"
+                    android:rotation="180"
+                    android:src="@drawable/right_arrow"
+                    app:tint="@color/cm_violet" />
+
+                <ImageView
+                    android:id="@+id/cal_next"
+                    android:layout_width="34dp"
+                    android:layout_height="34dp"
+                    android:layout_marginStart="@dimen/cm_space_2"
+                    android:background="@drawable/cm_btn_soft"
+                    android:contentDescription="@string/todo"
+                    android:padding="9dp"
+                    android:src="@drawable/right_arrow"
+                    app:tint="@color/cm_violet" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/cal_weekdays"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/cm_space_4"
+                android:orientation="horizontal" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/cal_grid"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/cm_space_2"
+                android:nestedScrollingEnabled="false"
+                android:overScrollMode="never" />
+
+            <!-- Legend -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="@dimen/cm_space_3"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <View
+                    android:layout_width="10dp"
+                    android:layout_height="10dp"
+                    android:background="@drawable/cm_dot_violet" />
+
+                <TextView
+                    style="@style/CmText.Caption"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="6dp"
+                    android:text="Today" />
+
+                <ImageView
+                    android:layout_width="14dp"
+                    android:layout_height="14dp"
+                    android:layout_marginStart="@dimen/cm_space_4"
+                    android:background="@drawable/cm_cal_done_bg"
+                    android:contentDescription="@null"
+                    android:padding="3dp"
+                    android:src="@drawable/ic_cm_check" />
+
+                <TextView
+                    style="@style/CmText.Caption"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="6dp"
+                    android:text="Finished" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- ───── The selected date's pictures ───── -->
+        <TextView
+            android:id="@+id/cal_list_header"
+            style="@style/CmText.Section"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/cm_space_6" />
+
+        <TextView
+            android:id="@+id/cal_list_sub"
+            style="@style/CmText.Caption"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/cal_list"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/cm_space_3"
+            android:nestedScrollingEnabled="false"
+            android:overScrollMode="never" />
+
+        <TextView
+            android:id="@+id/cal_footer"
+            style="@style/CmText.Caption"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/cm_space_4"
+            android:gravity="center" />
+
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>

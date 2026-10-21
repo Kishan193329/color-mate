@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/card_view_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_margin="@dimen/grid_item_margins"
+        android:outlineAmbientShadowColor="@android:color/transparent"
+        android:outlineSpotShadowColor="@android:color/transparent"
+        app:cardBackgroundColor="@color/cm_surface"
+        app:cardCornerRadius="@dimen/cm_radius_md"
+        app:cardElevation="0dp"
+        app:cardPreventCornerOverlap="false"
+        app:cardUseCompatPadding="false">
+
+        <!-- fitCenter, not centerCrop: pixel art must never be cropped or it loses columns. -->
+        <ImageView
+            android:id="@+id/imageView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_margin="@dimen/cm_space_2"
+            android:clipToOutline="true"
+            android:contentDescription="@null"
+            android:scaleType="fitCenter" />
+
+
+        <ProgressBar
+            android:id="@+id/loading_view"
+            android:layout_width="@dimen/grid_progress_size"
+            android:layout_height="@dimen/grid_progress_size"
+            android:layout_gravity="center"
+            android:indeterminate="true"
+            android:indeterminateTint="@color/hint_text_color"
+            android:indeterminateTintMode="src_in"
+            android:visibility="gone" />
+
+    </androidx.cardview.widget.CardView>
+</FrameLayout>
+

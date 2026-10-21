@@ -1,0 +1,37 @@
+{
+    "sprite" : "repal24.png",
+    "filter" : "solidcolors",
+    "bg_color" : "ff000000",
+    "colors" :
+    [
+     {"color" : "0xe02b2b2b"},
+     {"color" : "0xe04d4c4c"},
+     {"color" : "0xe0757575"},
+     {"color" : "0xe0a8a8a8"},
+     {"color" : "0xe0e2e2e2"},
+
+     {"color" : "0xe0000000"}
+     {"color" : "0xe03c3c3c"},
+     {"color" : "0xe05f5f5e"},
+     {"color" : "0xe08c8c8c"},
+     {"color" : "0xe0c4c4c4"},
+     {"color" : "0xe0F8F8F8"}
+
+     ],
+    "colors_ipad" :
+    [
+     {"color" : "0xe0000000"}
+     {"color" : "0xe02b2b2b"},
+     {"color" : "0xe03c3c3c"},
+     {"color" : "0xe04d4c4c"},
+     {"color" : "0xe05f5f5e"},
+     {"color" : "0xe0757575"},
+     {"color" : "0xe08c8c8c"},
+     {"color" : "0xe0a8a8a8"},
+     {"color" : "0xe0c4c4c4"},
+     {"color" : "0xe0e2e2e2"},
+     {"color" : "0xe0F8F8F8"}
+     ],
+    "name" : "Blacks",
+    "premium" : false
+}

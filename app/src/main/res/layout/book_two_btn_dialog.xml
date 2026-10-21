@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="@dimen/dialog_two_btn_width"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_dialog_card"
+    android:elevation="@dimen/dialog_two_btn_elevation"
+    android:layout_gravity="center"
+    android:orientation="vertical"
+    android:padding="@dimen/dialog_two_btn_padding">
+
+    <!-- Title (optional) -->
+    <TextView
+        android:id="@+id/dialog_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/dialog_two_btn_title_margin_top"
+        android:layout_marginBottom="@dimen/dialog_two_btn_title_margin_bottom"
+        android:gravity="center"
+        android:includeFontPadding="false"
+        android:text="Confirm"
+        android:textColor="#111111"
+        android:textSize="@dimen/dialog_two_btn_title_text_size"
+        android:fontFamily="@font/quicksand_bold" />
+
+    <!-- Message -->
+    <TextView
+        android:id="@+id/dialog_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/dialog_two_btn_msg_margin_bottom"
+        android:background="@drawable/bg_message_area"
+        android:gravity="center"
+        android:includeFontPadding="false"
+        android:lineSpacingExtra="@dimen/dialog_two_btn_msg_line_spacing"
+        android:padding="@dimen/dialog_two_btn_msg_padding"
+        android:text="Are you sure you want to continue?"
+        android:textColor="@color/charcoal_gray"
+        android:fontFamily="@font/quicksand_semibold"
+        android:textSize="@dimen/dialog_two_btn_msg_text_size" />
+
+    <!-- Buttons row -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/dialog_two_btn_btn_height"
+        android:orientation="horizontal"
+        android:weightSum="2">
+
+        <!-- Cancel -->
+        <LinearLayout
+            android:id="@+id/btn_left_btn"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_marginEnd="@dimen/dialog_two_btn_btn_margin_end"
+            android:layout_weight="1"
+            android:background="@drawable/bg_btn_outline"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackground"
+            android:gravity="center">
+
+            <TextView
+                android:id="@+id/tv_left_btn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/dialog_cancel"
+                android:textColor="@color/charcoal_gray"
+                android:textSize="@dimen/dialog_two_btn_btn_text_size"
+                android:fontFamily="@font/quicksand_semibold"
+                android:includeFontPadding="false"
+                />
+        </LinearLayout>
+
+        <!-- OK -->
+        <LinearLayout
+            android:id="@+id/iv_right_btn"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@drawable/bg_btn_primary"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackground"
+            android:gravity="center">
+
+            <TextView
+                android:id="@+id/tv_right_btn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/quicksand_semibold"
+                android:includeFontPadding="false"
+                android:text="Delete"
+                android:textColor="@color/white"
+                android:textSize="@dimen/dialog_two_btn_btn_text_size" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+</LinearLayout>

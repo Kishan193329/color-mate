@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 10" tablets: show 4 columns in grid views -->
+    <integer name="library_grid_columns">4</integer>
+</resources>

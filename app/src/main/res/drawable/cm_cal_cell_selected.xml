@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The date the user picked (when it is not today): a violet ring drawn as the cell's FOREGROUND. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <corners android:radius="12dp" />
+    <solid android:color="@android:color/transparent" />
+    <stroke android:width="2dp" android:color="@color/cm_violet" />
+</shape>

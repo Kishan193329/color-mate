@@ -1,0 +1,20 @@
+{
+  "bg_color" : "0xc300021d",
+  "filter": "livecolors",
+  "colors" : [
+    {"color" : "0xc300021c"},
+    {"color" : "0xc300021e"},
+    {"color" : "0xc3000220"},
+    {"color" : "0xc3000222"},
+    {"color" : "0xc3000258"},
+              
+    {"color" : "0xc300021b"},
+    {"color" : "0xc3000257"},
+    {"color" : "0xc300021d"},
+    {"color" : "0xc300021f"},
+    {"color" : "0xc3000221"},
+    {"color" : "0xc3000223"}
+  ],
+  "name" : "Greens",
+  "premium" : true
+}

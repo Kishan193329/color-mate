@@ -1,0 +1,26 @@
+{
+	"name": "concrete", 
+	"shader": "shaders/bookoverlay.fsh",
+    "autoblurmaps": true,
+    
+    "inputs": {
+        "overlay": {
+        	"path": ["assets/ciment_concrete1.jpg","assets/ciment_concrete2.jpg"],
+			"mipmaps": true,
+			"repeat": true
+        },
+        "lut": {
+            "global_lut": true
+        }
+    },
+    
+    "uvmatrix": {
+    	"type": "straight",
+    	"allowxflip": true,
+    	"allowyflip": false,
+        "allowxrandom": true,
+        "allowyrandom": true,
+    	"scale": 1.0,
+    	"scale_random": 0.05
+    }
+}
