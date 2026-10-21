@@ -1164,8 +1164,6 @@ public class MainActivity extends BaseActivity {
     private boolean hasMediaPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             return ContextCompat.checkSelfPermission(this,
-                    Manifest.permission.READ_MEDIA_IMAGES) == PackageManager.PERMISSION_GRANTED
-                    && ContextCompat.checkSelfPermission(this,
                     Manifest.permission.READ_MEDIA_AUDIO) == PackageManager.PERMISSION_GRANTED;
         } else {
             return ContextCompat.checkSelfPermission(this,
@@ -1180,8 +1178,7 @@ public class MainActivity extends BaseActivity {
     private void requestMediaPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.READ_MEDIA_IMAGES,
-                            Manifest.permission.READ_MEDIA_AUDIO},
+                    new String[]{Manifest.permission.READ_MEDIA_AUDIO},
                     PERMISSION_REQUEST_CODE);
         } else {
             ActivityCompat.requestPermissions(this,
