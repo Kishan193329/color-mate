@@ -460,6 +460,12 @@ def _game_data_color(folder: Path, flatten: float = 1.0):
     with a different-colour background). Big regions are area-capped. Returns
     (master, fl, numbers, colors, meta, border)."""
     folder = Path(folder)
+    # Figma-vectorised SVG items carry their regions + ink already (services/svg_builder.py) —
+    # no AI pass, no colour clustering. Photo items never have svg_game.npz, so their path below
+    # is unchanged.
+    from services import svg_builder
+    if svg_builder.is_svg_item(folder):
+        return svg_builder.game_data(folder)
     master = cv2.imread(str(folder / "reveal_master.png"))
     if master is None:
         raise FileNotFoundError("reveal_master.png missing — run the reveal pass first")

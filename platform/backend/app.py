@@ -39,6 +39,7 @@ import number_tab
 import simplify as simplify_mod
 import storage
 from services import reveal_game_builder as R
+from services import svg_builder
 
 log = logging.getLogger("colorforge")
 
@@ -389,6 +390,23 @@ def _process(iid: str, simplify_level: str | None = None) -> None:
         _fail(iid, e, "colour generation")
 
 
+def _process_svg(iid: str) -> None:
+    """Background: a Figma-vectorised SVG -> regions + ink straight from its shapes (no AI pass),
+    then the same play page / review flow as a photo. See services/svg_builder.py."""
+    try:
+        folder = ITEMS / iid
+        info = svg_builder.prepare(folder, folder / "source.svg")
+        R.build_color(folder)                                   # admin preview page
+        warn = ""
+        if info["ink_shapes"] < 15:
+            warn = ("Very few black outlines in this SVG — the picture will play with almost no line "
+                    "art. Regenerate the image with bold black outlines, then vectorize again.")
+        db.update_image(iid, status="review", error=warn, source_kind="svg",
+                        regions=info["regions"], colours=info["palette_numbers"])
+    except Exception as e:  # noqa: BLE001
+        _fail(iid, e, "SVG import")
+
+
 @app.post("/api/items")
 async def create_item(background: BackgroundTasks, request: Request, file: UploadFile = File(...),
                       title: str = Form(""), category: str = Form(""), simplify: str = Form(""),
@@ -399,16 +417,20 @@ async def create_item(background: BackgroundTasks, request: Request, file: Uploa
     background. `type` = colour (colour-fill) | diamond (bead grid). For diamond, `mode` is
     'auto' (detect the bead pitch of an existing render) or 'flat' (build a grid `cols` wide)."""
     kind = "diamond" if type.strip().lower() == "diamond" else "colour"
+    is_svg = kind == "colour" and ((file.filename or "").lower().endswith(".svg")
+                                   or (file.content_type or "").startswith("image/svg"))
     iid = uuid.uuid4().hex[:12]
     folder = ITEMS / iid
     folder.mkdir(parents=True, exist_ok=True)
-    with open(folder / "original.png", "wb") as out:
+    with open(folder / ("source.svg" if is_svg else "original.png"), "wb") as out:
         shutil.copyfileobj(file.file, out)
     cid = db.get_or_create_category(category, time.time()) if category.strip() else None
     ttl = title.strip() or Path(file.filename or iid).stem
     db.add_image(iid, ttl, cid, user["id"], time.time(), status="processing", kind=kind)
     _log(user, "Uploaded", f"{ttl} ({kind})", request)
-    if kind == "diamond":
+    if is_svg:
+        background.add_task(_enqueue, _process_svg, iid)
+    elif kind == "diamond":
         background.add_task(_enqueue, _process_diamond, iid, mode.strip().lower(),
                             max(20, min(220, cols)), max(4, min(80, colours)))
     else:
@@ -456,6 +478,8 @@ def regenerate(iid: str, background: BackgroundTasks, payload: dict = Body(defau
         cols = max(20, min(220, int(payload.get("cols") or 78)))
         k = max(4, min(80, int(payload.get("colours") or 32)))
         background.add_task(_enqueue, _process_diamond, iid, mode, cols, k)
+    elif (ITEMS / iid / "source.svg").is_file():
+        background.add_task(_enqueue, _process_svg, iid)
     else:
         lvl = (payload.get("simplify") or "").strip().lower()
         background.add_task(_enqueue, _regenerate, iid, lvl if lvl in simplify_mod.LEVELS else None)
