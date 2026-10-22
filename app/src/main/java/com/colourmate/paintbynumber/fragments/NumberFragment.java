@@ -101,6 +101,7 @@ public class NumberFragment extends Fragment {
 
         bindViews(view);
         setupSnackbar(view);
+        com.colourmate.paintbynumber.util.HitCard.attach(view);   // featured Hit picture + countdown
         setupSearchBar();
         setupDailyBanner(view);
         setupSwipeRefresh();

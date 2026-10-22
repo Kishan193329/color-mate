@@ -21,7 +21,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.colourmate.paintbynumber.R;
 import com.colourmate.paintbynumber.Utils.Manager;
+import com.colourmate.paintbynumber.Utils.ColorForgeApi;
 import com.colourmate.paintbynumber.activity.GameActivity;
+import com.colourmate.paintbynumber.activity.RevealActivity;
 import com.colourmate.paintbynumber.model.model.Level;
 import com.colourmate.paintbynumber.util.DailyChallengeManager;
 
@@ -52,6 +54,8 @@ public class DailyFragment extends Fragment {
     private final List<Cell> cells = new ArrayList<>();
     private final List<String> categories = new ArrayList<>();
     private final List<Level> categoryLevels = new ArrayList<>();
+    /** Our own published pictures (admin -> Daily feed), each tagged with its publish date. */
+    private final List<Level> ourLevels = new ArrayList<>();
     private Calendar selectedDate = Calendar.getInstance();
     private String selectedCategory;
 
@@ -87,6 +91,7 @@ public class DailyFragment extends Fragment {
         bindStreak();
         rebuildMonth();
         loadCategories();
+        loadOurPictures();
         return root;
     }
 
@@ -214,15 +219,32 @@ public class DailyFragment extends Fragment {
     /** The selected date's pictures — that date's own seeded arrangement of its category, first N. */
     private List<Cell> buildSelectedDateEntries() {
         List<Cell> entries = new ArrayList<>();
-        if (selectedDate == null || categoryLevels.isEmpty()) return entries;
+        if (selectedDate == null) return entries;
 
         Calendar today = Calendar.getInstance();
         boolean isToday = sameDate(selectedDate, today);
         boolean isFuture = selectedDate.after(today) && !isToday;
         int day = selectedDate.get(Calendar.DAY_OF_MONTH);
 
+        // Owner's rule: the pictures published FOR this date come first.
+        String key = new SimpleDateFormat("yyyy-MM-dd", Locale.US).format(selectedDate.getTime());
+        if (!isFuture) {
+            for (Level level : ourLevels) {
+                if (!key.equals(level.getTimeStamp())) continue;
+                Cell cell = new Cell();
+                cell.day = day;
+                cell.date = (Calendar) selectedDate.clone();
+                cell.isToday = isToday;
+                cell.isFuture = false;
+                cell.level = level;
+                entries.add(cell);
+            }
+        }
+        if (categoryLevels.isEmpty()) return entries;
+        int ours = entries.size();
+
         for (Level level : arrangeForDate(selectedDate)) {
-            if (entries.size() >= DAILY_PICK_COUNT) break;
+            if (entries.size() - ours >= DAILY_PICK_COUNT) break;
             Cell cell = new Cell();
             cell.day = day;
             cell.date = (Calendar) selectedDate.clone();
@@ -362,12 +384,39 @@ public class DailyFragment extends Fragment {
             Toast.makeText(requireContext(), R.string.daily_no_library, Toast.LENGTH_SHORT).show();
             return;
         }
+        if (level.isColorForge()) {
+            String base = ColorForgeApi.revealBaseUrl(requireContext(), level.getCategory(), level.getFileName());
+            if (base.isEmpty()) return;
+            Intent reveal = RevealActivity.fromUrl(requireContext(), base, level.getFileName(),
+                    new String[0], new String[0]);
+            reveal.putExtra(GameActivity.EXTRA_DAILY_DATE, DailyChallengeManager.dateKey(cell.date));
+            startActivity(reveal);
+            return;
+        }
         Intent intent = GameActivity.newIntent(requireContext(), level);
         intent.putExtra(GameActivity.EXTRA_DAILY_DATE, DailyChallengeManager.dateKey(cell.date));
         startActivity(intent);
     }
 
     // ─── By Number data (same endpoints as the By Number tab) ───
+
+    /** Our admin's pictures, date-wise. A failure just leaves the Daily tab as it was. */
+    private void loadOurPictures() {
+        if (!ColorForgeApi.hasExplicitServer(requireContext())) return;
+        String root = ColorForgeApi.restRoot(requireContext());
+        Manager.getInstance().executeApiRequestWithCall(root, "daily/", json -> {
+            if (!isAdded() || json == null || !json.has("data")) return;
+            ourLevels.clear();
+            com.google.gson.JsonArray data = json.getAsJsonArray("data");
+            for (int i = 0; i < data.size(); i++) {
+                Level level = Level.fromJson(data.get(i).getAsJsonObject());
+                if (level == null || level.getFileName() == null || level.getFileName().isEmpty()) continue;
+                level.setColorForge(true);
+                ourLevels.add(level);
+            }
+            rebuildMonth();
+        }, call -> { });
+    }
 
     private void loadCategories() {
         Manager.getInstance().executeApiRequest("category/", json -> {
@@ -467,7 +516,12 @@ public class DailyFragment extends Fragment {
             void bind(Cell cell) {
                 date.setVisibility(View.GONE);      // the heading names the date
                 itemView.setAlpha(cell.isFuture ? 0.45f : 1f);
-                String url = thumbnailUrl(cell.level != null ? cell.level : levelForDate(cell.date));
+                Level shown = cell.level != null ? cell.level : levelForDate(cell.date);
+                boolean ours = shown != null && shown.isColorForge();
+                image.setBackgroundColor(ours ? Color.WHITE : Color.TRANSPARENT);   // line art is transparent
+                String url = ours
+                        ? ColorForgeApi.borderThumbUrl(requireContext(), shown.getCategory(), shown.getFileName())
+                        : thumbnailUrl(shown);
                 if (url != null) {
                     com.squareup.picasso.Picasso.get().load(url)
                             .resize(tileSize, tileSize).centerCrop()

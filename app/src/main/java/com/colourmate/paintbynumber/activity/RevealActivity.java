@@ -328,6 +328,11 @@ public class RevealActivity extends AppCompatActivity
 
     @Override
     public void onFinished() {
+        // Opened from the Daily tab: finishing marks that date done, same as the By Number game.
+        String dailyDate = getIntent().getStringExtra(GameActivity.EXTRA_DAILY_DATE);
+        if (dailyDate != null) {
+            com.colourmate.paintbynumber.util.DailyChallengeManager.markCompleted(this, dailyDate);
+        }
         // The best moment of the whole session used to be a two-second Toast. Now: the full
         // picture (zoomed to fit), a particle burst over it, the artwork saved into My Works,
         // and a sheet with "Next picture" — which is also a natural ad break.
