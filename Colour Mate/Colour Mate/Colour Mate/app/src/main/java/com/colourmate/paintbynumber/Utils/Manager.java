@@ -318,6 +318,23 @@ public class Manager {
         /** Null = use the global B_URL (ionicsolutions). Set for the ColorForge tab. */
         private String baseUrlOverride;
 
+        /**
+         * By Number mix: when set, OUR server's pictures for the same category are fetched in
+         * parallel and shown ABOVE the paid list. The paid list never waits for them — if our
+         * server is slow or down the paid content appears exactly as before, and ours pop in on
+         * top whenever (if ever) they arrive. Owner's rule: new pictures sit at the top.
+         */
+        private String mixRoot;
+        private final ArrayList<T> mixItems = new ArrayList<>();
+        private final ArrayList<String> mixKeys = new ArrayList<>();
+        private boolean paidLoaded = false;
+        /** How many of mixItems currently sit at the front of mItems (so a re-load replaces them). */
+        private int mixInList = 0;
+
+        public void setMixRoot(String root) {
+            this.mixRoot = (root == null || root.isEmpty()) ? null : root;
+        }
+
         // ✅ NEW: Track loading state
         private volatile boolean isLoading = false;
         private Call currentCall;
@@ -357,6 +374,10 @@ public class Manager {
                     mItems.clear();
                     mKeys.clear();
                     parseAndAddResults(jsonObject.getAsJsonArray("data"));
+                    mItems.addAll(0, mixItems);
+                    mKeys.addAll(0, mixKeys);
+                    mixInList = mixItems.size();
+                    paidLoaded = true;
                 }
                 
                 if (jsonObject.has("next") && !jsonObject.get("next").isJsonNull()) {
@@ -445,6 +466,12 @@ public class Manager {
             lastError = null;
 
             Log.d(TAG, "Starting refresh for: " + mPath);
+
+            if (mixRoot != null && this.method == 1) {
+                paidLoaded = false;
+                Manager.getInstance().executeApiRequestWithCall(mixRoot, this.mPath,
+                        this::onMixLoaded, call -> { });
+            }
 
             if (this.method == 1) {
                 Manager.getInstance().executeApiRequestWithCall(this.baseUrlOverride, this.mPath,
@@ -541,6 +568,50 @@ public class Manager {
             if (mAuthMode == 0) return false;
             if (mAuthMode == 1) return loggedIn;
             return true;
+        }
+
+        /** Our server's list for this category. Runs on the main thread (like every listener). */
+        @SuppressWarnings("unchecked")
+        private void onMixLoaded(JsonObject json) {
+            if (mAbort || json == null || !json.has("data") || !mType.equals(Level.class)) return;
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+            Date now = new Date();
+            ArrayList<T> items = new ArrayList<>();
+            ArrayList<String> keys = new ArrayList<>();
+            for (JsonElement el : json.getAsJsonArray("data")) {
+                try {
+                    JsonObject o = el.getAsJsonObject();
+                    if (!o.has("key")) continue;
+                    Level lv = Level.fromJson(o);
+                    if (lv == null) continue;
+                    String ts = lv.getTimeStamp();
+                    if (ts != null && !ts.isEmpty()) {
+                        Date d = sdf.parse(ts);
+                        if (d != null && d.after(now)) continue;     // scheduled for later
+                    }
+                    lv.setColorForge(true);
+                    lv.setDiamond(false);
+                    items.add((T) lv);
+                    keys.add(o.get("key").getAsString());
+                } catch (Exception e) {
+                    Log.e(TAG, "Mix item skipped: " + e.getMessage());
+                }
+            }
+            mixItems.clear();
+            mixKeys.clear();
+            mixItems.addAll(items);
+            mixKeys.addAll(keys);
+            if (paidLoaded) {
+                for (int i = 0; i < mixInList && !mItems.isEmpty(); i++) {
+                    mItems.remove(0);
+                    mKeys.remove(0);
+                }
+                mItems.addAll(0, items);
+                mKeys.addAll(0, keys);
+                mixInList = items.size();
+                notifyListenersOfDataLoad();
+            }
+            Log.d(TAG, "Mix: " + items.size() + " of our pictures on top of " + mPath);
         }
 
         private void parseAndAddResults(JsonArray arr) {
@@ -978,7 +1049,12 @@ public class Manager {
     }
 
     public RestDataSource<Level> getImagesByCategory(String category) {
-        return new RestDataSource<>(Level.class, "gimg/c/" + category, 0, 1);
+        RestDataSource<Level> ds = new RestDataSource<>(Level.class, "gimg/c/" + category, 0, 1);
+        Context ctx = com.colourmate.paintbynumber.GlobalApplication.getAppContext();
+        if (ctx != null && ColorForgeApi.hasExplicitServer(ctx)) {
+            ds.setMixRoot(ColorForgeApi.restRoot(ctx));       // our new pictures, on top
+        }
+        return ds;
     }
 
     /**

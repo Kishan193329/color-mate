@@ -19,6 +19,8 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import com.colourmate.paintbynumber.R;
 import com.colourmate.paintbynumber.activity.ArtworkShareActivity;
 import com.colourmate.paintbynumber.activity.GameActivity;
+import com.colourmate.paintbynumber.activity.RevealActivity;
+import com.colourmate.paintbynumber.Utils.ColorForgeApi;
 import com.colourmate.paintbynumber.adapter.ColoringsAdapter;
 import com.colourmate.paintbynumber.adapter.LevelsAdapter;
 import com.colourmate.paintbynumber.ads.MediationManager;
@@ -246,6 +248,14 @@ public class NumberListFragment extends Fragment implements ColoringsAdapter.Col
         if (ctx == null)
             return;
 
+        if (level.isColorForge()) {
+            String base = ColorForgeApi.revealBaseUrl(ctx, level.getCategory(), level.getFileName());
+            if (base.isEmpty()) return;
+            MediationManager.showInterstitial((AppCompatActivity) getActivity(),
+                    () -> startActivity(RevealActivity.fromUrl(ctx, base, level.getFileName(),
+                            new String[0], new String[0])));
+            return;
+        }
         MediationManager.showInterstitial((AppCompatActivity) getActivity(),
                 () -> startActivity(GameActivity.newIntent(ctx, level)));
     }

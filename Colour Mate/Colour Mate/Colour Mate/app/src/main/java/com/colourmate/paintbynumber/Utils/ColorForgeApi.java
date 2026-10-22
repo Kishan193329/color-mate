@@ -199,6 +199,18 @@ public final class ColorForgeApi {
      * category+fileName to the picture's CDN bundle (route
      * {@code /index.php/Number/reveal/{cat}/{file}/{asset}}), so the app needs no bundle id.
      */
+    /** All our published pictures, newest first, for the Daily tab (number_tab.daily_payload). */
+    public static String dailyUrl(Context context) {
+        String base = baseUrl(context);
+        return TextUtils.isEmpty(base) ? "" : base + REST_SUFFIX + "daily/";
+    }
+
+    /** The featured Hit picture + unlock time (number_tab.hit_payload). */
+    public static String hitUrl(Context context) {
+        String base = baseUrl(context);
+        return TextUtils.isEmpty(base) ? "" : base + "index.php/App/hit";
+    }
+
     public static String revealBaseUrl(Context context, String category, String fileName) {
         String base = baseUrl(context);
         return TextUtils.isEmpty(base) ? ""

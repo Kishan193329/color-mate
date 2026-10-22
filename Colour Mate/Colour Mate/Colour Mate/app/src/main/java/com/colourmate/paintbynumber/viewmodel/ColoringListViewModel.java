@@ -236,6 +236,13 @@ public class ColoringListViewModel extends AndroidViewModel {
     public void onColoringClicked(Level level) {
         if (level == null) return;
 
+        // Our own pictures (mixed on top of By Number) play in the reveal game, which keeps its
+        // own progress — the flat game's "finished -> share" shortcut does not apply to them.
+        if (level.isColorForge()) {
+            navigationAction.postValue(new NavigationAction(NavigationType.GAME, level, null));
+            return;
+        }
+
         if (DataManager.getInstance().isFinishedLevel(level)) {
             // Completed level → share screen
             String imagePath = getCompletedImagePath(level);
