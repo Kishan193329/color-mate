@@ -26,7 +26,9 @@ import cv2
 import numpy as np
 
 INK_LUM = 0.10          # Rec.601 luminance below which a path is treated as outline ink
-MIN_REGION_PX = 24      # visible area (px) under which a region is merged into its neighbour
+MIN_REGION_PX = 80      # visible area (px) under which a region is merged into its neighbour (~9x9 px)
+MERGE_DE = 8.0          # Lab distance under which two fill colours share one palette number
+MAX_COLOURS = 150       # merge threshold rises until the palette fits this
 SS = 3                  # supersampling for the anti-aliased colour render and the ink alpha
 MAX_SIDE = 1254         # same cap as photo uploads (app.MAX_SIDE)
 
@@ -244,17 +246,34 @@ def prepare(folder: Path, src_svg: Path) -> dict:
     from services import reveal_game_builder as R   # local import: R imports this module
     lab = R.fill_labels(lab)
 
-    # 4. compact ids 1..N and number colours 1..K, darkest first
+    # 4. palette: Figma's vectoriser often emits hundreds of near-identical shades (one picture
+    #    measured 2,152). Colours closer than MERGE_DE in Lab share one number; the threshold rises
+    #    until the palette fits MAX_COLOURS. Harmless to the look — the reveal paints the TRUE
+    #    pixels of each shape, the number only says which group it belongs to.
+    uniq = [int(u) for u in np.unique(lab) if u > 0]
+    area = np.bincount(lab.ravel(), minlength=int(lab.max()) + 1)
+    rgb_area = {}
+    for old in uniq:
+        rgb_area[colour_of[old]] = rgb_area.get(colour_of[old], 0) + int(area[old])
+    rep_of = _merge_colours(rgb_area)
+
+    # 5. join touching regions that now carry the same colour group (one tap fills the shape)
+    group_of = np.zeros(int(lab.max()) + 1, np.int64)
+    reps = sorted(set(rep_of.values()), key=_lum)
+    num_of = {c: i for i, c in enumerate(reps, start=1)}
+    for old in uniq:
+        group_of[old] = num_of[rep_of[colour_of[old]]]
+    lab = _union_same_number(lab, group_of)
+
+    # 6. compact ids 1..N, numbered darkest first
     uniq = [int(u) for u in np.unique(lab) if u > 0]
     remap = np.zeros(int(lab.max()) + 1, np.int32)
     for new, old in enumerate(uniq, start=1):
         remap[old] = new
     fl = remap[lab]
-    region_rgb = {remap[old]: colour_of[old] for old in uniq}
-    palette = sorted(set(region_rgb.values()), key=_lum)
-    num_of = {c: i for i, c in enumerate(palette, start=1)}
-    numbers = {rid: num_of[c] for rid, c in region_rgb.items()}
+    numbers = {int(remap[old]): int(group_of[old]) for old in uniq}
     colors = {n: list(c) for c, n in num_of.items()}
+    palette = reps
 
     cv2.imwrite(str(folder / "reveal_master.png"), master)
     cv2.imwrite(str(folder / "original.png"), master)
@@ -265,6 +284,57 @@ def prepare(folder: Path, src_svg: Path) -> dict:
          "w": W, "h": H, "shapes": len(shapes), "ink_shapes": int(sum(ink_flags))}), encoding="utf-8")
     return {"regions": len(uniq), "palette_numbers": len(palette), "w": W, "h": H,
             "shapes": len(shapes), "ink_shapes": int(sum(ink_flags))}
+
+
+def _lab(rgb_list):
+    a = np.array(rgb_list, np.uint8).reshape(-1, 1, 3)
+    return cv2.cvtColor(a[..., ::-1], cv2.COLOR_BGR2LAB).reshape(-1, 3).astype(np.float32) * \
+        np.array([100 / 255, 1, 1], np.float32) - np.array([0, 128, 128], np.float32)
+
+
+def _merge_colours(rgb_area: dict) -> dict:
+    """{rgb: area} -> {rgb: representative rgb}. Greedy by area: each colour joins the first
+    bigger colour within the Lab threshold, else starts its own group."""
+    cols = sorted(rgb_area, key=lambda c: -rgb_area[c])
+    lab = _lab(cols)
+    thr = MERGE_DE
+    while True:
+        reps, rep_lab, out = [], [], {}
+        for c, l in zip(cols, lab):
+            if rep_lab:
+                d = np.sqrt(((np.asarray(rep_lab) - l) ** 2).sum(1))
+                j = int(d.argmin())
+                if d[j] <= thr:
+                    out[c] = reps[j]
+                    continue
+            reps.append(c); rep_lab.append(l); out[c] = c
+        if len(reps) <= MAX_COLOURS:
+            return out
+        thr += 2.0
+
+
+def _union_same_number(lab: np.ndarray, group_of: np.ndarray) -> np.ndarray:
+    """Merge 4-adjacent regions whose colour group is the same."""
+    parent = np.arange(int(lab.max()) + 1)
+
+    def find(x):
+        while parent[x] != x:
+            parent[x] = parent[parent[x]]
+            x = parent[x]
+        return x
+    pairs = set()
+    for a, b in ((lab[:, :-1], lab[:, 1:]), (lab[:-1, :], lab[1:, :])):
+        m = (a != b) & (a > 0) & (b > 0)
+        if m.any():
+            p = np.unique(np.stack([a[m], b[m]], 1), axis=0)
+            pairs.update(map(tuple, p.tolist()))
+    for a, b in pairs:
+        if group_of[a] == group_of[b]:
+            ra, rb = find(a), find(b)
+            if ra != rb:
+                parent[max(ra, rb)] = min(ra, rb)
+    roots = np.array([find(i) for i in range(len(parent))])
+    return roots[lab]
 
 
 def is_svg_item(folder: Path) -> bool:
