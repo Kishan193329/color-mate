@@ -306,6 +306,7 @@ def prepare(folder: Path, src_svg: Path) -> dict:
         {"numbers": {str(k): v for k, v in numbers.items()},
          "colors": {str(k): v for k, v in colors.items()},
          "w": W, "h": H, "shapes": len(shapes), "ink_shapes": int(sum(ink_flags))}), encoding="utf-8")
+    write_previews(folder)
     return {"regions": len(uniq), "palette_numbers": len(palette), "w": W, "h": H,
             "shapes": len(shapes), "ink_shapes": int(sum(ink_flags)),
             "ink_pct": round(float((ink_alpha > 128).mean()) * 100, 1)}
@@ -362,6 +363,52 @@ def _union_same_number(lab: np.ndarray, group_of: np.ndarray) -> np.ndarray:
     return roots[lab]
 
 
+# ── outline style (the admin picks one per picture) ─────────────────────────────────────────
+# Two looks for the same picture, both starting from a soft grey sketch of the real colours
+# (start.jpg — the app's blank canvas): "black" draws the outline ink pure black, "soft" draws it
+# a light grey so the line work melts into the sketch. Some pictures read better one way, some
+# the other, so the boss chooses in the admin (outline.txt in the item folder, mirrored on the row).
+OUTLINES = {"black": (0, 0, 0), "soft": (163, 163, 163)}
+TONE_K = 0.5            # sketch grey = 255 - (255 - luminance) * TONE_K
+
+
+def outline_of(folder: Path) -> str:
+    f = Path(folder) / "outline.txt"
+    v = f.read_text(encoding="utf-8").strip() if f.is_file() else "black"
+    return v if v in OUTLINES else "black"
+
+
+def set_outline(folder: Path, style: str) -> str:
+    style = style if style in OUTLINES else "black"
+    (Path(folder) / "outline.txt").write_text(style, encoding="utf-8")
+    return style
+
+
+def start_image(master: np.ndarray) -> np.ndarray:
+    """The blank canvas: each pixel's own colour as a light grey, so the picture is readable before
+    anything is filled (and a vectoriser's hairline seams vanish into it)."""
+    L = cv2.cvtColor(master, cv2.COLOR_BGR2GRAY).astype(np.float32)
+    g = np.clip(255.0 - (255.0 - L) * TONE_K, 0, 255).astype(np.uint8)
+    return cv2.cvtColor(g, cv2.COLOR_GRAY2BGR)
+
+
+def write_previews(folder: Path) -> None:
+    """start.jpg (the app canvas) + preview_black.jpg / preview_soft.jpg for the admin chooser."""
+    folder = Path(folder)
+    master = cv2.imread(str(folder / "reveal_master.png"))
+    ink = np.load(folder / "svg_game.npz")["ink"].astype(np.float32)[..., None] / 255.0
+    start = start_image(master)
+    cv2.imwrite(str(folder / "start.jpg"), start, [cv2.IMWRITE_JPEG_QUALITY, 88])
+    sc = min(1.0, 900.0 / max(start.shape[:2]))
+    for name, rgb in OUTLINES.items():
+        col = np.array(rgb[::-1], np.float32)
+        img = (start.astype(np.float32) * (1 - ink) + col * ink).astype(np.uint8)
+        if sc < 1:
+            img = cv2.resize(img, (round(img.shape[1] * sc), round(img.shape[0] * sc)),
+                             interpolation=cv2.INTER_AREA)
+        cv2.imwrite(str(folder / f"preview_{name}.jpg"), img, [cv2.IMWRITE_JPEG_QUALITY, 85])
+
+
 def is_svg_item(folder: Path) -> bool:
     return (Path(folder) / "svg_game.npz").is_file()
 
@@ -379,5 +426,6 @@ def game_data(folder: Path):
     colors = {int(k): v for k, v in js["colors"].items()}
     meta = lineart_region_builder.region_meta(fl, numbers)
     border = np.zeros((*fl.shape, 4), np.uint8)
+    border[..., :3] = OUTLINES[outline_of(folder)][::-1]     # BGR; the app draws border.png as-is
     border[..., 3] = ink
     return master, fl, numbers, colors, meta, border

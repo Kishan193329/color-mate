@@ -91,7 +91,9 @@ _IMG_COLS = {"uploader_id": "INTEGER", "reviewer_id": "INTEGER",
              "error": "TEXT NOT NULL DEFAULT ''",
              # what the uploaded picture measured as — 'flat' | 'textured' | 'mixed'. Drives the
              # admin's Detail advice; see reveal_game_builder.source_kind().
-             "source_kind": "TEXT NOT NULL DEFAULT ''"}
+             "source_kind": "TEXT NOT NULL DEFAULT ''",
+             # Figma-SVG items only: which outline look the boss picked — 'black' | 'soft'.
+             "outline": "TEXT NOT NULL DEFAULT ''"}
 
 
 def conn() -> sqlite3.Connection:
@@ -250,7 +252,7 @@ def add_image(iid: str, title: str, category_id: int | None, uploader_id: int | 
 def update_image(iid: str, **fields) -> None:
     allowed = {"title", "category_id", "tier", "status", "featured", "base_url", "published",
                "regions", "colours", "reviewer_id", "rejection", "submitted",
-               "file_name", "publish_ts", "error", "source_kind"}
+               "file_name", "publish_ts", "error", "source_kind", "outline"}
     s = {k: v for k, v in fields.items() if k in allowed}
     if not s:
         return

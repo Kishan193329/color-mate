@@ -2512,7 +2512,15 @@ not started; needs a Mac + Xcode.
 - `util/HitCard` + `include_hit_card.xml` on By Number — dimmed colour preview + padlock + countdown
   on the **server clock**, Play after unlock.
 
-**Deploy (needs the owner's PC — SSH key `~/.ssh/colorforge_vps`):** scp `app.py`, `number_tab.py`,
+**Outline look (2026-10-22):** every SVG picture comes in two looks the boss picks per picture in
+the admin drawer — **black** or **soft** (grey #A3A3A3) outline — both over `start.jpg`, a light grey
+sketch of the picture's own colours (`255-(255-L)*0.5`) that the app uses as its blank canvas instead
+of white (`RevealLevel`; optional, so photo items still start white). Choice lives in `outline.txt`
+in the item folder + the `outline` column; `PUT /api/items/{iid}/outline` re-publishes a published
+item. `_publish` stamps `"look"` into `regions.json` because the app cache revalidates on that file
+only — without it phones would keep the old border.png. Upload helper: `tools/upload_svgs.py`.
+
+**Deploy (needs the owner's PC — SSH key `~/.ssh/colorforge_vps`):** scp `app.py`, `db.py`, `number_tab.py`,
 `admin.html`, `services/svg_builder.py`, `services/reveal_game_builder.py` → `/opt/colorforge/`, then
 `systemctl restart colorforge`.
 

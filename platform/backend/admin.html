@@ -323,6 +323,13 @@
   .flag .fb{width:18px;height:18px;border-radius:5px;display:grid;place-items:center;flex:none}.flag .fb svg{width:12px;height:12px;stroke-width:2.6}
   .flag.ok{color:var(--muted)}.flag.ok .fb{background:var(--good-soft);color:var(--good)}
   .flag.warn{background:var(--warn-soft);color:var(--warn)}.flag.warn .fb{background:var(--warn);color:#fff}
+  .outpick{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .outpick button{display:flex;flex-direction:column;gap:0;padding:0;border:1px solid var(--border);border-radius:12px;overflow:hidden;background:var(--surface);cursor:pointer;text-align:left}
+  .outpick img{display:block;width:100%;aspect-ratio:1;object-fit:cover;background:#fff}
+  .outpick span{padding:8px 10px;font-weight:650;font-size:12.5px;color:var(--muted)}
+  .outpick button.on{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent),0 0 0 1px var(--accent)}
+  .outpick button.on span{color:var(--ink);background:var(--accent-soft)}
+  .outpick button:disabled{cursor:default;opacity:1}
   .tierpick{display:flex;gap:8px}
   .tierpick button{flex:1;border:1px solid var(--border);background:var(--surface);border-radius:10px;padding:10px 8px;cursor:pointer;font-weight:650;font-size:12.5px;color:var(--muted)}
   .tierpick button.on{border-color:var(--accent);color:var(--ink);background:var(--accent-soft);box-shadow:inset 0 0 0 1px var(--accent)}
@@ -508,6 +515,7 @@ function shell(){const boss=isBoss();
       </div>
       <div class="dside">
         <div id="dwErr" style="display:none"></div>
+        <div id="dwOutWrap" style="display:none"><div class="lblrow" id="dwOutLbl">Outline — pick the look that goes to the app</div><div class="outpick" id="dwOut"></div></div>
         <div id="dwQualityWrap"><div class="lblrow">Auto quality check</div><div class="flags" id="dwFlags"></div></div>
         <div id="dwTierWrap"><div class="lblrow">Tier</div><div class="tierpick" id="dwTier">
           <button data-t="free">Free</button><button data-t="reward">Reward ad</button><button data-t="premium">Premium</button></div></div>
@@ -1261,6 +1269,21 @@ async function openDrawer(id){
   if(failed)$('#dwErr').innerHTML=errorPanel(i,isDia);
   else if(i.error)$('#dwErr').innerHTML=`<div class="errbox"><div class="ei">${ic('alert')}</div><div><h4>Worth a look before publishing</h4><p>${esc(i.error)}</p></div></div>`;
   $('#dwQualityWrap').style.display=failed?'none':'';
+  /* Figma-SVG pictures come in two looks: black outlines or soft grey ones, both over a light grey
+     sketch of the real colours. Some pictures read better one way, some the other — the boss
+     picks here, and the pick is what the app receives (a published picture is re-exported). */
+  const isSvg=i.source_kind==='svg'&&!failed&&ready;
+  $('#dwOutWrap').style.display=isSvg?'':'none';
+  if(isSvg){const cur=i.outline||'black';
+    $('#dwOutLbl').textContent=isBoss()?'Outline — pick the look that goes to the app':'Outline — the boss picks the look';
+    $('#dwOut').innerHTML=[['black','Black outline'],['soft','Soft grey outline']].map(([k,l])=>
+      `<button data-out="${k}" class="${cur===k?'on':''}" ${isBoss()?'':'disabled'}><img alt="" loading="lazy" src="/api/items/${id}/outline/${k}.jpg"><span>${cur===k?'✓ ':''}${l}</span></button>`).join('');
+    if(isBoss())$$('#dwOut button').forEach(b=>b.onclick=async()=>{
+      if(b.classList.contains('on'))return;
+      try{await API.call(`/api/items/${id}/outline`,{method:'PUT',body:{style:b.dataset.out}});
+        await loadData();openDrawer(id);
+        toast(i.status==='published'?'Saved — re-publishing so the app gets the new look':'Saved — used when you publish','good');
+      }catch(e){toast('Could not save: '+e.message,'bad');}});}
   /* The Detail level matters more than anything in the renderer: the model inks whatever texture
      it can see, so a flat cartoon comes out at 8% ink and a textured photo at 27%. The backend
      measures which the upload is (source_kind) — say so here, next to the control that fixes it.

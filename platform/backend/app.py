@@ -403,6 +403,7 @@ def _process_svg(iid: str) -> None:
                     "almost no line art. Regenerate the image with bold pure-black outlines, then "
                     "vectorize again (or publish anyway if you like it).")
         db.update_image(iid, status="review", error=warn, source_kind="svg",
+                        outline=svg_builder.outline_of(folder),
                         regions=info["regions"], colours=info["palette_numbers"])
     except Exception as e:  # noqa: BLE001
         _fail(iid, e, "SVG import")
@@ -561,6 +562,39 @@ def add_comment_ep(iid: str, request: Request, payload: dict = Body(...), user: 
     return db.comments_for(iid)
 
 
+@app.get("/api/items/{iid}/outline/{style}.jpg")
+def outline_preview(iid: str, style: str):
+    """Admin chooser: the picture as the app will open it, with black or soft-grey outlines."""
+    _need(iid)
+    if style not in svg_builder.OUTLINES:
+        raise HTTPException(404, "unknown style")
+    folder = ITEMS / iid
+    p = folder / f"preview_{style}.jpg"
+    if not p.is_file() and svg_builder.is_svg_item(folder):
+        svg_builder.write_previews(folder)              # items imported before the chooser existed
+    if not p.is_file():
+        raise HTTPException(404, "not an SVG picture")
+    return FileResponse(p, media_type="image/jpeg")
+
+
+@app.put("/api/items/{iid}/outline")
+def choose_outline(iid: str, request: Request, background: BackgroundTasks,
+                   payload: dict = Body(...), user: dict = Depends(require_boss)):
+    """Pick the outline look for a Figma-SVG picture. A published picture is re-exported so the app
+    gets the new border.png; otherwise the choice is simply used at publish."""
+    it = _need(iid)
+    folder = ITEMS / iid
+    if not svg_builder.is_svg_item(folder):
+        raise HTTPException(400, "only Figma SVG pictures have an outline choice")
+    style = svg_builder.set_outline(folder, str(payload.get("style", "")))
+    db.update_image(iid, outline=style)
+    _log(user, "Outline", f"{it.get('title')} → {style}", request)
+    if it.get("status") == "published":
+        db.update_image(iid, status="publishing")
+        background.add_task(_enqueue, _publish, iid)
+    return db.get_image(iid)
+
+
 @app.get("/api/items/{iid}/thumb")
 def thumb(iid: str):
     it = _need(iid)
@@ -626,9 +660,17 @@ def _publish(iid: str) -> None:
         if not is_diamond:
             # Colour-fill: the app bundle (id_map / border / regions / original / swatches).
             info = R.export_color_bundle(folder)
+            svg_item = svg_builder.is_svg_item(folder)
             with zipfile.ZipFile(info["zip"]) as z:
                 for name in z.namelist():
                     data = z.read(name)
+                    if data and svg_item and name == "regions.json":
+                        # Stamp the outline look: the app's cache revalidates a picture by
+                        # comparing regions.json, so a changed look must change this file or
+                        # phones keep the old border.png.
+                        js = json.loads(data)
+                        js["look"] = svg_builder.outline_of(folder)
+                        data = json.dumps(js, separators=(",", ":")).encode()
                     if data:                        # skip directory entries
                         store.put_bytes(f"images/{iid}/{name}", data)
             # Delivery extras — NOT part of the engine (the July image-processing logic stays
@@ -651,6 +693,9 @@ def _publish(iid: str) -> None:
                                     interpolation=cv2.INTER_AREA)
                 store.put_bytes(f"images/{iid}/border_thumb.png",
                                 cv2.imencode(".png", bd)[1].tobytes())
+            if svg_builder.is_svg_item(folder) and (folder / "start.jpg").is_file():
+                # the soft grey sketch the app shows before anything is filled
+                store.put_bytes(f"images/{iid}/start.jpg", (folder / "start.jpg").read_bytes())
         else:
             # Diamond: the playable payload is grid.json, plus the renders for the admin preview.
             # Running export_color_bundle() here would spend the whole line-art + region pass
@@ -859,7 +904,7 @@ def number_play(category: str, file_name: str):
 # prefers it because a 1254px raster shows its own pixels once the player zooms in; the
 # vector stays crisp at any zoom and is smaller than the PNG it replaces.
 _REVEAL_ASSETS = {"regions.json", "id_map.png", "border.png", "border.svg",
-                  "original.png", "original.jpg", "border_thumb.png"}
+                  "original.png", "original.jpg", "border_thumb.png", "start.jpg"}
 
 
 @number_router.get("/index.php/Number/reveal/{category}/{file_name}/{asset}")
@@ -873,6 +918,8 @@ def number_reveal_asset(category: str, file_name: str, asset: str):
     # it only proves the item is published; the key is always images/<iid>/<asset>.
     if not (db.get_image(iid) or {}).get("base_url"):
         raise HTTPException(404, "no bundle for this picture")
+    if asset == "start.jpg" and not store.exists(f"images/{iid}/start.jpg"):
+        raise HTTPException(404, "no sketch canvas")   # photo items: the app starts on white
     if asset == "border_thumb.png" and not store.exists(f"images/{iid}/border_thumb.png"):
         asset = "border.png"                         # older item: the grid still gets a picture
     if asset.startswith("original."):
