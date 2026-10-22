@@ -869,7 +869,10 @@ function vUpload(){
       <option>50</option><option>60</option><option selected>78</option><option>100</option><option>120</option><option>150</option></select></div>
     <div class="field"><label>Diamond colours</label><select id="upK">
       <option>18</option><option>24</option><option selected>32</option><option>40</option><option>50</option></select></div>`
-    :`<div class="field"><label>Simplify (dark / photo / busy art)</label><select id="upSimp">
+    :`<div class="field"><label>Picture type</label><select id="upVec">
+      <option value="1">Flat art with black outlines — vectorize here (no Figma needed)</option>
+      <option value="">Photo / painting — AI line art</option></select></div>
+    <div class="field"><label>Simplify (only for Photo / painting)</label><select id="upSimp">
       <option value="">Off — clean line art</option><option value="light">Light</option><option value="medium">Medium — photos</option><option value="strong">Strong — very busy</option></select></div>`}
     </div>
   </div></div>
@@ -1212,7 +1215,7 @@ async function upload(files){
     fd.append('type',DEPT);
     if(DEPT==='diamond'){fd.append('mode',$('#upMode')?$('#upMode').value:'auto');
       fd.append('cols',$('#upCols')?$('#upCols').value:78);fd.append('colours',$('#upK')?$('#upK').value:32);}
-    else fd.append('simplify',simp);
+    else{fd.append('simplify',simp);fd.append('vectorize',$('#upVec')?$('#upVec').value:'');}
     try{await API.call('/api/items',{method:'POST',body:fd});}catch(e){toast('Upload failed: '+e.message,'bad');}
   }
   if(out)out.textContent='';

@@ -2520,6 +2520,13 @@ in the item folder + the `outline` column; `PUT /api/items/{iid}/outline` re-pub
 item. `_publish` stamps `"look"` into `regions.json` because the app cache revalidates on that file
 only — without it phones would keep the old border.png. Upload helper: `tools/upload_svgs.py`.
 
+**No Figma needed (2026-10-22, Figma credits ran out):** colour uploads have a *Picture type* select —
+"Flat art with black outlines — vectorize here" (default) saves `source.png`, runs
+`svg_builder.vectorize()` (**vtracer**, `hierarchical=cutout`, in `requirements.txt`) to `source.svg`, then the
+normal SVG import. vtracer puts `translate()` on every `<path>`, so `parse()` now reads per-path translate too
+(without it the shapes land at 0,0 and the picture is garbage). Tested end-to-end on the canyon picture:
+2194 regions / 142 colours / 10% ink, outline choice + publish OK. "Photo / painting" keeps the July AI path.
+
 **Deploy (needs the owner's PC — SSH key `~/.ssh/colorforge_vps`):** scp `app.py`, `db.py`, `number_tab.py`,
 `admin.html`, `services/svg_builder.py`, `services/reveal_game_builder.py` → `/opt/colorforge/`, then
 `systemctl restart colorforge`.

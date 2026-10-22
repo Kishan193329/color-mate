@@ -193,6 +193,11 @@ def parse(svg_text: str):
         if not polys:
             continue
         tx, ty = stack[-1]
+        # vtracer (the free vectoriser) puts translate() on each <path>, not on a <g>
+        pm = re.search(r"translate\(\s*(" + _NUM.pattern + r")[\s,]*(" + _NUM.pattern + r")?",
+                       pa.get("transform", ""))
+        if pm:
+            tx += float(pm.group(1)); ty += float(pm.group(2) or 0)
         polys = [p + np.float32([tx - vx, ty - vy]) for p in polys]
         shapes.append((rgb, op, polys))
     return w, h, shapes
@@ -407,6 +412,26 @@ def write_previews(folder: Path) -> None:
             img = cv2.resize(img, (round(img.shape[1] * sc), round(img.shape[0] * sc)),
                              interpolation=cv2.INTER_AREA)
         cv2.imwrite(str(folder / f"preview_{name}.jpg"), img, [cv2.IMWRITE_JPEG_QUALITY, 85])
+
+
+def vectorize(src_png: Path, out_svg: Path) -> None:
+    """Flat artwork (PNG/JPG with black outlines) -> SVG, the free way, so no Figma credits are
+    needed. vtracer in 'cutout' mode gives non-overlapping shapes like Figma's Vectorize; it puts
+    translate() on each <path>, which parse() reads. Big inputs are brought to MAX_SIDE first."""
+    import vtracer
+    img = cv2.imread(str(src_png), cv2.IMREAD_COLOR)
+    if img is None:
+        raise ValueError("could not read the uploaded image")
+    sc = MAX_SIDE / max(img.shape[:2])
+    if sc < 1:
+        img = cv2.resize(img, (round(img.shape[1] * sc), round(img.shape[0] * sc)),
+                         interpolation=cv2.INTER_AREA)
+    tmp = Path(out_svg).with_suffix(".in.png")
+    cv2.imwrite(str(tmp), img)
+    vtracer.convert_image_to_svg_py(str(tmp), str(out_svg), colormode="color",
+                                    hierarchical="cutout", mode="polygon", filter_speckle=4,
+                                    color_precision=6, layer_difference=16)
+    tmp.unlink(missing_ok=True)
 
 
 def is_svg_item(folder: Path) -> bool:

@@ -390,6 +390,17 @@ def _process(iid: str, simplify_level: str | None = None) -> None:
         _fail(iid, e, "colour generation")
 
 
+def _process_vectorize(iid: str) -> None:
+    """Background: flat PNG/JPG -> source.svg (vtracer, no Figma) -> the normal SVG import."""
+    try:
+        folder = ITEMS / iid
+        svg_builder.vectorize(folder / "source.png", folder / "source.svg")
+    except Exception as e:  # noqa: BLE001
+        _fail(iid, e, "vectorize")
+        return
+    _process_svg(iid)
+
+
 def _process_svg(iid: str) -> None:
     """Background: a Figma-vectorised SVG -> regions + ink straight from its shapes (no AI pass),
     then the same play page / review flow as a photo. See services/svg_builder.py."""
@@ -414,6 +425,7 @@ async def create_item(background: BackgroundTasks, request: Request, file: Uploa
                       title: str = Form(""), category: str = Form(""), simplify: str = Form(""),
                       type: str = Form("colour"), mode: str = Form("auto"),
                       cols: int = Form(78), colours: int = Form(32),
+                      vectorize: str = Form(""),
                       user: dict = Depends(current_user)):
     """Save the upload under the signed-in user, register it 'processing', and generate in the
     background. `type` = colour (colour-fill) | diamond (bead grid). For diamond, `mode` is
@@ -424,13 +436,18 @@ async def create_item(background: BackgroundTasks, request: Request, file: Uploa
     iid = uuid.uuid4().hex[:12]
     folder = ITEMS / iid
     folder.mkdir(parents=True, exist_ok=True)
-    with open(folder / ("source.svg" if is_svg else "original.png"), "wb") as out:
+    # A flat PNG/JPG (ChatGPT art with black outlines) can be vectorised here instead of in Figma.
+    vec = kind == "colour" and not is_svg and vectorize.strip() in ("1", "true", "yes")
+    name = "source.svg" if is_svg else ("source.png" if vec else "original.png")
+    with open(folder / name, "wb") as out:
         shutil.copyfileobj(file.file, out)
     cid = db.get_or_create_category(category, time.time()) if category.strip() else None
     ttl = title.strip() or Path(file.filename or iid).stem
     db.add_image(iid, ttl, cid, user["id"], time.time(), status="processing", kind=kind)
     _log(user, "Uploaded", f"{ttl} ({kind})", request)
-    if is_svg:
+    if vec:
+        background.add_task(_enqueue, _process_vectorize, iid)
+    elif is_svg:
         background.add_task(_enqueue, _process_svg, iid)
     elif kind == "diamond":
         background.add_task(_enqueue, _process_diamond, iid, mode.strip().lower(),
