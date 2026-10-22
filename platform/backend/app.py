@@ -398,9 +398,10 @@ def _process_svg(iid: str) -> None:
         info = svg_builder.prepare(folder, folder / "source.svg")
         R.build_color(folder)                                   # admin preview page
         warn = ""
-        if info["ink_shapes"] < 15:
-            warn = ("Very few black outlines in this SVG — the picture will play with almost no line "
-                    "art. Regenerate the image with bold black outlines, then vectorize again.")
+        if info.get("ink_pct", 0) < 3.0:
+            warn = (f"Only {info.get('ink_pct', 0)}% of the picture is outline — it will play with "
+                    "almost no line art. Regenerate the image with bold pure-black outlines, then "
+                    "vectorize again (or publish anyway if you like it).")
         db.update_image(iid, status="review", error=warn, source_kind="svg",
                         regions=info["regions"], colours=info["palette_numbers"])
     except Exception as e:  # noqa: BLE001

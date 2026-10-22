@@ -25,7 +25,10 @@ from pathlib import Path
 import cv2
 import numpy as np
 
-INK_LUM = 0.10          # Rec.601 luminance below which a path is treated as outline ink
+INK_LUM = 0.10          # Rec.601 luminance below which a path is ALWAYS outline ink
+INK_LUM_THIN = 0.42     # darker than this AND thin (stroke-like) -> also outline ink
+INK_THICK = 3.2         # mean stroke width (px, 2*area/perimeter on the raster) counted as "thin"
+
 MIN_REGION_PX = 80      # visible area (px) under which a region is merged into its neighbour (~9x9 px)
 MERGE_DE = 8.0          # Lab distance under which two fill colours share one palette number
 MAX_COLOURS = 150       # merge threshold rises until the palette fits this
@@ -209,7 +212,28 @@ def prepare(folder: Path, src_svg: Path) -> dict:
     if not shapes:
         raise ValueError("no filled shapes found in the SVG")
 
-    ink_flags = [_lum(rgb) < INK_LUM for rgb, _, _ in shapes]
+    # Outline detection. Many vectorised pictures draw their outlines in very dark brown or navy
+    # rather than pure black, so luminance alone misses them. A path is ink when it is near-black,
+    # or when it is darkish AND stroke-like: mean width (2*area/perimeter, measured on the
+    # rendered raster so compound paths count correctly) of only a few pixels. A dark but WIDE
+    # shape — a black cat's fur, a night sky — stays a colourable region.
+    allid = np.zeros((H, W), np.int32)
+    for k, (rgb, op, polys) in enumerate(shapes, start=1):
+        _fill(allid, polys, k, s)
+    n = len(shapes) + 1
+    area = np.bincount(allid.ravel(), minlength=n)
+    edge = np.zeros((H, W), bool)
+    edge[:, :-1] |= allid[:, :-1] != allid[:, 1:]
+    edge[:, 1:] |= allid[:, :-1] != allid[:, 1:]
+    edge[:-1, :] |= allid[:-1, :] != allid[1:, :]
+    edge[1:, :] |= allid[:-1, :] != allid[1:, :]
+    perim = np.bincount(allid[edge].ravel(), minlength=n)
+    ink_flags = []
+    for k, (rgb, _, _) in enumerate(shapes, start=1):
+        L = _lum(rgb)
+        thick = 2.0 * area[k] / max(1, perim[k])
+        ink_flags.append(L < INK_LUM or (L < INK_LUM_THIN and area[k] >= 12 and thick < INK_THICK))
+    del allid, edge
 
     # 1. anti-aliased colour render (supersampled, painter's order, opacity over what is below)
     big = np.full((H * SS, W * SS, 3), 255, np.uint8)
@@ -283,7 +307,8 @@ def prepare(folder: Path, src_svg: Path) -> dict:
          "colors": {str(k): v for k, v in colors.items()},
          "w": W, "h": H, "shapes": len(shapes), "ink_shapes": int(sum(ink_flags))}), encoding="utf-8")
     return {"regions": len(uniq), "palette_numbers": len(palette), "w": W, "h": H,
-            "shapes": len(shapes), "ink_shapes": int(sum(ink_flags))}
+            "shapes": len(shapes), "ink_shapes": int(sum(ink_flags)),
+            "ink_pct": round(float((ink_alpha > 128).mean()) * 100, 1)}
 
 
 def _lab(rgb_list):
