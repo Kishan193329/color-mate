@@ -128,6 +128,38 @@ def gimg_payload(category: str, next_key: str | None = None) -> dict:
     return {"data": merged, "next": up_next or ""}
 
 
+def _row(it: dict, category: str = "") -> dict:
+    ts = it.get("publish_ts") or it.get("published") or it.get("created") or 0
+    day = datetime.fromtimestamp(float(ts), tz=timezone.utc).strftime("%Y-%m-%d")
+    return {"key": it["file_name"], "fileName": it["file_name"],
+            "category": it.get("category") or category, "title": it.get("title") or "",
+            "timeStamp": day,
+            "isNewToday": day == datetime.now(tz=timezone.utc).strftime("%Y-%m-%d")}
+
+
+def daily_payload() -> dict:
+    """Every published colour picture of ours, newest first, across all categories — the Daily
+    tab groups them by `timeStamp`. Future-dated items are left in; the app hides them until
+    their day, exactly as the category feed does."""
+    return {"data": [_row(it) for it in db.number_items(None)], "next": ""}
+
+
+def hit_payload() -> dict:
+    """The one featured "Hit" picture and when it unlocks (epoch seconds), or {} when none is set.
+    `now` is the server clock so the app's countdown cannot be cheated by changing the phone time."""
+    cfg = db.get_config().get("hit") or {}
+    iid = cfg.get("iid")
+    if not iid:
+        return {}
+    it = db.get_image(iid)
+    if not it or it.get("status") != "published" or not it.get("file_name"):
+        return {}
+    import time as _t
+    row = _row(it)
+    row.update({"unlockAt": int(cfg.get("unlock_ts") or 0), "now": int(_t.time())})
+    return row
+
+
 def image_response(category: str, subpath: str, store):
     """Serve line / colored / thumb, or 302 to upstream if merge is on and we don't own it."""
     cat = category.strip()

@@ -530,6 +530,24 @@ function toast(m,k){const t=document.createElement('div');t.className='toast'+(k
   t.innerHTML=`${ic(k==='good'?'check':k==='bad'?'x':'bell')}<span>${m}</span>`;$('#toasts').appendChild(t);
   setTimeout(()=>{t.style.opacity='0';setTimeout(()=>t.remove(),260);},2800);}
 function today(){const d=new Date();return new Date(d.getTime()-d.getTimezoneOffset()*6e4).toISOString().slice(0,10);}
+let HIT={};
+/* The one featured "Hit" picture: the app shows it on top with a countdown and opens it only
+   once the countdown ends. Boss picks the picture (must be published) and the unlock moment. */
+function hitModal(id){
+  const it=ITEMS.find(x=>x.id===id);const isHit=HIT.iid===id;
+  const d=new Date(Date.now()+24*3600e3);d.setMinutes(0,0,0);
+  const pad=n=>String(n).padStart(2,'0');
+  const cur=isHit&&HIT.unlock_ts?new Date(HIT.unlock_ts*1000):d;
+  const v=`${cur.getFullYear()}-${pad(cur.getMonth()+1)}-${pad(cur.getDate())}T${pad(cur.getHours())}:${pad(cur.getMinutes())}`;
+  $('#modal').innerHTML=`<h3>⭐ Hit image</h3><p><b>${esc(it?it.title:'')}</b> becomes the featured picture in the app — shown on top with a countdown, playable once it unlocks. Only one Hit at a time; setting this replaces the current one.</p>
+    <div class="field"><label>Unlocks at (your local time)</label><input type="datetime-local" id="mhit" value="${v}"/></div>
+    <div class="macts">${isHit?'<button class="btn danger" id="mclr">Remove Hit</button>':''}<div class="grow"></div><button class="btn" id="mc">Cancel</button><button class="btn pri" id="mo">${isHit?'Update':'Make Hit'}</button></div>`;
+  $('#modalScrim').classList.add('on');
+  $('#mc').onclick=closeModal;
+  const clr=$('#mclr');if(clr)clr.onclick=async()=>{closeModal();try{HIT=await API.call('/api/hit',{method:'PUT',body:{}});toast('Hit image removed','good');go(VIEW);}catch(e){toast(e.message,'bad');}};
+  $('#mo').onclick=async()=>{const t=new Date($('#mhit').value).getTime()/1000;if(!t){$('#mhit').style.borderColor='var(--bad)';return;}
+    closeModal();try{HIT=await API.call('/api/hit',{method:'PUT',body:{iid:id,unlock_ts:t}});toast('Hit image set','good');go(VIEW);}catch(e){toast(e.message,'bad');}};
+}
 function confirmModal(o){const d=o.danger;
   // `o.date` adds a go-live date picker. onOk gets (text, date) — existing callers read only
   // the first argument, so they are unaffected.
@@ -548,6 +566,7 @@ function closeModal(){$('#modalScrim').classList.remove('on');}
 async function loadData(){
   const jobs=[API.call('/api/items').then(d=>ITEMS=d),API.call('/api/categories').then(d=>CATS=d)];
   if(isBoss())jobs.push(API.call('/api/users').then(d=>USERS=d).catch(()=>USERS=[]));
+  jobs.push(API.call('/api/hit').then(d=>HIT=d||{}).catch(()=>HIT={}));
   await Promise.all(jobs);
   const q=ITEMS.filter(i=>inDept(i)&&i.status==='submitted').length;const qn=$('#qn');if(qn)qn.textContent=q;
 }
@@ -753,6 +772,7 @@ function card(i){
       ${schedNote(i)}
       ${i.status==='rejected'&&i.rejection?`<div class="rej">✕ ${esc(i.rejection)}</div>`:''}
       ${i.error?`<div class="rej" title="${esc(i.error)}">⚠ ${esc(i.error)}</div>`:''}
+      ${HIT.iid===i.id?`<div style="font-size:11px;font-weight:700;color:#d18a00;margin-top:4px">⭐ HIT · unlocks ${new Date(HIT.unlock_ts*1000).toLocaleString()}</div>`:''}
       ${i.source_kind==='svg'?`<div style="font-size:11px;color:var(--muted);margin-top:4px">Figma SVG · no AI pass</div>`:''}
       <div class="row">${cardActions(i)}</div></div></div>`;}
 
@@ -1285,6 +1305,7 @@ function drawerActions(i){
   // owner on their own freshly-generated (review) or rejected image: publish it directly
   if(isBoss()&&(i.status==='review'||i.status==='rejected'))return `<button class="btn ghost" data-ddel>${ic('trash')}Delete</button><div class="grow"></div><button class="btn good" data-dapprove>${ic('check')}Approve &amp; publish</button>`;
   if(!isBoss()&&(i.status==='review'||i.status==='rejected'))return `<button class="btn ghost" data-ddel>${ic('trash')}Delete</button><div class="grow"></div><button class="btn pri" data-dsubmit>${ic('check')}Submit for approval</button>`;
+  if(isBoss()&&i.status==='published'&&(i.type||'colour')!=='diamond')return `<div class="grow"></div><button class="btn ${HIT.iid===i.id?'good':'ghost'}" data-dhit>⭐ ${HIT.iid===i.id?'Hit image — edit':'Make Hit image'}</button>`;
   return `<div class="grow"></div><span style="font-size:12.5px;color:var(--muted);align-self:center">${SLABEL[i.status]||i.status}</span>`;
 }
 function bindDrawerActions(){
@@ -1293,6 +1314,7 @@ function bindDrawerActions(){
   const s=$('[data-dsubmit]');if(s)s.onclick=async()=>{if(await act(CUR,'submit')){toast('Submitted for approval','good');closeDrawer();}};
   const d=$('[data-ddel]');if(d)d.onclick=()=>doDelete(CUR);
   const rt=$('[data-dretry]');if(rt)rt.onclick=()=>doRetry(CUR);
+  const hb=$('[data-dhit]');if(hb)hb.onclick=()=>hitModal(CUR);
 }
 /* Retry = regenerate at the item's default settings. The upload is untouched, so this is the
    same path the Regenerate bar uses — just without asking the user to pick a level first. */

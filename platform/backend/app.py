@@ -785,6 +785,43 @@ def app_ads():
     return ad_config.get()
 
 
+@number_router.get("/index.php/Number/daily/")
+def number_daily():
+    """All our published colour pictures, newest first — feeds the app's Daily tab date-wise."""
+    return number_tab.daily_payload()
+
+
+@number_router.get("/index.php/App/hit")
+def app_hit():
+    """The featured Hit picture + unlock time, or {} if none. Public, like the feeds."""
+    return number_tab.hit_payload()
+
+
+@app.get("/api/hit")
+def get_hit(user: dict = Depends(current_user)):
+    return db.get_config().get("hit") or {}
+
+
+@app.put("/api/hit")
+def set_hit(request: Request, payload: dict = Body(...), user: dict = Depends(require_boss)):
+    """{iid, unlock_at:'YYYY-MM-DDTHH:MM' (local) or unlock_ts:epoch} — or {} to clear."""
+    iid = (payload.get("iid") or "").strip()
+    if not iid:
+        db.set_config("hit", {})
+        _log(user, "Hit image cleared", "", request)
+        return {}
+    it = _need(iid)
+    if it.get("status") != "published":
+        raise HTTPException(400, "publish the picture first")
+    ts = payload.get("unlock_ts")
+    if ts is None:
+        ts = number_tab.parse_publish_ts(payload.get("unlock_at")) or time.time()
+    cfg = {"iid": iid, "unlock_ts": float(ts)}
+    db.set_config("hit", cfg)
+    _log(user, "Hit image set", f"{it.get('title')} unlocks {ts}", request)
+    return cfg
+
+
 @number_router.get("/index.php/Number/category/")
 def number_category_list():
     return number_tab.categories_payload()
