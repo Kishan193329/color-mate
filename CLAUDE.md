@@ -2539,7 +2539,21 @@ Before that, the branch was smoke-tested locally on a fresh DB: SVG upload → r
 previews → publish → category/gimg/reveal/daily → outline change re-publishes → Hit set and served.
 ⚠️ Setting a Hit image right after changing an outline returns "publish the picture first" — the item
 is briefly `publishing` again. Wait and retry.
-**Not yet done:** v16 on a phone (PDF checklist) and the 56 SVG uploads.
+**Phone-tested 2026-10-22 (v16 debug, CPH2333)** against a throwaway local server: mix on top of
+`animals`, reveal fill + progress, Daily date-first, Hit lock → countdown → unlock → Play, and our
+server down → paid content fine, no crash. ⚠️ `hasExplicitServer()` refuses any URL containing
+`127.0.0.1`/`localhost`, so a local test needs `http://localtest.me:8011/` (public DNS → 127.0.0.1)
+plus `adb reverse`. ⚠️ **Open UX bug:** on the grey `start.jpg` canvas the selected number's grey
+highlight is invisible at fit zoom — a player cannot tell where to tap.
+
+**The SVG set arrived as `Colour Mate/Colour by Number own/`** (untracked, 119 MB — keep it out of
+git): `pics/*.svg` (53 of the manifest's 56; `26_2`, `30_2`, `26_2322` missing), `thumbs/`, and an
+`index.html` web player. Those SVGs put each colour in **`data-c` with no `fill`** — `parse()` used to
+default to black, so every shape became ink and the import failed. Fixed (falls back to `data-c`);
+all 53 import, 5-47 s each, the same 6 under 3% ink as listed in the owner's PDF. `upload_svgs.py`
+gained `--dir=` and `--only=`. Deployed; 3 uploaded to the live admin with `--no-publish` (Moonlit
+Cat, Painted Peonies, Sunset Canyon) — in `review`, not yet in the app. Run uploads ON the VPS
+(`/root/svg_upload/`, credentials read from the password file there) so the password never leaves it.
 
 ### 8.6 Performance audit — findings + fix plan (2026-07-21, code-verified)
 
