@@ -4,7 +4,7 @@
 > discovered by reading the code, what was decided, and what is still open.
 > **Keep it updated** — when a decision changes or new facts are found, edit this file.
 >
-> Last updated: **2026-10-14** (🔴 **Play "Disruptive Ads" strike fixed — read §8.5bx before touching ads**; nav changes §8.5bx; LIVE on a VPS §8.5ar; S3 §8.5at; July engine restored §8.5bv) · Branch: `quality-fixes`
+> Last updated: **2026-10-22** (SVG / Daily / Hit deployed + merged, v16 — §8.5by;🔴 **Play "Disruptive Ads" strike fixed — read §8.5bx before touching ads**; nav changes §8.5bx; LIVE on a VPS §8.5ar; S3 §8.5at; July engine restored §8.5bv) · Branch: `quality-fixes`
 > Owner: Kishan (kishankalathiya1111@gmail.com). Owner writes in Gujarati/Hinglish —
 > replying in simple English mixed with Gujarati words works well.
 
@@ -2527,9 +2527,19 @@ normal SVG import. vtracer puts `translate()` on every `<path>`, so `parse()` no
 (without it the shapes land at 0,0 and the picture is garbage). Tested end-to-end on the canyon picture:
 2194 regions / 142 colours / 10% ink, outline choice + publish OK. "Photo / painting" keeps the July AI path.
 
-**Deploy (needs the owner's PC — SSH key `~/.ssh/colorforge_vps`):** scp `app.py`, `db.py`, `number_tab.py`,
-`admin.html`, `services/svg_builder.py`, `services/reveal_game_builder.py` → `/opt/colorforge/`, then
-`systemctl restart colorforge`.
+**✅ DEPLOYED 2026-10-22, and merged into `quality-fixes` (fast-forward) with versionCode 15 → 16.**
+Before deploying, the VPS copies were diffed against `quality-fixes` — identical apart from CRLF, so
+nothing live was lost. Uploaded those 6 files **plus `requirements.txt`**, and ran
+`.venv/bin/pip install vtracer` first: it is imported lazily, so a server without it still starts but
+every "vectorize here" upload fails. Upload the files from `git show` (LF), not a Windows checkout.
+Backup of the replaced files + `content.db` in `/root/deploy_backup_20261022_190123/` (rollback = copy
+back + restart; the new `outline` column is harmless to the old code). Verified live: all feeds 200,
+the existing "Dark Girls" reveal assets 200, `outline` column added, `number_merge` off, admin login OK.
+Before that, the branch was smoke-tested locally on a fresh DB: SVG upload → review → both outline
+previews → publish → category/gimg/reveal/daily → outline change re-publishes → Hit set and served.
+⚠️ Setting a Hit image right after changing an outline returns "publish the picture first" — the item
+is briefly `publishing` again. Wait and retry.
+**Not yet done:** v16 on a phone (PDF checklist) and the 56 SVG uploads.
 
 ### 8.6 Performance audit — findings + fix plan (2026-07-21, code-verified)
 
