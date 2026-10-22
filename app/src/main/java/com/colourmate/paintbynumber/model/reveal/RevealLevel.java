@@ -90,7 +90,7 @@ public class RevealLevel {
         InputStream open(String name) throws Exception;
     }
 
-    private RevealLevel(int width, int height, char[] idMap, int[] original,
+    private RevealLevel(int width, int height, char[] idMap, int[] original, int[] start,
                         Bitmap border, BorderVector borderVector,
                         Region[] regions, int[] palette) {
         this.width = width;
@@ -103,8 +103,14 @@ public class RevealLevel {
         this.palette = palette;
 
         this.display = new int[original.length];
-        // Unrevealed picture = paper, so the line art and numbers read cleanly.
-        java.util.Arrays.fill(display, Color.WHITE);
+        // Unrevealed picture = paper, so the line art and numbers read cleanly — or, for a
+        // Figma-SVG picture, start.jpg: a light grey sketch of its own colours, so the picture is
+        // readable before anything is filled.
+        if (start != null && start.length == display.length) {
+            System.arraycopy(start, 0, display, 0, start.length);
+        } else {
+            java.util.Arrays.fill(display, Color.WHITE);
+        }
 
         this.totalPerNumber = new int[palette.length];
         this.revealedPerNumber = new int[palette.length];
@@ -174,7 +180,15 @@ public class RevealLevel {
             border = BitmapFactory.decodeStream(in);
         }
 
-        return new RevealLevel(width, height, idMap, original, border, borderVector,
+        // Optional: only Figma-SVG pictures have a sketch canvas; everything else starts on white.
+        int[] start = null;
+        try {
+            start = readPixels(source, "start.jpg", null, width, height);
+        } catch (Exception ignored) {
+            // no start.jpg for this picture — expected
+        }
+
+        return new RevealLevel(width, height, idMap, original, start, border, borderVector,
                 regions, palette);
     }
 
