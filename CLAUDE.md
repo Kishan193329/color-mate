@@ -2477,6 +2477,45 @@ Pixel grid, Saved, Reveal, Diamond were already on the design system — left al
   `cm_ink_2`. `navColorFor()` (per-tab paint colours) is kept but unused. An intermediate
   "violet gradient pill behind the icon only" variant was built and replaced the same day.
 
+### 8.5by 🖼️ Figma-SVG pipeline, mix into By Number, Daily + Hit image (2026-10-22, branch `claude/svg-daily-hit`)
+
+Owner's new content flow: ChatGPT image (black-outline prompt) → **Figma "Vectorize"** → SVG upload
+in the admin → app. Owner's rules: the new pictures **mix into the existing By Number categories,
+newest on top**; **Daily** shows them date-wise; one **Hit image** sits on top with an unlock
+countdown. Game-style UI redesign: later. iOS: owner wants a **native Swift** app (not Flutter) —
+not started; needs a Mac + Xcode.
+
+**Backend**
+- `services/svg_builder.py` — SVG → game data with **no AI pass**: paths with luminance < 0.10 are
+  the line art (pre-drawn), every other path is a region; slivers < 80 px absorbed; near-identical
+  shades merged (Lab ΔE 8, threshold rises until ≤ 150 colours — Figma emits up to ~2,100 shades);
+  touching regions of the same group joined. Writes `reveal_master.png`, `original.png`,
+  `svg_game.npz/json`.
+- `reveal_game_builder._game_data_color()` returns `svg_builder.game_data()` when `svg_game.npz`
+  exists — so build_color / export_color_bundle / Number-tab export run **unchanged** for SVG items.
+  Photo items never have that file, so the July engine path is untouched (§8.5bv).
+- `app.py`: `.svg` uploads (colour dept) → `_process_svg`; regenerate re-runs it. A picture with
+  < 15 ink shapes gets a warning in `error` while staying `review` (drawer shows it).
+- `GET /index.php/Number/daily/` — all our published colour pictures, newest first.
+- `GET /index.php/App/hit` — `{fileName, category, title, unlockAt, now}` or `{}`; `PUT /api/hit`
+  (boss) stores `{iid, unlock_ts}` in config. Admin drawer of a published picture → "Make Hit image".
+- **Categories must use By Number's names** (`animals, flowers, mandalas, nature, people, other,
+  love, kids`) — the mix prepends by category name, so a new name would never appear in By Number.
+
+**App** (`claude/svg-daily-hit`)
+- `Manager.RestDataSource.setMixRoot()` — `getImagesByCategory()` fetches our server's list for the
+  same category **in parallel** and puts it above the paid list. The paid list never waits; if our
+  server is down nothing changes. `mixInList` makes a refresh replace (not duplicate) the mix.
+- Tapping a mixed (colorForge) picture → `RevealActivity` (NumberListFragment / ColoringListViewModel).
+- `DailyFragment` — the selected date's own pictures first (by `timeStamp`), then the paid picks;
+  opens RevealActivity with `EXTRA_DAILY_DATE`, which now marks the day done on finish.
+- `util/HitCard` + `include_hit_card.xml` on By Number — dimmed colour preview + padlock + countdown
+  on the **server clock**, Play after unlock.
+
+**Deploy (needs the owner's PC — SSH key `~/.ssh/colorforge_vps`):** scp `app.py`, `number_tab.py`,
+`admin.html`, `services/svg_builder.py`, `services/reveal_game_builder.py` → `/opt/colorforge/`, then
+`systemctl restart colorforge`.
+
 ### 8.6 Performance audit — findings + fix plan (2026-07-21, code-verified)
 
 Root cause of "app not smooth": the team already found the worst jank source (**per-item
