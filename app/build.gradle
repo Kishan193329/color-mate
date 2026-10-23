@@ -15,8 +15,9 @@ android {
         minSdk 24
         targetSdk 36
         // 14: Play "Disruptive Ads" fix (2026-10-14) — the strike names versionCode 13.
-        versionCode 15
-        versionName "15" +
+        // 16: our SVG pictures in By Number, Daily date-wise, Hit card (2026-10-22).
+        versionCode 16
+        versionName "16" +
                 ".0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
