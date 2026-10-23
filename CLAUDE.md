@@ -2581,6 +2581,24 @@ subscribers should see a notice 3-4 days before the plan ends, support email = a
 - `SettingsActivity.sendFeedback` → `admin@gyandatabit.com` (was a broken `…gmail.com` without `@`).
 Not changed: the SKUs `colour_mate_monthly` / `colour_mate_yearly` — same ids as the live build.
 
+### 8.5cb 🖼️ Admin: preview = the app's look, outline on upload + in bulk, N-per-day schedule (2026-10-23)
+
+Owner: *"grey valu add kari devi, preview exact nathi aavtu, bulk ma daroj 50 image jay e rite."*
+- **Review page was wrong for SVG pictures**: `play_color.html` always started on a WHITE page with
+  whatever border existed at import, while the app opens on the grey `start.jpg` sketch with the
+  chosen outline. `_PLAY_COLOR_HTML` now takes `start` (a JPEG data-URI, empty for photo items) and
+  paints the canvas from it (`blank()`, also used by Reset). `choose_outline` rebuilds the page in
+  the queue (`_rebuild_preview`) and `_publish` rebuilds it for SVG items — so Review always shows
+  the look the app gets. Verified headless: grey sketch + soft outline rendered.
+  *(Still different on purpose: the web page prints every number; the app shows numbers only when
+  zoomed in, §8.5w.)*
+- **Outline at upload** (`#upOut` → form field `outline` → `set_outline` before processing) and
+  **in bulk** (Library bulk bar: "Black outline N" / "Soft outline N" on selected SVG items,
+  sequential PUTs; published ones re-publish).
+- **Bulk "Daily schedule" takes pictures-per-day** (modal input, default 50): the first N go live on
+  the start date, the next N a day later, grid order. `confirmModal` gained `inputValue`.
+Deploy: `app.py`, `admin.html`, `services/reveal_game_builder.py` (same list as §8.5by/bz).
+
 ### 8.6 Performance audit — findings + fix plan (2026-07-21, code-verified)
 
 Root cause of "app not smooth": the team already found the worst jank source (**per-item

@@ -511,6 +511,8 @@ def build_color(folder: Path, flatten: float = 1.0) -> dict:
         job=job, w=w, h=h,
         master=_data_uri((folder / "reveal_master.png").read_bytes()),
         idmap=_data_uri(_png(idm)), border=_data_uri(_png(bdr)),
+        # SVG pictures open on a grey sketch (start.jpg) in the app, not white — preview the same.
+        start="data:image/jpeg;base64," + base64.b64encode((folder / "start.jpg").read_bytes()).decode("ascii") if (folder / "start.jpg").exists() else "",
         meta=json.dumps(meta, separators=(",", ":")),
         palette=json.dumps(palette, separators=(",", ":")))
     (folder / "play_color.html").write_text(html, encoding="utf-8")
@@ -680,7 +682,7 @@ cv.addEventListener('click',e=>{{ const r=cv.getBoundingClientRect();
   if(x>=0&&y>=0&&x<W&&y<H) revealRegion(idAt(x,y)); }});
 function revealAll(){{ const d=display.data,m=masterData.data;
   for(let i=0;i<d.length;i++) d[i]=m[i]; for(const mm of META) revealed.add(mm.id); repaint(); }}
-function reset(){{ display.data.fill(255); revealed.clear(); repaint(); }}
+function reset(){{ blank(); revealed.clear(); repaint(); }}
 </script></body></html>"""
 
 
@@ -717,16 +719,19 @@ const NUMS=Object.keys(PALETTE).map(Number).sort((a,b)=>a-b);
 const cv=document.getElementById('c'), ctx=cv.getContext('2d');
 const master=new Image(), idmap=new Image(), border=new Image();
 master.src="{master}"; idmap.src="{idmap}"; border.src="{border}";
+const START="{start}", startImg=new Image(); let startData=null;
 let masterData,idData,display,filled=new Set(),filledByNum={{}},sel=NUMS[0],ready=0,anim=new Map(),raf=0;
 const rgb=c=>'rgb('+c[0]+','+c[1]+','+c[2]+')';
 const dark=c=>0.299*c[0]+0.587*c[1]+0.114*c[2]>150;
-function boot(){{ if(++ready<3) return;
+function blank(){{ if(startData) display.data.set(startData); else display.data.fill(255); }}
+function boot(){{ if(++ready<(START?4:3)) return;
   const o=document.createElement('canvas'); o.width=W; o.height=H; const oc=o.getContext('2d');
   oc.drawImage(master,0,0); masterData=oc.getImageData(0,0,W,H).data;
   oc.clearRect(0,0,W,H); oc.drawImage(idmap,0,0); idData=oc.getImageData(0,0,W,H).data;
-  display=ctx.createImageData(W,H); display.data.fill(255);
+  if(START){{ oc.clearRect(0,0,W,H); oc.drawImage(startImg,0,0,W,H); startData=oc.getImageData(0,0,W,H).data; }}
+  display=ctx.createImageData(W,H); blank();
   for(const n of NUMS) filledByNum[n]=0; buildPalette(); repaint(); }}
-master.onload=boot; idmap.onload=boot; border.onload=boot;
+master.onload=boot; idmap.onload=boot; border.onload=boot; if(START){{ startImg.onload=boot; startImg.src=START; }}
 function idAt(x,y){{ const i=(y*W+x)*4; return idData[i]+idData[i+1]*256; }}
 function fillRegion(id){{ if(id<=0||filled.has(id)) return false; const m=metaById[id]; if(!m) return false;
   filled.add(id); filledByNum[m.n]++; const bb=m.bb, idx=[];
@@ -767,5 +772,5 @@ cv.addEventListener('pointerdown',e=>{{ const r=cv.getBoundingClientRect();
   if(fillRegion(id)){{ updatePalette(); autoAdvance(); }} }});
 function autoAdvance(){{ if(filledByNum[sel]>=idsByNum[sel].length){{ const nx=NUMS.find(n=>filledByNum[n]<idsByNum[n].length); if(nx!=null){{ sel=nx; updatePalette(); }} }} }}
 function fillAll(){{ for(const m of META) if(!filled.has(m.id)) fillRegion(m.id); updatePalette(); }}
-function reset(){{ display.data.fill(255); filled.clear(); anim.clear(); for(const n of NUMS) filledByNum[n]=0; sel=NUMS[0]; updatePalette(); repaint(); }}
+function reset(){{ blank(); filled.clear(); anim.clear(); for(const n of NUMS) filledByNum[n]=0; sel=NUMS[0]; updatePalette(); repaint(); }}
 </script></body></html>"""

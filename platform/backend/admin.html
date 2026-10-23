@@ -559,7 +559,7 @@ function hitModal(id){
 function confirmModal(o){const d=o.danger;
   // `o.date` adds a go-live date picker. onOk gets (text, date) — existing callers read only
   // the first argument, so they are unaffected.
-  $('#modal').innerHTML=`<h3>${o.title}</h3><p>${o.body}</p>${o.input?`<div class="field"><textarea id="mi" placeholder="${o.input}"></textarea></div>`:''}
+  $('#modal').innerHTML=`<h3>${o.title}</h3><p>${o.body}</p>${o.input?`<div class="field"><textarea id="mi" placeholder="${o.input}">${o.inputValue||''}</textarea></div>`:''}
     ${o.date?`<div class="field"><label>Go live on</label><input type="date" id="md" value="${o.date.value||today()}" min="${today()}"/>
       <div class="hint">Today = live as soon as it finishes publishing. A future date keeps it hidden in the app until that day.</div></div>`:''}
     <div class="macts"><button class="btn" id="mc">Cancel</button><button class="btn ${d?'danger':'pri'}" id="mo">${o.ok||'Confirm'}</button></div>`;
@@ -836,12 +836,14 @@ function vLibrary(){
 function bulkBar(list){
   const ids=list.map(i=>i.id), picked=ids.filter(id=>SEL.has(id));
   const pub=picked.map(id=>ITEMS.find(i=>i.id===id)).filter(i=>i&&['review','submitted','rejected'].includes(i.status));
+  const svg=picked.map(id=>ITEMS.find(i=>i.id===id)).filter(i=>i&&i.source_kind==='svg');
   return `<div class="bulk ${picked.length?'on':''}">
     <label class="bchk"><input type="checkbox" id="selAll" ${picked.length&&picked.length===ids.length?'checked':''}/>
       <span>${picked.length?`${picked.length} selected`:'Select all'}</span></label>
     ${picked.length?`<div class="grow"></div>
       ${pub.length?`<button class="btn sm good" id="bulkPub">${ic('check')}Publish ${pub.length}</button>`:''}
       ${picked.length>1?`<button class="btn sm" id="bulkDaily">${ic('clock')}Daily schedule ${picked.length}</button>`:''}
+      ${svg.length&&isBoss()?`<button class="btn sm" data-bulkout="black">Black outline ${svg.length}</button><button class="btn sm" data-bulkout="soft">Soft outline ${svg.length}</button>`:''}
       <button class="btn sm bad" id="bulkDel">${ic('trash')}Delete ${picked.length}</button>
       <button class="btn sm ghost" id="bulkNone">Clear</button>`:''}
   </div>`;}
@@ -872,6 +874,9 @@ function vUpload(){
     :`<div class="field"><label>Picture type</label><select id="upVec">
       <option value="1">Flat art with black outlines — vectorize here (no Figma needed)</option>
       <option value="">Photo / painting — AI line art</option></select></div>
+    <div class="field"><label>Outline (flat art / SVG)</label><select id="upOut">
+      <option value="black">Black outline</option><option value="soft">Soft grey outline</option></select>
+      <div class="hint">Can be changed per picture later, or for many at once from the Library.</div></div>
     <div class="field"><label>Simplify (only for Photo / painting)</label><select id="upSimp">
       <option value="">Off — clean line art</option><option value="light">Light</option><option value="medium">Medium — photos</option><option value="strong">Strong — very busy</option></select></div>`}
     </div>
@@ -1085,6 +1090,7 @@ function bindView(){
   const bn=$('#bulkNone');if(bn)bn.onclick=()=>{SEL.clear();go(VIEW);};
   const bp=$('#bulkPub');if(bp)bp.onclick=()=>doBulkPublish();
   const bdy=$('#bulkDaily');if(bdy)bdy.onclick=()=>doBulkDaily();
+  $$('[data-bulkout]').forEach(b=>b.onclick=()=>doBulkOutline(b.dataset.bulkout));
   const bd=$('#bulkDel');if(bd)bd.onclick=()=>doBulkDelete();
   lazyThumbs();
   $$('[data-retry]').forEach(b=>b.onclick=e=>{e.stopPropagation();doRetry(b.dataset.retry);});
@@ -1176,13 +1182,17 @@ async function doBulkDaily(){
   const good=ids.map(id=>ITEMS.find(i=>i.id===id))
     .filter(i=>i&&['published','review','submitted','rejected'].includes(i.status));
   if(!good.length){toast('Nothing schedulable selected','bad');return;}
-  confirmModal({title:`One per day — ${good.length} pictures`,ok:'Schedule',date:{value:today()},
-    body:`The first picture goes live on the date below, the next one a day later, and so on, in
-      the order they appear in the grid. The app keeps each hidden until its day.`,
-    onOk:async(_,dt)=>{
+  confirmModal({title:`Daily schedule — ${good.length} pictures`,ok:'Schedule',date:{value:today()},
+    input:'Pictures per day (e.g. 50)',inputValue:'50',
+    body:`Starting on the date below, this many pictures go live each day, in the order they appear
+      in the grid, until all are scheduled. The app keeps each hidden until its day.`,
+    onOk:async(per,dt)=>{
+      per=Math.max(1,parseInt(per,10)||1);
       if(!dt)return;
-      let ok=0,fail=0,day=new Date(dt+'T00:00:00');
+      let ok=0,fail=0,n=0,day=new Date(dt+'T00:00:00');
       for(const it of good){
+        if(n&&n%per===0)day.setDate(day.getDate()+1);
+        n++;
         const d=day.toISOString().slice(0,10);
         try{
           if(it.status==='published')
@@ -1191,11 +1201,17 @@ async function doBulkDaily(){
             await API.call('/api/items/'+it.id+'/publish',{method:'POST',body:{publish_date:d}});
           ok++;
         }catch(e){fail++;}
-        day.setDate(day.getDate()+1);
       }
       SEL.clear();
-      toast(`Scheduled ${ok} picture${ok===1?'':'s'}, one per day from ${dt}`+(fail?` — ${fail} failed`:''),fail?'bad':'good');
+      toast(`Scheduled ${ok} picture${ok===1?'':'s'}, ${per} per day from ${dt}`+(fail?` — ${fail} failed`:''),fail?'bad':'good');
       go(VIEW);}});}
+async function doBulkOutline(style){
+  const ids=visibleIds().filter(id=>SEL.has(id)&&(ITEMS.find(i=>i.id===id)||{}).source_kind==='svg');
+  let ok=0,fail=0;
+  for(const id of ids){try{await API.call(`/api/items/${id}/outline`,{method:'PUT',body:{style}});ok++;}catch(e){fail++;}}
+  SEL.clear();await loadData();
+  toast(`${style==='soft'?'Soft grey':'Black'} outline set on ${ok}`+(fail?` — ${fail} failed`:'')+' (published ones are re-publishing)',fail?'bad':'good');
+  go(VIEW);}
 async function doReject(id){confirmModal({title:'Reject image',danger:true,ok:'Reject',input:'What should the artist fix?',
   body:'The artist sees this note and can fix and resubmit.',
   onOk:async r=>{if(await act(id,'reject',{reason:r}))toast('Rejected — artist notified','bad');}});}
@@ -1215,7 +1231,7 @@ async function upload(files){
     fd.append('type',DEPT);
     if(DEPT==='diamond'){fd.append('mode',$('#upMode')?$('#upMode').value:'auto');
       fd.append('cols',$('#upCols')?$('#upCols').value:78);fd.append('colours',$('#upK')?$('#upK').value:32);}
-    else{fd.append('simplify',simp);fd.append('vectorize',$('#upVec')?$('#upVec').value:'');}
+    else{fd.append('simplify',simp);fd.append('vectorize',$('#upVec')?$('#upVec').value:'');fd.append('outline',$('#upOut')?$('#upOut').value:'');}
     try{await API.call('/api/items',{method:'POST',body:fd});}catch(e){toast('Upload failed: '+e.message,'bad');}
   }
   if(out)out.textContent='';

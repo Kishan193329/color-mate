@@ -426,7 +426,7 @@ async def create_item(background: BackgroundTasks, request: Request, file: Uploa
                       title: str = Form(""), category: str = Form(""), simplify: str = Form(""),
                       type: str = Form("colour"), mode: str = Form("auto"),
                       cols: int = Form(78), colours: int = Form(32),
-                      vectorize: str = Form(""),
+                      vectorize: str = Form(""), outline: str = Form(""),
                       user: dict = Depends(current_user)):
     """Save the upload under the signed-in user, register it 'processing', and generate in the
     background. `type` = colour (colour-fill) | diamond (bead grid). For diamond, `mode` is
@@ -442,6 +442,8 @@ async def create_item(background: BackgroundTasks, request: Request, file: Uploa
     name = "source.svg" if is_svg else ("source.png" if vec else "original.png")
     with open(folder / name, "wb") as out:
         shutil.copyfileobj(file.file, out)
+    if (vec or is_svg) and outline.strip():
+        svg_builder.set_outline(folder, outline.strip())
     cid = db.get_or_create_category(category, time.time()) if category.strip() else None
     ttl = title.strip() or Path(file.filename or iid).stem
     db.add_image(iid, ttl, cid, user["id"], time.time(), status="processing", kind=kind)
@@ -610,7 +612,17 @@ def choose_outline(iid: str, request: Request, background: BackgroundTasks,
     if it.get("status") == "published":
         db.update_image(iid, status="publishing")
         background.add_task(_enqueue, _publish, iid)
+    else:
+        background.add_task(_enqueue, _rebuild_preview, iid)
     return db.get_image(iid)
+
+
+def _rebuild_preview(iid: str) -> None:
+    """The review page shows the chosen outline over the grey canvas, exactly as the app will."""
+    try:
+        R.build_color(ITEMS / iid)
+    except Exception as e:  # noqa: BLE001
+        log.warning("preview rebuild failed for %s: %s", iid, e)
 
 
 @app.get("/api/items/{iid}/thumb")
@@ -677,8 +689,10 @@ def _publish(iid: str) -> None:
 
         if not is_diamond:
             # Colour-fill: the app bundle (id_map / border / regions / original / swatches).
-            info = R.export_color_bundle(folder)
             svg_item = svg_builder.is_svg_item(folder)
+            if svg_item:
+                R.build_color(folder)                      # review page = the chosen look
+            info = R.export_color_bundle(folder)
             with zipfile.ZipFile(info["zip"]) as z:
                 for name in z.namelist():
                     data = z.read(name)
