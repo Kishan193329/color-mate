@@ -363,7 +363,7 @@ public class SettingsActivity extends BaseActivity {
         Intent intent = new Intent(Intent.ACTION_SENDTO);
         intent.setData(Uri.parse("mailto:")); // Only email apps
 
-        intent.putExtra(Intent.EXTRA_EMAIL, new String[]{"magicalkidsiqgrow.gmail.com"});
+        intent.putExtra(Intent.EXTRA_EMAIL, new String[]{"admin@gyandatabit.com"});
         intent.putExtra(Intent.EXTRA_SUBJECT, "App Feedback");
         intent.putExtra(Intent.EXTRA_TEXT,
                 "App Version: " + getAppVersion() + "\n" +

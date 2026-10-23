@@ -1001,6 +1001,7 @@ public class MainActivity extends BaseActivity {
         // — it lapses, the user cancels in the Play Store, or a refund is issued — and until this
         // ran, premium stayed switched on. Throttled to once a minute inside IAPManager.
         IAPManager.getInstance(this).refreshEntitlements();
+        com.colourmate.paintbynumber.util.PremiumExpiry.maybeNotify(this);
 
         if (Library.getInstance().mLibraryItemsChanged) {
             refreshGrid();
