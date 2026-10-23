@@ -2531,6 +2531,40 @@ normal SVG import. vtracer puts `translate()` on every `<path>`, so `parse()` no
 `admin.html`, `services/svg_builder.py`, `services/reveal_game_builder.py` → `/opt/colorforge/`, then
 `systemctl restart colorforge`.
 
+### 8.5bz 🪙 First-launch speed + coin economy + Hit coins + coin packs + referral (2026-10-23)
+
+Owner: first open is slow and lags after the age screen; code must be lean; and a coin economy for
+players who will not subscribe. Decided numbers (owner picked the recommended set — permanent):
+**premium picture 150 · Hit instant 300 · reward ad +30 · finished picture +20 (first finish only) ·
+packs 500/$0.99 1,200/$1.99 3,500/$4.99 8,000/$9.99 · referral: referrer +200, friend +100 welcome,
+referrer gets 10% of coins the friend earns finishing pictures.**
+
+**Speed (no device to profile — fixed what the code showed):**
+- `MainActivity.loadCategories()` downloaded **all 7 paid category lists** (animals alone 1,600+ items)
+  and parsed them **on the main thread** on every launch, to write counters **nothing reads**. Deleted,
+  with `model/CategoryModel` and `util/ColourColourArchPreference`.
+- First run was 5 screens (Splash → Age → Premium → Main → Welcome) plus a notification dialog.
+  Agreeing on the age screen now marks Welcome seen; the notification prompt waits for launch 2.
+- 🐞 The consent run never counted as a launch, so the paywall showed on launch 1 **and** 2 — fixed.
+- By Number's daily list is built on a background thread (it sorts/parses dates for hundreds of items).
+
+**Coins (app, all in `util/`):** `CoinManager` (+ `rewardCompletion`, `isUnlocked/markUnlocked`),
+`PictureUnlock` (gate + tile badge "🪙 150" / "▶ Ad"; premium subscribers skip it), `CoinSheet`
+(the one purse sheet for Home, locked pictures and the Hit card — replaced ~60 lines in MainActivity),
+`CoinStore` (its own BillingClient for consumables: consume first, then credit, token remembered so a
+purchase can never pay twice; unconsumed packs recovered on connect), `Referral` (Android-ID keyed
+POSTs). Tier comes from the admin's existing **Tier** control (free / reward / premium) — now in the
+feed rows (`number_tab._row`, which both feeds share).
+**Hit card:** before unlock = countdown; from unlock to +24 h = "Play now · 300 🪙" or wait;
+after 24 h (or premium, or paid once) = free.
+
+**Server:** `referral.py` (table `referrals`, created on first use) + `POST /index.php/App/ref/{register|redeem|earned|claim}`.
+"New device" = Android ID first seen within 3 days and never redeemed; own code refused; one report
+caps at 50 coins. **Owner must create the 4 in-app products in Play Console** (ids `coins_500`,
+`coins_1200`, `coins_3500`, `coins_8000`) or the pack buttons show "…".
+Deploy adds `referral.py` + `number_tab.py` (and `app.py`, `services/svg_builder.py` from the
+thumbnail change).
+
 ### 8.6 Performance audit — findings + fix plan (2026-07-21, code-verified)
 
 Root cause of "app not smooth": the team already found the worst jank source (**per-item

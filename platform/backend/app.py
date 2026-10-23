@@ -36,6 +36,7 @@ import diamond_builder as DIA
 import ad_config
 import diamond_tab
 import number_tab
+import referral
 import simplify as simplify_mod
 import storage
 from services import reveal_game_builder as R
@@ -860,6 +861,21 @@ def number_daily():
 def app_hit():
     """The featured Hit picture + unlock time, or {} if none. Public, like the feeds."""
     return number_tab.hit_payload()
+
+
+@number_router.post("/index.php/App/ref/{action}")
+def app_referral(action: str, payload: dict = Body(...)):
+    """Refer-a-friend (referral.py): register | redeem | earned | claim, keyed by the device id."""
+    fn = {"register": lambda: referral.register(payload.get("device")),
+          "redeem": lambda: referral.redeem(payload.get("device"), payload.get("code")),
+          "earned": lambda: referral.earned(payload.get("device"), payload.get("amount")),
+          "claim": lambda: referral.claim(payload.get("device"))}.get(action)
+    if not fn:
+        raise HTTPException(404, "unknown action")
+    try:
+        return fn()
+    except ValueError as e:
+        raise HTTPException(400, str(e))
 
 
 @app.get("/api/hit")

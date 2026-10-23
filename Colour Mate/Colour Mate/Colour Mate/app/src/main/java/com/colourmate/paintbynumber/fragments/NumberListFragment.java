@@ -251,9 +251,15 @@ public class NumberListFragment extends Fragment implements ColoringsAdapter.Col
         if (level.isColorForge()) {
             String base = ColorForgeApi.revealBaseUrl(ctx, level.getCategory(), level.getFileName());
             if (base.isEmpty()) return;
-            MediationManager.showInterstitial((AppCompatActivity) getActivity(),
-                    () -> startActivity(RevealActivity.fromUrl(ctx, base, level.getFileName(),
-                            new String[0], new String[0])));
+            AppCompatActivity act = (AppCompatActivity) getActivity();
+            Runnable play = () -> startActivity(RevealActivity.fromUrl(ctx, base, level.getFileName(),
+                    new String[0], new String[0]));
+            // A picture the player has just paid for (coins or a video) opens with no extra ad.
+            if (com.colourmate.paintbynumber.util.PictureUnlock.isLocked(act, level)) {
+                com.colourmate.paintbynumber.util.PictureUnlock.open(act, level, play);
+            } else {
+                MediationManager.showInterstitial(act, play::run);
+            }
             return;
         }
         MediationManager.showInterstitial((AppCompatActivity) getActivity(),

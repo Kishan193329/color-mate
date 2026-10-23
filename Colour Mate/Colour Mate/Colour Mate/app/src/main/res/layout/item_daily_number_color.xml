@@ -64,4 +64,21 @@
         android:src="@drawable/ic_favorite_border"
         app:tint="#8A8A8A" />
 
+    <!-- Locked ColorForge picture: "🪙 150" or "▶ Ad" (util/PictureUnlock.showBadge). -->
+    <TextView
+        android:id="@+id/tv_progress_chip"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|start"
+        android:layout_margin="@dimen/cm_space_2"
+        android:background="@drawable/cm_progress_chip"
+        android:paddingStart="9dp"
+        android:paddingEnd="9dp"
+        android:paddingTop="3dp"
+        android:paddingBottom="3dp"
+        android:textColor="#FFFFFF"
+        android:textSize="11sp"
+        android:textStyle="bold"
+        android:visibility="gone" />
+
 </androidx.cardview.widget.CardView>

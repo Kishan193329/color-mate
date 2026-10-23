@@ -26,6 +26,7 @@ public class ConsentActivity extends AppCompatActivity {
 
         findViewById(R.id.btn_consent_agree).setOnClickListener(v -> {
             getSharedPreferences(PREFS, MODE_PRIVATE).edit().putBoolean(KEY, true).apply();
+            WelcomeActivity.markSeen(this);
             Intent intent = new Intent(this, PremiumActivity.class);
             intent.putExtra(PremiumActivity.EXTRA_LAUNCHED_FROM_SPLASH, true);
             startActivity(intent);

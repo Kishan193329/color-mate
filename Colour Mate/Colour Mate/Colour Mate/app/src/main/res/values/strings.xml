@@ -177,4 +177,6 @@ Tap here for unlimited scanning</string>
     <string name="hit_locked">Soon</string>
     <string name="hit_unlocks_in">Unlocks in %1$s</string>
     <string name="hit_unlocked">Unlocked — play now!</string>
+    <string name="hit_play_coins">Play now · %1$d 🪙</string>
+    <string name="hit_free_in">Free in %1$s</string>
 </resources>

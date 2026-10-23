@@ -30,6 +30,9 @@ public final class CoinManager {
     public static final int DAILY_BONUS = 50;
     public static final int REWARD_AD_COINS = 30;
     public static final int HINT_COST = 20;
+    public static final int COMPLETE_COINS = 20;        // first finish of a picture
+    public static final int PREMIUM_PICTURE_COST = 150; // a premium-tier picture, unlocked for good
+    public static final int HIT_INSTANT_COST = 300;     // play the Hit picture before its free day
 
     private CoinManager() {}
 
@@ -80,6 +83,25 @@ public final class CoinManager {
         p.edit().putString(K_LAST_BONUS_DAY, today).apply();
         add(c, DAILY_BONUS);
         return DAILY_BONUS;
+    }
+
+    /** +COMPLETE_COINS the first time a picture is finished — replaying it earns nothing. */
+    public static int rewardCompletion(Context c, String fileName) {
+        if (fileName == null || fileName.isEmpty()) return 0;
+        SharedPreferences p = prefs(c);
+        if (p.getBoolean("done_" + fileName, false)) return 0;
+        p.edit().putBoolean("done_" + fileName, true).apply();
+        add(c, COMPLETE_COINS);
+        Referral.reportEarned(c, COMPLETE_COINS);   // the friend who invited this player gets 10%
+        return COMPLETE_COINS;
+    }
+
+    public static boolean isUnlocked(Context c, String fileName) {
+        return prefs(c).getBoolean("unlock_" + fileName, false);
+    }
+
+    public static void markUnlocked(Context c, String fileName) {
+        prefs(c).edit().putBoolean("unlock_" + fileName, true).apply();
     }
 
     public static boolean canAfford(Context c, int cost) {

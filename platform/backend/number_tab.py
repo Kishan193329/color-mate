@@ -109,16 +109,7 @@ def gimg_payload(category: str, next_key: str | None = None) -> dict:
     ours = []
     # Only our page-0 (no cursor) prepends ColorForge items — upstream owns its cursor.
     if not next_key:
-        for it in db.number_items(category):
-            ts = it.get("publish_ts") or it.get("published") or it.get("created") or 0
-            day = datetime.fromtimestamp(float(ts), tz=timezone.utc).strftime("%Y-%m-%d")
-            ours.append({
-                "key": it["file_name"],
-                "fileName": it["file_name"],
-                "category": it.get("category") or category,
-                "timeStamp": day,
-                "isNewToday": day == datetime.now(tz=timezone.utc).strftime("%Y-%m-%d"),
-            })
+        ours = [_row(it, category) for it in db.number_items(category)]
     if not cfg["number_merge"]:
         return {"data": ours, "next": ""}
     up_data, up_next = _upstream_gimg(cfg["number_upstream"], category, next_key)
@@ -134,6 +125,8 @@ def _row(it: dict, category: str = "") -> dict:
     return {"key": it["file_name"], "fileName": it["file_name"],
             "category": it.get("category") or category, "title": it.get("title") or "",
             "timeStamp": day,
+            # free | reward | premium — the app unlocks premium with coins, reward with an ad
+            "tier": (it.get("tier") or "free").lower(),
             "isNewToday": day == datetime.now(tz=timezone.utc).strftime("%Y-%m-%d")}
 
 
