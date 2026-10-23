@@ -2565,6 +2565,22 @@ caps at 50 coins. **Owner must create the 4 in-app products in Play Console** (i
 Deploy adds `referral.py` + `number_tab.py` (and `app.py`, `services/svg_builder.py` from the
 thumbnail change).
 
+### 8.5ca 🔒 Premium is never revoked by a billing error; end-of-plan notice; support email (2026-10-23)
+
+Owner: old premium users must keep premium through the update (bad reviews otherwise), monthly/yearly
+subscribers should see a notice 3-4 days before the plan ends, support email = admin@gyandatabit.com.
+- `IAPManager.queryPurchasesForType`: a non-OK billing result sets `queryFailed` and the stored
+  `KEY_IS_PREMIUM` is **left as is** — only two OK answers from Play may change it. Before, a failed
+  query counted as "no premium" and switched ads back on for paying users.
+- Any purchased **subscription** = premium, and any purchased one-time product that is **not a coin
+  pack** = premium — so a product id renamed since an old purchase still keeps premium.
+- `util/PremiumExpiry`: remembers product / purchaseTime / isAutoRenewing from the SUBS query,
+  computes the current period end (monthly or yearly steps from purchaseTime), and on Home's
+  `onResume` shows once a day, inside the last 4 days: "renews in N days" or "ends in N days —
+  Keep Premium" (opens the Play subscription page). `periodEnd()` is the dial; `WARN_DAYS = 4`.
+- `SettingsActivity.sendFeedback` → `admin@gyandatabit.com` (was a broken `…gmail.com` without `@`).
+Not changed: the SKUs `colour_mate_monthly` / `colour_mate_yearly` — same ids as the live build.
+
 ### 8.6 Performance audit — findings + fix plan (2026-07-21, code-verified)
 
 Root cause of "app not smooth": the team already found the worst jank source (**per-item

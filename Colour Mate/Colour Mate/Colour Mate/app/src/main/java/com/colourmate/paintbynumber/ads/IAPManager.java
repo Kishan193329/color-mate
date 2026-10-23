@@ -17,6 +17,7 @@ import com.android.billingclient.api.BillingResult;
 import com.android.billingclient.api.PendingPurchasesParams;
 import com.android.billingclient.api.ProductDetails;
 import com.android.billingclient.api.Purchase;
+import com.colourmate.paintbynumber.util.PremiumExpiry;
 import com.android.billingclient.api.PurchasesUpdatedListener;
 import com.android.billingclient.api.QueryProductDetailsParams;
 import com.android.billingclient.api.QueryPurchasesParams;
@@ -67,6 +68,7 @@ public class IAPManager {
     private volatile boolean subsHasPremium = false;
     private volatile boolean inAppChecked = false;
     private volatile boolean subsChecked = false;
+    private volatile boolean queryFailed = false;
 
     private final List<PurchaseListener> listeners =
             Collections.synchronizedList(new ArrayList<>());
@@ -199,6 +201,7 @@ public class IAPManager {
         subsHasPremium = false;
         inAppChecked = false;
         subsChecked = false;
+        queryFailed = false;
     }
 
     // ─── Query: Purchases ─────────────────────────────────────────────────────
@@ -217,36 +220,49 @@ public class IAPManager {
                 .build();
 
         billingClient.queryPurchasesAsync(params, (billingResult, purchases) -> {
+            boolean ok = billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK;
             boolean hasPremium = false;
+            boolean isSubs = productType.equals(BillingClient.ProductType.SUBS);
 
-            if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
+            if (ok) {
                 for (Purchase p : purchases) {
-                    // ✅ UPDATED: Check against ALL premium SKUs
-                    for (String sku : PREMIUM_SKUS) {
-                        if (p.getProducts().contains(sku)
-                                && p.getPurchaseState() == Purchase.PurchaseState.PURCHASED) {
-                            hasPremium = true;
-                            if (!p.isAcknowledged()) acknowledgePurchase(p);
-                        }
-                    }
+                    if (p.getPurchaseState() != Purchase.PurchaseState.PURCHASED) continue;
+                    // Every subscription we sell is Premium, and every one-time product that is
+                    // not a coin pack is Premium (a lifetime purchase from an older version) — so a
+                    // paying user keeps premium even if a product id was renamed since they bought.
+                    boolean premium = isSubs || !isCoinPack(p);
+                    if (!premium) continue;
+                    hasPremium = true;
+                    if (!p.isAcknowledged()) acknowledgePurchase(p);
+                    if (isSubs) PremiumExpiry.remember(context, p);
                 }
+                if (isSubs && !hasPremium) PremiumExpiry.forget(context);
             }
 
             synchronized (this) {
-                if (productType.equals(BillingClient.ProductType.INAPP)) {
-                    inAppHasPremium = hasPremium;
-                    inAppChecked = true;
-                } else {
-                    subsHasPremium = hasPremium;
-                    subsChecked = true;
-                }
+                if (!ok) queryFailed = true;
+                if (isSubs) { subsHasPremium = hasPremium; subsChecked = true; }
+                else        { inAppHasPremium = hasPremium; inAppChecked = true; }
 
                 if (inAppChecked && subsChecked) {
-                    boolean isPremium = inAppHasPremium || subsHasPremium;
-                    updatePremiumStatus(isPremium);
+                    if (queryFailed) {
+                        // Play did not answer properly — keep whatever premium state we already
+                        // have. Revoking on a billing hiccup would take premium away from people
+                        // who paid for it.
+                        Log.w(TAG, "Purchase query failed — premium left as is");
+                    } else {
+                        updatePremiumStatus(inAppHasPremium || subsHasPremium);
+                    }
                 }
             }
         });
+    }
+
+    private static boolean isCoinPack(Purchase p) {
+        for (String id : p.getProducts()) {
+            if (com.colourmate.paintbynumber.util.CoinStore.coinsFor(id) > 0) return true;
+        }
+        return false;
     }
 
     // ─── Query: Product Details ───────────────────────────────────────────────
