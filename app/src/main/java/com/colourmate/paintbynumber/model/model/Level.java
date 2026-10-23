@@ -21,6 +21,8 @@ public class Level implements Parcelable {
     /** Set alongside {@link #colorForge} when the item came from the Diamond feed, whose assets
      *  live under a different root — the thumbnail and the payload are not the colour ones. */
     private boolean diamond;
+    /** Our pictures only: "free", "reward" (an ad unlocks it) or "premium" (coins unlock it). */
+    private String tier = "free";
 
     public int describeContents() {
         return 0;
@@ -96,6 +98,7 @@ public class Level implements Parcelable {
         this.isNewToday = parcel.readByte() != 0;
         this.colorForge = parcel.readByte() != 0;
         this.diamond = parcel.readByte() != 0;
+        this.tier = parcel.readString();
     }
 
     public void writeToParcel(Parcel parcel, int i) {
@@ -106,6 +109,7 @@ public class Level implements Parcelable {
         // flag it would fetch a ColorForge picture from the ionicsolutions host and 404.
         parcel.writeByte(this.colorForge ? (byte) 1 : 0);
         parcel.writeByte(this.diamond ? (byte) 1 : 0);
+        parcel.writeString(this.tier);
     }
 
     /** True when this level comes from our ColorForge server ("New 2026" tab). */
@@ -120,6 +124,14 @@ public class Level implements Parcelable {
     /** True when this level came from the Diamond feed rather than the colour one. */
     public boolean isDiamond() {
         return diamond;
+    }
+
+    public String getTier() {
+        return tier == null ? "free" : tier;
+    }
+
+    public boolean isPaidTier() {
+        return "premium".equals(tier) || "reward".equals(tier);
     }
 
     public void setDiamond(boolean diamond) {
@@ -160,6 +172,9 @@ public class Level implements Parcelable {
             level.fileName = JsonHelpers.getAsString(jsonObject, "fileName");
             level.category = JsonHelpers.getAsString(jsonObject, "category");
             level.timeStamp = JsonHelpers.getAsString(jsonObject, "timeStamp");
+            if (jsonObject.has("tier") && !jsonObject.get("tier").isJsonNull()) {
+                level.tier = jsonObject.get("tier").getAsString();
+            }
             if (jsonObject.has("isNewToday")) {
                 if (!jsonObject.get("isNewToday").isJsonNull()) {
                     level.isNewToday = jsonObject.get("isNewToday").getAsBoolean();

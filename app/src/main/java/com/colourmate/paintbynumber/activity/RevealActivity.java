@@ -339,6 +339,7 @@ public class RevealActivity extends AppCompatActivity
         revealView.fitToScreen();
         revealView.celebrate();
         saveFinishedArtwork();
+        rewardCoins(getIntent().getStringExtra(EXTRA_FILE_NAME));
 
         View sheet = findViewById(R.id.fl_reveal_done);
         View card = findViewById(R.id.ll_done_card);
@@ -410,6 +411,12 @@ public class RevealActivity extends AppCompatActivity
                 }
             }, 600);
         }
+    }
+
+    /** +20 coins the first time a picture is finished (util/CoinManager). */
+    private void rewardCoins(String fileName) {
+        int got = com.colourmate.paintbynumber.util.CoinManager.rewardCompletion(this, fileName);
+        if (got > 0) Toast.makeText(this, "Picture finished: +" + got + " coins 🪙", Toast.LENGTH_SHORT).show();
     }
 
     /** What the saved PNG is called: the app fileName, or the sample asset folder. */

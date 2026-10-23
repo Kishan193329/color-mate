@@ -736,6 +736,9 @@ public class SplashActivity extends AppCompatActivity {
 
         // First launch: the 18+ / mature-content consent gate comes before anything else.
         if (!getSharedPreferences("app_prefs", MODE_PRIVATE).getBoolean("age_consent_v1", false)) {
+            // This run shows the paywall (Consent -> Premium), so it counts as launch 1; otherwise
+            // the next launch counts as 1 again and the paywall appears twice in a row.
+            shouldShowPaywallNow();
             startActivity(new Intent(this, ConsentActivity.class));
             overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
             finish();

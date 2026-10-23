@@ -61,8 +61,11 @@ public class ColoringListViewModel extends AndroidViewModel {
     private Manager.RestDataSource<Level> dataSource;
 
     // By Number's "daily" tab = the bought daily list + our own published pictures, merged by date.
-    private JsonObject paidDaily;
-    private JsonArray ourDaily;
+    private volatile JsonObject paidDaily;
+    private volatile JsonArray ourDaily;
+    /** Sorting a few hundred dated items is off the main thread; the result is posted back. */
+    private static final java.util.concurrent.ExecutorService WORK =
+            java.util.concurrent.Executors.newSingleThreadExecutor();
 
     // Timeout
     private final Handler timeoutHandler = new Handler(Looper.getMainLooper());
@@ -165,7 +168,7 @@ public class ColoringListViewModel extends AndroidViewModel {
                     com.colourmate.paintbynumber.Utils.ColorForgeApi.restRoot(ctx), "daily/", json -> {
                         if (reqId != dailyReqId || json == null || !json.has("data")) return;
                         ourDaily = json.getAsJsonArray("data");
-                        if (paidDaily != null) postDaily();
+                        if (paidDaily != null) WORK.execute(this::postDaily);
                     }, call -> { });
         }
 
@@ -187,7 +190,7 @@ public class ColoringListViewModel extends AndroidViewModel {
             }
 
             paidDaily = jsonObject;
-            postDaily();
+            WORK.execute(this::postDaily);
         });
     }
 

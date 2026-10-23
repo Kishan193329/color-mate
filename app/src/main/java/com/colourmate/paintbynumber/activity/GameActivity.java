@@ -318,6 +318,13 @@ public class GameActivity extends AppCompatActivity implements LinearTimer.Timer
     private File saveCompletedImageAndGetFile() {
         try {
             DataManager.getInstance().finishLevel(viewModel.getCurrentLevel());
+            Level done = viewModel.getCurrentLevel();
+            if (done != null && com.colourmate.paintbynumber.util.CoinManager
+                    .rewardCompletion(this, done.getFileName()) > 0) {
+                runOnUiThread(() -> android.widget.Toast.makeText(this, "Picture finished: +"
+                        + com.colourmate.paintbynumber.util.CoinManager.COMPLETE_COINS + " coins 🪙",
+                        android.widget.Toast.LENGTH_SHORT).show());
+            }
             String dailyDate = getIntent() != null ? getIntent().getStringExtra(EXTRA_DAILY_DATE) : null;
             if (dailyDate != null) {
                 com.colourmate.paintbynumber.util.DailyChallengeManager.markCompleted(this, dailyDate);

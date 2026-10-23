@@ -44,9 +44,6 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
-import com.android.volley.RequestQueue;
-import com.android.volley.toolbox.StringRequest;
-import com.android.volley.toolbox.Volley;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.DataSource;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
@@ -72,8 +69,6 @@ import com.colourmate.paintbynumber.fragments.NumberFragment;
 import com.colourmate.paintbynumber.fragments.PixelFragment;
 import com.colourmate.paintbynumber.fragments.SavedFragment;
 import com.colourmate.paintbynumber.library.Library;
-import com.colourmate.paintbynumber.model.CategoryModel;
-import com.colourmate.paintbynumber.util.ColourColourArchPreference;
 import com.colourmate.paintbynumber.util.DailyChallengeManager;
 import com.colourmate.paintbynumber.util.RatingPrompt;
 import com.colourmate.paintbynumber.util.StreakManager;
@@ -86,9 +81,6 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import java.io.File;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -115,7 +107,6 @@ public class MainActivity extends BaseActivity {
     private BroadcastReceiver broadcastReceiver;
 
     private final List<LibraryItemAdapter> adapters = new ArrayList<>();
-    private final List<CategoryModel> categoryList = new ArrayList<>();
 
     private long backPressedTime;
     private Toast backToast;
@@ -194,9 +185,12 @@ public class MainActivity extends BaseActivity {
             }
         });
 
-        askNotificationPermission();
+        // Not on the very first open: that run already shows the age screen, the paywall and the
+        // grid. A permission dialog on top of all that is one screen too many.
+        if (getSharedPreferences("app_prefs", MODE_PRIVATE).getInt("launch_count", 0) >= 2) {
+            askNotificationPermission();
+        }
         getFirebaseToken();
-        loadCategories();
         Manager.getInstance().initialize();
 
         // Daily: hidden 2026-08-20, back 2026-10-14 — and since the same day a real TAB
@@ -251,16 +245,6 @@ public class MainActivity extends BaseActivity {
                 startActivity(WelcomeActivity.newIntent(this));
             }
         }
-
-        // Defer heavy non-critical init to after first layout
-        new Handler(Looper.getMainLooper()).postDelayed(() -> {
-            if (!isFinishing() && !isDestroyed()) {
-                // loadCategories() already ran at onCreate (line ~172); calling it again here
-                // duplicated 7 network requests + spun a 2nd Volley queue on every cold start.
-                // Background GIF (old meadow) disabled — we use the clean modern static background.
-                // loadBackgroundGif();
-            }
-        }, 300);
 
         Library.getInstance().mLibraryItemsChanged = true;
     }
@@ -458,66 +442,9 @@ public class MainActivity extends BaseActivity {
                 com.colourmate.paintbynumber.util.CoinManager.balance(this)));
     }
 
-    /**
-     * The coin sheet: balance, "watch a video" to earn, and Premium as the way out of needing
-     * coins at all. Premium users see the balance only — there is nothing to sell them.
-     */
+    /** The coin purse — shared with locked pictures and the Hit card (util/CoinSheet). */
     private void showCoinsSheet() {
-        final android.app.Dialog sheet = new android.app.Dialog(this, R.style.FullWidthDialog);
-        sheet.requestWindowFeature(Window.FEATURE_NO_TITLE);
-        sheet.setContentView(R.layout.dialog_coins);
-        Window w = sheet.getWindow();
-        if (w != null) {
-            w.setGravity(android.view.Gravity.BOTTOM);
-            w.setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT));
-            w.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        }
-
-        final TextView balance = sheet.findViewById(R.id.tv_coins_balance);
-        final View watch = sheet.findViewById(R.id.btn_coins_watch);
-        final View premium = sheet.findViewById(R.id.btn_coins_premium);
-        final Runnable paint = () -> balance.setText(com.colourmate.paintbynumber.util.CoinManager.format(
-                com.colourmate.paintbynumber.util.CoinManager.balance(this)));
-        paint.run();
-
-        boolean adsOn = com.colourmate.paintbynumber.ads.AdController.shouldShowAds(this);
-        watch.setVisibility(adsOn ? View.VISIBLE : View.GONE);
-        premium.setVisibility(adsOn ? View.VISIBLE : View.GONE);
-
-        watch.setOnClickListener(v -> {
-            watch.setEnabled(false);
-            MediationManager.showRewardedAd(this, new com.colourmate.paintbynumber.ads.RewardedAdListener() {
-                @Override public void onRewardGranted() {
-                    runOnUiThread(() -> {
-                        com.colourmate.paintbynumber.util.CoinManager.add(MainActivity.this,
-                                com.colourmate.paintbynumber.util.CoinManager.REWARD_AD_COINS);
-                        paint.run();
-                        refreshCoins();
-                        bounce(balance);
-                        watch.setEnabled(true);
-                        Toast.makeText(MainActivity.this, "+" + com.colourmate.paintbynumber.util.CoinManager.REWARD_AD_COINS
-                                + " coins 🪙", Toast.LENGTH_SHORT).show();
-                    });
-                }
-                // No video available: nothing is granted — coins are the one place a free grant
-                // would be farmable — but the button must come back.
-                @Override public void onRewardNull() {
-                    runOnUiThread(() -> {
-                        watch.setEnabled(true);
-                        Toast.makeText(MainActivity.this, "No video right now — try again in a moment",
-                                Toast.LENGTH_SHORT).show();
-                    });
-                }
-                @Override public void onRewardProgress() { }
-                @Override public void onVideoSkipped() { runOnUiThread(() -> watch.setEnabled(true)); }
-            });
-        });
-        premium.setOnClickListener(v -> {
-            sheet.dismiss();
-            startActivity(new Intent(this, PremiumActivity.class));
-        });
-        sheet.findViewById(R.id.btn_coins_close).setOnClickListener(v -> sheet.dismiss());
-        sheet.show();
+        com.colourmate.paintbynumber.util.CoinSheet.show(this, this::refreshCoins);
     }
 
     /** Shared tap feedback for the nav icons and the top-bar Saved icon. */
@@ -1060,6 +987,15 @@ public class MainActivity extends BaseActivity {
             bounce(binding.cmCoinsChip);
             Toast.makeText(this, "Daily bonus: +" + bonus + " coins 🪙", Toast.LENGTH_SHORT).show();
         }
+        // Coins this player's invited friends have earned them since last time (referral.py).
+        com.colourmate.paintbynumber.util.Referral.claim(this, r -> {
+            int got = r == null ? 0 : r.optInt("coins");
+            if (got <= 0 || isFinishing()) return;
+            com.colourmate.paintbynumber.util.CoinManager.add(this, got);
+            refreshCoins();
+            bounce(binding.cmCoinsChip);
+            Toast.makeText(this, "+" + got + " coins from your friends 🪙", Toast.LENGTH_SHORT).show();
+        });
 
         // Re-check entitlements with Play. A subscription can end without the app hearing about it
         // — it lapses, the user cancels in the Play Store, or a refund is issued — and until this
@@ -1532,59 +1468,4 @@ public class MainActivity extends BaseActivity {
 
     // ==================== CATEGORIES ====================
 
-    private void loadCategories() {
-        categoryList.add(new CategoryModel("love", Manager.LoveURL()));
-        categoryList.add(new CategoryModel("animals", Manager.AnimalURL()));
-        categoryList.add(new CategoryModel("flowers", Manager.FlowerURL()));
-        categoryList.add(new CategoryModel("nature", Manager.NatureURL()));
-        categoryList.add(new CategoryModel("mandalas", Manager.MandalaURL()));
-        categoryList.add(new CategoryModel("people", Manager.PeopleURL()));
-        categoryList.add(new CategoryModel("kids", Manager.KidURL()));
-
-        RequestQueue requestQueue = Volley.newRequestQueue(this);
-
-        for (int i = 0; i < categoryList.size(); i++) {
-            final int finalI = i;
-            String url = categoryList.get(i).getCatURL();
-
-            StringRequest strReq = new StringRequest(
-                    com.android.volley.Request.Method.GET, url,
-                    response -> {
-                        try {
-                            JSONArray data = new JSONObject(response).getJSONArray("data");
-                            String catName = categoryList.get(finalI).getCatName();
-                            int length = data.length();
-
-                            switch (catName) {
-                                case "kids":
-                                    ColourColourArchPreference.setTotalkids(this, length);
-                                    break;
-                                case "mandalas":
-                                    ColourColourArchPreference.setTotalmandala(this, length);
-                                    break;
-                                case "flowers":
-                                    ColourColourArchPreference.setTotalflower(this, length);
-                                    break;
-                                case "nature":
-                                    ColourColourArchPreference.setTotalnature(this, length);
-                                    break;
-                                case "animals":
-                                    ColourColourArchPreference.setTotalanimal(this, length);
-                                    break;
-                                case "love":
-                                    ColourColourArchPreference.setTotallove(this, length);
-                                    break;
-                                case "people":
-                                    ColourColourArchPreference.setTotalpeople(this, length);
-                                    break;
-                            }
-                        } catch (JSONException e) {
-                            Log.e("CategoryLoader", "JSON parse error", e);
-                        }
-                    },
-                    error -> Log.d("Error", error.toString()));
-
-            requestQueue.add(strReq);
-        }
-    }
 }

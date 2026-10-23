@@ -116,6 +116,10 @@ public class LevelsAdapter extends RecyclerView.Adapter<LevelsAdapter.LevelHolde
                         h.itemView.getContext(), level.getCategory(), level.getFileName())
                 : Manager.BASE_URL + "thumb/" + level.getCategory() + "/t/" + level.getFileName() + ".png";
         h.ivResult.setBackgroundColor(ours ? android.graphics.Color.WHITE : android.graphics.Color.TRANSPARENT);
+        android.widget.TextView chip = h.itemView.findViewById(R.id.tv_progress_chip);
+        if (chip != null && !com.colourmate.paintbynumber.util.PictureUnlock.showBadge(chip, level)) {
+            chip.setVisibility(View.GONE);
+        }
 
         if (preview != null) {
             // fit()+centerCrop = decode to the cell size, matching the layout's scaleType

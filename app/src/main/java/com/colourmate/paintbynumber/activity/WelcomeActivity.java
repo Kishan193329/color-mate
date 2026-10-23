@@ -22,6 +22,11 @@ public class WelcomeActivity extends AppCompatActivity {
     private static final String KEY_SEEN = "seen";
 
     /** True until the player has been through this screen once. */
+    /** The age screen already introduces the app; one intro screen per install is enough. */
+    public static void markSeen(Context context) {
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().putBoolean(KEY_SEEN, true).apply();
+    }
+
     public static boolean shouldShow(Context context) {
         return !context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
                 .getBoolean(KEY_SEEN, false);

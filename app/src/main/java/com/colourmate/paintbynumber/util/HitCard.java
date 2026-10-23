@@ -1,6 +1,5 @@
 package com.colourmate.paintbynumber.util;
 
-import android.app.Activity;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.View;
@@ -93,18 +92,41 @@ public final class HitCard {
         return unlockAt - (System.currentTimeMillis() / 1000L + clockOffset);
     }
 
+    /** After unlock: 300 coins to play at once, or free once this much longer has passed. */
+    private static final long FREE_AFTER = 24 * 3600L;
+
+    /** Seconds until it is free for everyone; <= 0 once it is. */
+    private long secondsToFree() {
+        return secondsLeft() + FREE_AFTER;
+    }
+
+    private boolean canPlayFree() {
+        android.content.Context c = card.getContext();
+        return secondsToFree() <= 0 || CoinManager.isUnlocked(c, fileName)
+                || com.colourmate.paintbynumber.ads.AppPreference.getBoolean(c,
+                        com.colourmate.paintbynumber.ads.Keys.KEY_IS_PREMIUM, false);
+    }
+
     private final Runnable tick = new Runnable() {
         @Override public void run() {
             if (!running) return;
+            android.content.Context c = card.getContext();
             long left = secondsLeft();
             boolean locked = left > 0;
+            boolean free = !locked && canPlayFree();
             lock.setVisibility(locked ? View.VISIBLE : View.GONE);
-            play.setText(locked ? R.string.hit_locked : R.string.hit_play);
             play.setAlpha(locked ? 0.55f : 1f);
-            countdown.setText(locked
-                    ? card.getContext().getString(R.string.hit_unlocks_in, format(left))
-                    : card.getContext().getString(R.string.hit_unlocked));
-            if (locked) handler.postDelayed(this, 1000L);
+            if (locked) {
+                play.setText(R.string.hit_locked);
+                countdown.setText(c.getString(R.string.hit_unlocks_in, format(left)));
+            } else if (free) {
+                play.setText(R.string.hit_play);
+                countdown.setText(c.getString(R.string.hit_unlocked));
+            } else {
+                play.setText(c.getString(R.string.hit_play_coins, CoinManager.HIT_INSTANT_COST));
+                countdown.setText(c.getString(R.string.hit_free_in, format(secondsToFree())));
+            }
+            if (!free) handler.postDelayed(this, 1000L);
         }
     };
 
@@ -113,20 +135,43 @@ public final class HitCard {
     private void stop() { running = false; handler.removeCallbacks(tick); }
 
     private void onTap() {
+        android.content.Context ctx = card.getContext();
         long left = secondsLeft();
         if (left > 0) {
-            Toast.makeText(card.getContext(),
-                    card.getContext().getString(R.string.hit_unlocks_in, format(left)),
-                    Toast.LENGTH_SHORT).show();
+            Toast.makeText(ctx, ctx.getString(R.string.hit_unlocks_in, format(left)), Toast.LENGTH_SHORT).show();
             return;
         }
-        String base = ColorForgeApi.revealBaseUrl(card.getContext(), category, fileName);
+        if (!(ctx instanceof AppCompatActivity)) return;
+        AppCompatActivity a = (AppCompatActivity) ctx;
+        if (canPlayFree()) { openGame(a, true); return; }
+
+        int cost = CoinManager.HIT_INSTANT_COST;
+        int have = CoinManager.balance(a);
+        android.app.AlertDialog.Builder b = new android.app.AlertDialog.Builder(a)
+                .setTitle("Play the Hit picture now")
+                .setMessage("Play it today for " + cost + " coins, or free in " + format(secondsToFree())
+                        + ".\nYou have " + have + " coins.")
+                .setNegativeButton("Wait", null);
+        if (have >= cost) {
+            b.setPositiveButton("Play · " + cost + " 🪙", (d, w) -> {
+                if (!CoinManager.trySpend(a, cost)) return;
+                CoinManager.markUnlocked(a, fileName);
+                start();
+                openGame(a, false);
+            });
+        } else {
+            b.setPositiveButton("Get coins", (d, w) -> CoinSheet.show(a, null));
+        }
+        b.show();
+    }
+
+    /** Paid with coins: straight in. Free: through the usual interstitial break. */
+    private void openGame(AppCompatActivity a, boolean withAd) {
+        String base = ColorForgeApi.revealBaseUrl(a, category, fileName);
         if (base.isEmpty()) return;
-        android.content.Context ctx = card.getContext();
-        Runnable open = () -> ctx.startActivity(RevealActivity.fromUrl(ctx, base, fileName,
+        Runnable open = () -> a.startActivity(RevealActivity.fromUrl(a, base, fileName,
                 new String[0], new String[0]));
-        Activity a = ctx instanceof Activity ? (Activity) ctx : null;
-        if (a instanceof AppCompatActivity) MediationManager.showInterstitial((AppCompatActivity) a, open::run);
+        if (withAd) MediationManager.showInterstitial(a, open::run);
         else open.run();
     }
 

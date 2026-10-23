@@ -214,7 +214,9 @@ public class ColoringsAdapter extends BaseRestAdapter<ColoringsAdapter.ColoringV
             int pct = ctx.getSharedPreferences("reveal_progress", android.content.Context.MODE_PRIVATE)
                     .getInt(key, 0);
             if (pct <= 0) {
-                chip.setVisibility(android.view.View.GONE);
+                if (!com.colourmate.paintbynumber.util.PictureUnlock.showBadge(chip, level)) {
+                    chip.setVisibility(android.view.View.GONE);
+                }
             } else {
                 chip.setVisibility(android.view.View.VISIBLE);
                 chip.setText(pct >= 100 ? "✓" : pct + "%");

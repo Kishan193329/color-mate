@@ -390,7 +390,8 @@ public class DailyFragment extends Fragment {
             Intent reveal = RevealActivity.fromUrl(requireContext(), base, level.getFileName(),
                     new String[0], new String[0]);
             reveal.putExtra(GameActivity.EXTRA_DAILY_DATE, DailyChallengeManager.dateKey(cell.date));
-            startActivity(reveal);
+            com.colourmate.paintbynumber.util.PictureUnlock.open(
+                    (androidx.appcompat.app.AppCompatActivity) requireActivity(), level, () -> startActivity(reveal));
             return;
         }
         Intent intent = GameActivity.newIntent(requireContext(), level);
