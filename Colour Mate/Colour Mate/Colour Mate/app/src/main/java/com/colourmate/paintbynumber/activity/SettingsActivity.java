@@ -353,7 +353,10 @@ public class SettingsActivity extends BaseActivity {
     }
 
     private void openPrivacyPolicy() {
-        String privacyUrl = "https://your-privacy-policy-link.com";
+        // Admin → Ads → Policy URL; until one is set, the Play listing carries the policy link.
+        String privacyUrl = com.colourmate.paintbynumber.ads.AppPreference.getString(this,
+                com.colourmate.paintbynumber.ads.Keys.KEY_POLICY, "");
+        if (privacyUrl.isEmpty()) privacyUrl = "https://play.google.com/store/apps/details?id=" + getPackageName();
 
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(privacyUrl));
         startActivity(intent);
@@ -363,7 +366,10 @@ public class SettingsActivity extends BaseActivity {
         Intent intent = new Intent(Intent.ACTION_SENDTO);
         intent.setData(Uri.parse("mailto:")); // Only email apps
 
-        intent.putExtra(Intent.EXTRA_EMAIL, new String[]{"admin@gyandatabit.com"});
+        String email = com.colourmate.paintbynumber.ads.AppPreference.getString(this,
+                com.colourmate.paintbynumber.ads.Keys.KEY_DEV_EMAIL, "");
+        if (email.isEmpty()) email = "admin@gyandatabit.com";
+        intent.putExtra(Intent.EXTRA_EMAIL, new String[]{email});
         intent.putExtra(Intent.EXTRA_SUBJECT, "App Feedback");
         intent.putExtra(Intent.EXTRA_TEXT,
                 "App Version: " + getAppVersion() + "\n" +
