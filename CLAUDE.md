@@ -30,8 +30,13 @@ Two **separate** products that need to be connected:
   **https://github.com/Kishan193329/color-mate.git**. **Branch layout (owner's rule):**
   `main` = **ONLY the Android project, at the repo root** (no CLAUDE.md, no backend) — made with
   `git subtree split --prefix="Colour Mate/Colour Mate/Colour Mate"` and force-pushed; `quality-fixes`
-  = the full tree (app + `platform/backend` + Flutter + docs). After any app change: commit on
-  `quality-fixes`, re-split, `git push -f origin <split>:main`. Ignored on purpose: `platform/backend/data/`, `models/*.pth`, `.venv`, `build/`,
+  = the full tree (app + `platform/backend` + Flutter + docs).
+  **🔴 Owner's rule since 2026-10-23: do NOT merge or re-split into `main`.** New work goes on a named
+  branch and is pushed there — currently **`svg-daily-hit-v16`**. `main` stays at `b48fb2b` until
+  the owner says otherwise. Tag **`viral`** = the full tree at `92e0c21` (same commit as
+  `quality-fixes` and `svg-daily-hit-v16` on that date) — the snapshot to come back to.
+  *(Before that date the rule was: commit on `quality-fixes`, re-split, `git push -f origin
+  <split>:main`.)* Ignored on purpose: `platform/backend/data/`, `models/*.pth`, `.venv`, `build/`,
   `local.properties`, and `color_mate_old/` (the owner's 3 GB July backup — it was staged once by
   accident and left a 3 GB dangling blob in `.git` until pruned). `google-services.json` is
   committed deliberately. Put `ADMOB_APP_ID` in `~/.gradle/gradle.properties`, never the project.
