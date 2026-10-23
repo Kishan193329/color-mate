@@ -33,7 +33,10 @@ Two **separate** products that need to be connected:
   = the full tree (app + `platform/backend` + Flutter + docs).
   **🔴 Owner's rule since 2026-10-23: do NOT merge or re-split into `main`.** New work goes on a named
   branch and is pushed there — currently **`svg-daily-hit-v16`**. `main` stays at `b48fb2b` until
-  the owner says otherwise. Tag **`viral`** = the full tree at `92e0c21` (same commit as
+  the owner says otherwise. **VPS = git:** on 2026-10-23 all 21 tracked backend files on the VPS
+  were made byte-identical to this branch (deployed `1ee361f`/`cbd2507`/`72e03e1` incl. the new
+  `referral.py`; its table is created lazily on the first `/index.php/App/ref/*` call; backup in
+  `/root/deploy_backup_20261023_202320/`). Tag **`viral`** = the full tree at `92e0c21` (same commit as
   `quality-fixes` and `svg-daily-hit-v16` on that date) — the snapshot to come back to.
   *(Before that date the rule was: commit on `quality-fixes`, re-split, `git push -f origin
   <split>:main`.)* Ignored on purpose: `platform/backend/data/`, `models/*.pth`, `.venv`, `build/`,
