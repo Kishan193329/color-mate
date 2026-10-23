@@ -32,7 +32,8 @@ Two **separate** products that need to be connected:
   `git subtree split --prefix="Colour Mate/Colour Mate/Colour Mate"` and force-pushed; `quality-fixes`
   = the full tree (app + `platform/backend` + Flutter + docs).
   **🔴 Owner's rule since 2026-10-23: do NOT merge or re-split into `main`.** New work goes on a named
-  branch and is pushed there — currently **`svg-daily-hit-v16`**. `main` stays at `b48fb2b` until
+  branch and is pushed there. **Name a new branch `YYYY-MM-DD-<feature>`** (owner, 2026-10-23) —
+  latest is **`2026-10-23-svg-vector-engine`** (§8.5bz, branched from `svg-daily-hit-v16` @ `9cd99f5`). `main` stays at `b48fb2b` until
   the owner says otherwise. **VPS = git:** on 2026-10-23 all 21 tracked backend files on the VPS
   were made byte-identical to this branch (deployed `1ee361f`/`cbd2507`/`72e03e1` incl. the new
   `referral.py`; its table is created lazily on the first `/index.php/App/ref/*` call; backup in
