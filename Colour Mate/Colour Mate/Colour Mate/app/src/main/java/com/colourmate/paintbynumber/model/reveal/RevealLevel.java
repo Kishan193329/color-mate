@@ -79,6 +79,13 @@ public class RevealLevel {
     public final BorderVector borderVector;
     public final SparseArray<Region> regionsById = new SparseArray<>();
     public final Region[] regions;
+    /**
+     * The picture as vector shapes (SVG pictures only). When present the board draws these
+     * instead of the rasters — see RevealView's vector engine. Null = photo picture.
+     */
+    public final VectorArt vector;
+    /** Outline look the admin picked for an SVG picture: "black" or "soft". */
+    public final String look;
     /** Palette colour per number (index 0 unused, so palette[n] matches the printed number). */
     public final int[] palette;
 
@@ -92,7 +99,9 @@ public class RevealLevel {
 
     private RevealLevel(int width, int height, char[] idMap, int[] original, int[] start,
                         Bitmap border, BorderVector borderVector,
-                        Region[] regions, int[] palette) {
+                        Region[] regions, int[] palette, VectorArt vector, String look) {
+        this.vector = vector;
+        this.look = look;
         this.width = width;
         this.height = height;
         this.idMap = idMap;
@@ -188,8 +197,17 @@ public class RevealLevel {
             // no start.jpg for this picture — expected
         }
 
+        // Optional: SVG pictures ship their shapes so the board can stay sharp at any zoom.
+        VectorArt vector = null;
+        try (InputStream in = source.open("vector.json.gz")) {
+            VectorArt v = VectorArt.parse(in);
+            if (v.width == width && v.height == height) vector = v;
+        } catch (Exception ignored) {
+            // photo picture, or published before the vector engine — the rasters play
+        }
+
         return new RevealLevel(width, height, idMap, original, start, border, borderVector,
-                regions, palette);
+                regions, palette, vector, meta.optString("look", "black"));
     }
 
     private static int[] readPixels(Source source, String name, String fallback,

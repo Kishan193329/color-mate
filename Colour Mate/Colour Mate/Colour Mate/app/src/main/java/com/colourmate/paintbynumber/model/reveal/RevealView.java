@@ -145,18 +145,292 @@ public class RevealView extends View {
 
     public void setLevel(RevealLevel level) {
         this.level = level;
-        displayBitmap = Bitmap.createBitmap(level.width, level.height, Bitmap.Config.ARGB_8888);
-        highlightBitmap = Bitmap.createBitmap(level.width, level.height, Bitmap.Config.ARGB_8888);
-        highlightPixels = new int[level.width * level.height];
-        highlightDirty = true;
-        pushPixels();
+        if (level.vector == null) {
+            displayBitmap = Bitmap.createBitmap(level.width, level.height, Bitmap.Config.ARGB_8888);
+            highlightBitmap = Bitmap.createBitmap(level.width, level.height, Bitmap.Config.ARGB_8888);
+            highlightPixels = new int[level.width * level.height];
+            highlightDirty = true;
+            pushPixels();
+        }
         fitToScreen();
+        if (level.vector != null) {
+            outlineColour = "soft".equals(level.look) ? 0xFFA3A3A3 : 0xFF000000;
+            startPulse();
+            requestArt();
+        }
     }
 
     public void setSelectedNumber(int number) {
         this.selectedNumber = number;
         highlightDirty = true;
         invalidate();
+    }
+
+    /** Re-draw the picture from its revealed state — call after progress is restored. */
+    public void refreshArt() {
+        if (level != null && level.vector != null) requestArt();
+        invalidate();
+    }
+
+    // ─── Vector engine (SVG pictures) ───
+    //
+    // An SVG picture used to play through the raster path: a 1254px id-map, border bitmap and
+    // grey sketch, so its line went soft and blocky once zoomed and the selected number's grey
+    // highlight vanished into the grey sketch. Here the picture is the SVG's own shapes:
+    //  - outline ink always drawn, crisp at any zoom (the admin's black / soft look);
+    //  - an unfilled shape is a light grey tone of its own colour, a filled one its true colour;
+    //  - the selected number's unfilled shapes blink in a tint of that colour.
+    // Thousands of shapes cannot be drawn every frame, so the picture is rendered into a
+    // screen-sized bitmap on a worker thread whenever the camera settles, and while the player
+    // pinches or pans that bitmap is simply moved with the fingers. A fill paints its own few
+    // shapes straight into the bitmap, so tapping never waits for a full render.
+
+    /** Seam cover between neighbouring shapes, in screen px — polygons meet, they do not overlap. */
+    private static final float VEC_SEAM_PX = 0.9f;
+    private static final long VEC_SETTLE_MS = 80;
+    private static final int HIGHLIGHT_VIOLET = 0xFF7A5CFF;   // cm_violet
+
+    private int outlineColour = 0xFF000000;
+    private float lastFrameScale = -1f, lastFrameOX, lastFrameOY;
+    private Bitmap artFront;
+    private Canvas artFrontCanvas;
+    private float artScale, artOX, artOY;
+    private boolean artValid;
+    private final android.graphics.Matrix artMatrix = new android.graphics.Matrix();
+    private final Paint vecPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Paint artBlit = new Paint(Paint.FILTER_BITMAP_FLAG);
+    private volatile boolean artRendering;
+    private boolean artPending;
+    /** Regions filled after a background render started — painted onto its result on arrival. */
+    private final List<RevealLevel.Region> fillsDuringRender = new ArrayList<>();
+    private ValueAnimator pulseAnim;
+    private float pulse;
+    private final Runnable artRunnable = this::renderArtAsync;
+
+    { vecPaint.setStyle(Paint.Style.FILL_AND_STROKE); vecPaint.setStrokeJoin(Paint.Join.ROUND); }
+
+    private boolean vectorMode() {
+        return level != null && level.vector != null;
+    }
+
+    /** Light grey of a colour's own luminance — the unfilled look (same as the admin's sketch). */
+    private static int tone(int c) {
+        float l = 0.299f * android.graphics.Color.red(c) + 0.587f * android.graphics.Color.green(c)
+                + 0.114f * android.graphics.Color.blue(c);
+        int g = (int) (255 - (255 - l) * 0.5f);
+        return 0xFF000000 | (g << 16) | (g << 8) | g;
+    }
+
+    private void startPulse() {
+        if (pulseAnim != null) pulseAnim.cancel();
+        pulseAnim = ValueAnimator.ofFloat(0f, 1f);
+        pulseAnim.setDuration(1050);
+        pulseAnim.setRepeatCount(ValueAnimator.INFINITE);
+        pulseAnim.setRepeatMode(ValueAnimator.REVERSE);
+        pulseAnim.addUpdateListener(a -> {
+            pulse = (float) a.getAnimatedValue();
+            invalidate();
+        });
+        pulseAnim.start();
+    }
+
+    @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        if (pulseAnim != null) pulseAnim.cancel();
+        removeCallbacks(artRunnable);
+    }
+
+    /** Debounced: a full render once the camera has stopped moving. */
+    private void requestArt() {
+        removeCallbacks(artRunnable);
+        postDelayed(artRunnable, VEC_SETTLE_MS);
+    }
+
+    private void renderArtAsync() {
+        if (!vectorMode() || getWidth() == 0 || getHeight() == 0) return;
+        if (artRendering) {
+            artPending = true;
+            return;
+        }
+        artRendering = true;
+        synchronized (fillsDuringRender) {
+            fillsDuringRender.clear();
+        }
+        final int w = getWidth(), h = getHeight();
+        final float s = scale, ox = offsetX, oy = offsetY;
+        final RevealLevel lvl = level;
+        new Thread(() -> {
+            Bitmap bmp = null;
+            try {
+                bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+                drawArt(new Canvas(bmp), lvl, s, ox, oy, w, h);
+            } catch (Throwable ignored) {
+                // out of memory on a small phone: keep showing the previous frame
+            }
+            final Bitmap done = bmp;
+            post(() -> {
+                artRendering = false;
+                if (done != null && lvl == level) {
+                    Bitmap old = artFront;
+                    artFront = done;
+                    artFrontCanvas = new Canvas(done);
+                    artScale = s;
+                    artOX = ox;
+                    artOY = oy;
+                    artValid = true;
+                    synchronized (fillsDuringRender) {
+                        for (RevealLevel.Region r : fillsDuringRender) paintRegionInto(r, null, 0, 0, 0);
+                        fillsDuringRender.clear();
+                    }
+                    if (old != null && old != done) old.recycle();
+                }
+                if (artPending) {
+                    artPending = false;
+                    renderArtAsync();
+                }
+                invalidate();
+            });
+        }, "vector-art").start();
+    }
+
+    /** The whole picture at one camera position. Worker thread: own Paint, read-only paths. */
+    private void drawArt(Canvas c, RevealLevel lvl, float s, float ox, float oy, int w, int h) {
+        VectorArt v = lvl.vector;
+        Paint p = new Paint(Paint.ANTI_ALIAS_FLAG);
+        p.setStyle(Paint.Style.FILL_AND_STROKE);
+        p.setStrokeJoin(Paint.Join.ROUND);
+        p.setStrokeWidth(VEC_SEAM_PX / s);
+        c.drawColor(0xFFFFFFFF);
+        c.save();
+        c.translate(ox, oy);
+        c.scale(s, s);
+        float m = 2f / s;
+        RectF vis = new RectF(-ox / s - m, -oy / s - m, (w - ox) / s + m, (h - oy) / s + m);
+        drawShapes(c, p, lvl, vis, s);
+        c.restore();
+    }
+
+    /**
+     * Every shape touching {@code area}, in the SVG's own order. The order matters: these pictures
+     * often lay a dark shape UNDER a lighter one (a moon's rim, the heart of a rose), so drawing
+     * all colours first and all ink after put black discs on top of the picture.
+     */
+    private void drawShapes(Canvas c, Paint p, RevealLevel lvl, RectF area, float s) {
+        VectorArt v = lvl.vector;
+        float seam = VEC_SEAM_PX / s, inkSeam = 0.4f / s;
+        for (int i = 0; i < v.paths.length; i++) {
+            if (!RectF.intersects(area, v.bounds[i])) continue;
+            int rid = v.regionOf[i];
+            if (rid == 0) {
+                p.setColor(outlineColour);
+                p.setStrokeWidth(inkSeam);
+            } else {
+                RevealLevel.Region r = lvl.regionsById.get(rid);
+                p.setColor(r != null && r.revealed ? v.colour[i] : tone(v.colour[i]));
+                p.setStrokeWidth(seam);
+            }
+            c.drawPath(v.paths[i], p);
+        }
+    }
+
+    /**
+     * Re-draws the region's box of the picture bitmap from the current state (the region is
+     * already marked revealed), in the SVG's own order so whatever lies on top stays on top;
+     * with {@code radius} > 0 only within that distance of (ox, oy) — the flood fill's edge.
+     */
+    private void paintRegionInto(RevealLevel.Region region, @Nullable Path clip, float ox, float oy,
+                                 float radius) {
+        if (!artValid || artFrontCanvas == null || region == null) return;
+        Canvas c = artFrontCanvas;
+        c.save();
+        c.translate(artOX, artOY);
+        c.scale(artScale, artScale);
+        RectF box = new RectF(region.left - 2, region.top - 2, region.right + 3, region.bottom + 3);
+        c.clipRect(box);
+        if (radius > 0) {
+            if (clip == null) clip = new Path();
+            clip.reset();
+            clip.addCircle(ox, oy, radius, Path.Direction.CW);
+            c.clipPath(clip);
+        }
+        drawShapes(c, vecPaint, level, box, artScale);
+        c.restore();
+    }
+
+    private final Path fillClip = new Path();
+
+    /** Vector flood fill: the region's true colours spread out from the touch point. */
+    private void vectorFill(RevealLevel.Region region, int originX, int originY) {
+        synchronized (fillsDuringRender) {
+            if (artRendering) fillsDuringRender.add(region);
+        }
+        float maxDist = 1f;
+        for (int cx = region.left; cx <= region.right; cx += Math.max(1, region.right - region.left)) {
+            for (int cy = region.top; cy <= region.bottom; cy += Math.max(1, region.bottom - region.top)) {
+                maxDist = Math.max(maxDist, (float) Math.hypot(cx - originX, cy - originY));
+            }
+        }
+        final float md = maxDist + 2f;
+        final int colour = (level.palette != null && region.number < level.palette.length)
+                ? level.palette[region.number] : 0xFF9AA0A6;
+        level.paintRegion(region, 1f);                  // keeps the saved artwork in step
+        ValueAnimator animator = ValueAnimator.ofFloat(0f, 1f);
+        animator.setDuration(FILL_MS);
+        animator.setInterpolator(new DecelerateInterpolator());
+        animator.addUpdateListener(a -> {
+            float radius = (float) a.getAnimatedValue() * md;
+            paintRegionInto(region, fillClip, originX, originY, radius);
+            emitEdgeParticles(region, originX, originY, radius, colour);
+            invalidate();
+        });
+        animator.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator a) {
+                paintRegionInto(region, null, 0, 0, 0);
+                invalidate();
+            }
+        });
+        animator.start();
+    }
+
+    /** Per frame: the picture bitmap moved with the camera, then the blinking parts to fill. */
+    private void drawVector(Canvas canvas) {
+        canvas.drawColor(0xFFFFFFFF);
+        if (artValid && artFront != null) {
+            float k = scale / artScale;
+            artMatrix.setScale(k, k);
+            artMatrix.postTranslate(offsetX - artOX * k, offsetY - artOY * k);
+            canvas.drawBitmap(artFront, artMatrix, artBlit);
+        }
+        // The blink redraws every frame, so only a camera that actually MOVED since the last
+        // frame may restart the settle timer — otherwise the timer would never get to fire.
+        if (scale != lastFrameScale || offsetX != lastFrameOX || offsetY != lastFrameOY) {
+            lastFrameScale = scale;
+            lastFrameOX = offsetX;
+            lastFrameOY = offsetY;
+            if (!artValid || scale != artScale || offsetX != artOX || offsetY != artOY) requestArt();
+        }
+
+        // The parts to fill now blink in the app's violet. A tint of the colour itself was tried
+        // first and measured invisible: a dark colour mixed toward white lands on the same grey as
+        // the sketch around it (0 coloured pixels on screen for a dark-green number).
+        VectorArt v = level.vector;
+        vecPaint.setStyle(Paint.Style.FILL);
+        vecPaint.setColor(HIGHLIGHT_VIOLET);
+        vecPaint.setAlpha((int) (70 + 120 * pulse));
+        canvas.save();
+        canvas.translate(offsetX, offsetY);
+        canvas.scale(scale, scale);
+        for (RevealLevel.Region r : level.regions) {
+            if (r.revealed || r.number != selectedNumber) continue;
+            int[] shapes = v.shapesOfRegion.get(r.id);
+            if (shapes == null) continue;
+            for (int i : shapes) canvas.drawPath(v.paths[i], vecPaint);
+        }
+        canvas.restore();
+        vecPaint.setAlpha(255);
+        vecPaint.setStyle(Paint.Style.FILL_AND_STROKE);
     }
 
     public int getSelectedNumber() {
@@ -302,7 +576,16 @@ public class RevealView extends View {
     @Override
     protected void onDraw(@NonNull Canvas canvas) {
         super.onDraw(canvas);
-        if (level == null || displayBitmap == null) return;
+        if (level == null) return;
+        if (vectorMode()) {
+            drawVector(canvas);
+            labelRenderer.draw(canvas, level, selectedNumber, scale, fitScale, offsetX, offsetY,
+                    getWidth(), getHeight(), labelBottomInset);
+            drawHint(canvas);
+            if (!particles.isEmpty()) drawParticles(canvas);
+            return;
+        }
+        if (displayBitmap == null) return;
 
         destRect.set(offsetX, offsetY,
                 offsetX + level.width * scale, offsetY + level.height * scale);
@@ -618,7 +901,11 @@ public class RevealView extends View {
      * outline is never crossed. Finishes in {@link #FILL_MS} ms.
      */
     private void floodFill(RevealLevel.Region region, int originX, int originY) {
-        float maxDist = 1f;                       // reach the farthest corner of the region by the end
+        if (vectorMode()) {
+            vectorFill(region, originX, originY);
+            return;
+        }
+        float maxDist = 1f;                      // reach the farthest corner of the region by the end
         for (int cx = region.left; cx <= region.right; cx += Math.max(1, region.right - region.left)) {
             for (int cy = region.top; cy <= region.bottom; cy += Math.max(1, region.bottom - region.top)) {
                 maxDist = Math.max(maxDist, (float) Math.hypot(cx - originX, cy - originY));

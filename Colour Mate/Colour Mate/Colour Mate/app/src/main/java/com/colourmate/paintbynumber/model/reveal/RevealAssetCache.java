@@ -70,7 +70,8 @@ public final class RevealAssetCache {
 
     /** Every file a picture needs, fetched at once instead of one after another. */
     private static final String[] ASSETS = {
-            "regions.json", "original.jpg", "id_map.png", "border.svg", "border.png", "start.jpg"};
+            "regions.json", "original.jpg", "id_map.png", "border.svg", "border.png", "start.jpg",
+            "vector.json.gz"};
 
     /**
      * The loader used to fetch the five files sequentially, so the wall time was the SUM of

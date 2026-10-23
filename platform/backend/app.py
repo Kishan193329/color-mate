@@ -692,6 +692,9 @@ def _publish(iid: str) -> None:
             svg_item = svg_builder.is_svg_item(folder)
             if svg_item:
                 R.build_color(folder)                      # review page = the chosen look
+                if not (folder / "vector.json.gz").is_file() and (folder / "source.svg").is_file():
+                    svg_builder.write_vector(folder)       # imported before the vector engine
+            has_vector = svg_item and (folder / "vector.json.gz").is_file()
             info = R.export_color_bundle(folder)
             with zipfile.ZipFile(info["zip"]) as z:
                 for name in z.namelist():
@@ -702,6 +705,8 @@ def _publish(iid: str) -> None:
                         # phones keep the old border.png.
                         js = json.loads(data)
                         js["look"] = svg_builder.outline_of(folder)
+                        if has_vector:
+                            js["vec"] = 1                # same reason: phones refetch and get it
                         data = json.dumps(js, separators=(",", ":")).encode()
                     if data:                        # skip directory entries
                         store.put_bytes(f"images/{iid}/{name}", data)
@@ -730,6 +735,10 @@ def _publish(iid: str) -> None:
             if svg_builder.is_svg_item(folder) and (folder / "start.jpg").is_file():
                 # the soft grey sketch the app shows before anything is filled
                 store.put_bytes(f"images/{iid}/start.jpg", (folder / "start.jpg").read_bytes())
+            if has_vector:
+                # the picture as shapes — the app's vector engine draws these instead of rasters
+                store.put_bytes(f"images/{iid}/vector.json.gz",
+                                (folder / "vector.json.gz").read_bytes())
         else:
             # Diamond: the playable payload is grid.json, plus the renders for the admin preview.
             # Running export_color_bundle() here would spend the whole line-art + region pass
@@ -953,7 +962,8 @@ def number_play(category: str, file_name: str):
 # prefers it because a 1254px raster shows its own pixels once the player zooms in; the
 # vector stays crisp at any zoom and is smaller than the PNG it replaces.
 _REVEAL_ASSETS = {"regions.json", "id_map.png", "border.png", "border.svg",
-                  "original.png", "original.jpg", "border_thumb.png", "start.jpg"}
+                  "original.png", "original.jpg", "border_thumb.png", "start.jpg",
+                  "vector.json.gz"}
 
 
 @number_router.get("/index.php/Number/reveal/{category}/{file_name}/{asset}")
@@ -969,6 +979,8 @@ def number_reveal_asset(category: str, file_name: str, asset: str):
         raise HTTPException(404, "no bundle for this picture")
     if asset == "start.jpg" and not store.exists(f"images/{iid}/start.jpg"):
         raise HTTPException(404, "no sketch canvas")   # photo items: the app starts on white
+    if asset == "vector.json.gz" and not store.exists(f"images/{iid}/vector.json.gz"):
+        raise HTTPException(404, "no vector")          # photo items: the raster engine plays
     if asset == "border_thumb.png" and not store.exists(f"images/{iid}/border_thumb.png"):
         asset = "border.png"                         # older item: the grid still gets a picture
     if asset.startswith("original."):

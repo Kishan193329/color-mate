@@ -212,20 +212,14 @@ def _fill(canvas, polys, value, scale):
     cv2.fillPoly(canvas, pts, value, lineType=cv2.LINE_8, shift=4)
 
 
-def prepare(folder: Path, src_svg: Path) -> dict:
-    """Read the SVG and write reveal_master.png, original.png, svg_game.npz and svg_game.json."""
-    folder = Path(folder)
-    w0, h0, shapes = parse(Path(src_svg).read_text(encoding="utf-8", errors="ignore"))
-    s = min(1.0, MAX_SIDE / max(w0, h0))
-    W, H = int(round(w0 * s)), int(round(h0 * s))
-    if not shapes:
-        raise ValueError("no filled shapes found in the SVG")
+def _ink_flags(shapes, s: float, W: int, H: int):
+    """-> (allid, ink_flags). allid = the topmost shape (1-based) per pixel, painter's order.
 
-    # Outline detection. Many vectorised pictures draw their outlines in very dark brown or navy
-    # rather than pure black, so luminance alone misses them. A path is ink when it is near-black,
-    # or when it is darkish AND stroke-like: mean width (2*area/perimeter, measured on the
-    # rendered raster so compound paths count correctly) of only a few pixels. A dark but WIDE
-    # shape — a black cat's fur, a night sky — stays a colourable region.
+    Outline detection. Many vectorised pictures draw their outlines in very dark brown or navy
+    rather than pure black, so luminance alone misses them. A path is ink when it is near-black,
+    or when it is darkish AND stroke-like: mean width (2*area/perimeter, measured on the
+    rendered raster so compound paths count correctly) of only a few pixels. A dark but WIDE
+    shape — a black cat's fur, a night sky — stays a colourable region."""
     allid = np.zeros((H, W), np.int32)
     for k, (rgb, op, polys) in enumerate(shapes, start=1):
         _fill(allid, polys, k, s)
@@ -242,7 +236,73 @@ def prepare(folder: Path, src_svg: Path) -> dict:
         L = _lum(rgb)
         thick = 2.0 * area[k] / max(1, perim[k])
         ink_flags.append(L < INK_LUM or (L < INK_LUM_THIN and area[k] >= 12 and thick < INK_THICK))
-    del allid, edge
+    return allid, ink_flags
+
+
+# ── vector.json.gz: the picture as shapes, for the app's vector engine ──────────────────────
+# The raster path (id_map + border.png at 1254 px) is what made SVG pictures look soft and
+# pixelated once zoomed: the SVG's own crisp line was thrown away. This keeps every shape as a
+# polygon so the app can draw it at any zoom, tagged with the region it belongs to (the SAME ids
+# as regions.json / id_map.png, which still drive taps, numbers and progress) — 0 = outline ink.
+VECTOR_EPS = 0.25       # polygon simplification, px at the 1254 canvas (~0.3 of a screen px at fit)
+
+
+def write_vector(folder: Path, src_svg: Path | None = None) -> dict:
+    """Write vector.json.gz from source.svg + the regions already in svg_game.npz."""
+    import gzip
+    folder = Path(folder)
+    src_svg = Path(src_svg) if src_svg else folder / "source.svg"
+    w0, h0, shapes = parse(src_svg.read_text(encoding="utf-8", errors="ignore"))
+    s = min(1.0, MAX_SIDE / max(w0, h0))
+    fl = np.load(folder / "svg_game.npz")["fl"].astype(np.int64)
+    H, W = fl.shape
+    allid, ink_flags = _ink_flags(shapes, s, W, H)
+
+    # each shape belongs to the region that holds most of its VISIBLE pixels; slivers that were
+    # absorbed into a neighbour follow it, shapes hidden under others are not sent at all
+    vis = allid > 0
+    key = allid[vis].astype(np.int64) * (int(fl.max()) + 1) + fl[vis]
+    keys, cnt = np.unique(key, return_counts=True)
+    owner, best = {}, {}
+    for kk, c in zip(keys.tolist(), cnt.tolist()):
+        k, r = divmod(kk, int(fl.max()) + 1)
+        if c > best.get(k, 0):
+            best[k], owner[k] = c, r
+
+    out = []
+    for k, ((rgb, op, polys), ink) in enumerate(zip(shapes, ink_flags), start=1):
+        if k not in owner:
+            continue
+        rid = 0 if ink else int(owner[k])
+        if not ink and rid == 0:
+            continue
+        subs = []
+        for p in polys:
+            q = (p * s).astype(np.float32)
+            if len(q) > 3:
+                q = cv2.approxPolyDP(q.reshape(-1, 1, 2), VECTOR_EPS, True).reshape(-1, 2)
+            if len(q) < 3:
+                continue
+            a = np.round(q * 10).astype(np.int64)
+            subs.append([int(a[0, 0]), int(a[0, 1])] + np.diff(a, axis=0).ravel().tolist())
+        if subs:
+            out.append([rid, "%02x%02x%02x" % tuple(int(v) for v in rgb)] + subs)
+    blob = json.dumps({"v": 1, "w": W, "h": H, "s": out}, separators=(",", ":")).encode()
+    (folder / "vector.json.gz").write_bytes(gzip.compress(blob, 9))
+    return {"shapes": len(out), "bytes": len(blob)}
+
+
+def prepare(folder: Path, src_svg: Path) -> dict:
+    """Read the SVG and write reveal_master.png, original.png, svg_game.npz and svg_game.json."""
+    folder = Path(folder)
+    w0, h0, shapes = parse(Path(src_svg).read_text(encoding="utf-8", errors="ignore"))
+    s = min(1.0, MAX_SIDE / max(w0, h0))
+    W, H = int(round(w0 * s)), int(round(h0 * s))
+    if not shapes:
+        raise ValueError("no filled shapes found in the SVG")
+
+    allid, ink_flags = _ink_flags(shapes, s, W, H)
+    del allid
 
     # 1. anti-aliased colour render (supersampled, painter's order, opacity over what is below)
     big = np.full((H * SS, W * SS, 3), 255, np.uint8)
@@ -316,6 +376,7 @@ def prepare(folder: Path, src_svg: Path) -> dict:
          "colors": {str(k): v for k, v in colors.items()},
          "w": W, "h": H, "shapes": len(shapes), "ink_shapes": int(sum(ink_flags))}), encoding="utf-8")
     write_previews(folder)
+    write_vector(folder, src_svg)
     return {"regions": len(uniq), "palette_numbers": len(palette), "w": W, "h": H,
             "shapes": len(shapes), "ink_shapes": int(sum(ink_flags)),
             "ink_pct": round(float((ink_alpha > 128).mean()) * 100, 1)}

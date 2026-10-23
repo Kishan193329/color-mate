@@ -371,9 +371,13 @@ public class RevealActivity extends AppCompatActivity
             try {
                 android.graphics.Bitmap art = android.graphics.Bitmap.createBitmap(
                         done.width, done.height, android.graphics.Bitmap.Config.ARGB_8888);
-                art.setPixels(done.display, 0, done.width, 0, 0, done.width, done.height);
                 android.graphics.Canvas c = new android.graphics.Canvas(art);
-                if (done.border != null) c.drawBitmap(done.border, 0f, 0f, null);
+                if (done.vector != null) {
+                    done.vector.renderFinished(c, "soft".equals(done.look) ? 0xFFA3A3A3 : 0xFF000000);
+                } else {
+                    art.setPixels(done.display, 0, done.width, 0, 0, done.width, done.height);
+                    if (done.border != null) c.drawBitmap(done.border, 0f, 0f, null);
+                }
                 java.io.File dir = new java.io.File(getFilesDir(),
                         com.colourmate.paintbynumber.viewmodel.GameViewModel.COLOR_NUMBER_PATH);
                 //noinspection ResultOfMethodCallIgnored

@@ -2631,6 +2631,42 @@ Owner: *"grey valu add kari devi, preview exact nathi aavtu, bulk ma daroj 50 im
   the start date, the next N a day later, grid order. `confirmModal` gained `inputValue`.
 Deploy: `app.py`, `admin.html`, `services/reveal_game_builder.py` (same list as §8.5by/bz).
 
+### 8.5bz ✒️ SVG pictures get their own VECTOR engine (2026-10-23)
+
+Owner, on a zoomed SVG picture: soft white-glow borders, pixels, grey-on-grey — *"svg nu apde alag
+color fill engine banavu pade … png and svg both separate engine."* Cause: `svg_builder` rasterised
+everything to 1254 px (id_map + border.png + start.jpg), so the SVG's crisp line was thrown away on
+the server. The owner's own web player (`Colour by Number own/index.html`) was read as the spec: each
+`<path>` is a part (`data-g` group, `data-c` colour, `data-t=1` = pre-filled ink), drawn as vector.
+
+**Backend** — `svg_builder.write_vector()` → `vector.json.gz`:
+`{"v":1,"w","h","s":[[regionId,"rrggbb",[x0,y0,dx,dy…]…]…]}`, coords in tenths of a px on the 1254
+canvas, `approxPolyDP` eps 0.25, regionId 0 = ink, **same ids as regions.json / id_map** (each shape
+→ the region holding most of its visible pixels; hidden shapes dropped). Written by `prepare()`, and
+by `_publish` for SVG items that predate it. Published to `images/{iid}/vector.json.gz`, served by the
+reveal route; `regions.json` gets `"vec":1` so phones' caches refetch. Measured: biggest picture
+(Mushroom Forest, 9,640 shapes) 361 KB gz; region agreement vs id_map 95.7–99.6%, and 93–95% of the
+disagreeing pixels sit within 2 px of a region edge (interior mismatch 0.06–0.31%).
+`_ink_flags()` is now shared by `prepare()` and `write_vector()` so both classify ink identically.
+
+**App** — `model/reveal/VectorArt` (parses the gz; checks the magic bytes, since a server may or may
+not undo the gzip in transit). `RevealLevel.vector` + `.look`; `RevealView` draws vector when present,
+the old raster path otherwise (photo pictures unchanged):
+- shapes drawn **in the SVG's own order** — the first build drew all colours then all ink and put
+  black discs over the moon and rose centres (dark shapes sit UNDER light ones in these files);
+- unfilled = grey tone of the shape's own colour, filled = its true colour, ink = black/soft per look;
+- picture rendered into a screen-sized bitmap on a worker thread when the camera settles (80 ms),
+  moved with the fingers in between; a fill re-draws only its region's box, in order, clipped to the
+  spreading circle; fills that land mid-render are re-applied on arrival;
+- selected number blinks **violet (#7A5CFF)** — a tint of the colour itself was measured invisible
+  (0 coloured pixels for a dark-green number on the grey sketch); the blink redraws every frame, so
+  the settle timer only restarts when the camera actually moved, or it would never fire;
+- finished artwork saved from the vector (`VectorArt.renderFinished`).
+
+✅ **Verified on the device against a local test server** (2 real SVGs): correct z-order, crisp at
+hint zoom (~2.4x+), tap fills with true colour, violet blink visible, progress saved and restored.
+**Not yet on the VPS** — needs deploy + republishing every published SVG item to produce the vector.
+
 ### 8.6 Performance audit — findings + fix plan (2026-07-21, code-verified)
 
 Root cause of "app not smooth": the team already found the worst jank source (**per-item
