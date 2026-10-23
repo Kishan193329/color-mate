@@ -1,6 +1,7 @@
 """Upload the Figma-vectorised SVGs into ColorForge admin, category-wise, then approve & publish.
 
   python3 upload_svgs.py https://srv1919471.hstgr.cloud  <email>  <password>  [--no-publish]
+                         [--dir=<folder with the .svg files>]  [--only=35_2,35_232838]
 
 Resumable: a picture whose title already exists in the admin is skipped. Uploads are sequential
 (the server generates one job at a time anyway — §8.5aw) and the script waits for each to reach
@@ -50,6 +51,9 @@ def main():
     base, email = sys.argv[1].rstrip("/"), sys.argv[2]
     pw = os.environ.get("CF_PW") or sys.argv[3]
     publish = "--no-publish" not in sys.argv
+    opt = dict(a[2:].split("=", 1) for a in sys.argv[4:] if a.startswith("--") and "=" in a)
+    src = Path(opt.get("dir", HERE))
+    only = set(filter(None, opt.get("only", "").split(",")))
 
     def login():
         t = call(base, "/api/auth/login", body={"email": email, "password": pw}, method="POST")
@@ -71,9 +75,11 @@ def main():
                 raise
     have = {i["title"]: i for i in api("/api/items")}
     for k, (title, cat) in M.items():
+        if only and k not in only:
+            continue
         it = have.get(title)
         if not it:
-            blob = (HERE / f"{k}.svg").read_bytes()
+            blob = (src / f"{k}.svg").read_bytes()
             it = api("/api/items", "POST",
                       files={"file": (f"{k}.svg", blob, "image/svg+xml")},
                       fields={"title": title, "category": cat, "type": "colour", "vectorize": ""})

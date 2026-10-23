@@ -14,7 +14,8 @@ It writes the same intermediate files a photo upload ends with (`reveal_master.p
 build_color / export_color_bundle / the Number-tab export all work unchanged for SVG items.
 
 Supported SVG: what Figma writes for a vectorised frame — <path d fill [fill-opacity]>, an
-optional viewBox offset, and translate() on groups. Gradients, strokes and masks are ignored.
+optional viewBox offset, and translate() on groups. The "Colour by Number" player's SVGs (colour in
+data-c, no fill) are read too. Gradients, strokes and masks are ignored.
 """
 from __future__ import annotations
 
@@ -185,8 +186,11 @@ def parse(svg_text: str):
         pa = dict(_ATTR.findall(m.group(1)))
         if any(a <= m.start() < b for a, b in defs):
             continue                                        # clip/mask geometry, not artwork
-        rgb = _hex(pa.get("fill", "#000000"))
-        if rgb is None or pa.get("fill", "").lower() == "none":
+        # The "Colour by Number" player's SVGs carry the colour in data-c and have no fill at all;
+        # without this every shape defaulted to black and the whole picture became outline ink.
+        fill = pa.get("fill") or pa.get("data-c") or "#000000"
+        rgb = _hex(fill)
+        if rgb is None or fill.lower() == "none":
             continue
         op = float(pa.get("fill-opacity", pa.get("opacity", "1")) or 1)
         polys = _flatten(pa.get("d", ""))
