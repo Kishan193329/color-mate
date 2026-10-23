@@ -60,6 +60,10 @@ public class ColoringListViewModel extends AndroidViewModel {
     // Data source for normal categories
     private Manager.RestDataSource<Level> dataSource;
 
+    // By Number's "daily" tab = the bought daily list + our own published pictures, merged by date.
+    private JsonObject paidDaily;
+    private JsonArray ourDaily;
+
     // Timeout
     private final Handler timeoutHandler = new Handler(Looper.getMainLooper());
     private Runnable timeoutRunnable;
@@ -151,6 +155,20 @@ public class ColoringListViewModel extends AndroidViewModel {
             }
         });
 
+        paidDaily = null;
+        ourDaily = null;
+        android.content.Context ctx = getApplication();
+        if (com.colourmate.paintbynumber.Utils.ColorForgeApi.hasExplicitServer(ctx)) {
+            // Our server is asked in parallel and never holds the bought list up; whichever answers
+            // second re-posts the merged list.
+            Manager.getInstance().executeApiRequestWithCall(
+                    com.colourmate.paintbynumber.Utils.ColorForgeApi.restRoot(ctx), "daily/", json -> {
+                        if (reqId != dailyReqId || json == null || !json.has("data")) return;
+                        ourDaily = json.getAsJsonArray("data");
+                        if (paidDaily != null) postDaily();
+                    }, call -> { });
+        }
+
         Manager.getInstance().executeApiRequest("gimg/c/" + category, jsonObject -> {
             cancelTimeout();
 
@@ -168,24 +186,45 @@ public class ColoringListViewModel extends AndroidViewModel {
                 return;
             }
 
-            try {
-                List<Object> items = processApiData(jsonObject);
-
-                if (items == null || items.isEmpty()) {
-                    Log.e(TAG, "Processed items list is empty");
-                    uiState.postValue(UiState.ERROR);
-                    return;
-                }
-
-                Log.d(TAG, "Daily loaded " + items.size() + " items");
-                dailyItems.postValue(items);
-                uiState.postValue(UiState.SUCCESS);
-
-            } catch (Exception e) {
-                Log.e(TAG, "Error processing daily data", e);
-                uiState.postValue(UiState.ERROR);
-            }
+            paidDaily = jsonObject;
+            postDaily();
         });
+    }
+
+    /** Paid daily list + ours (ours first within the same date), then the usual month grouping. */
+    private void postDaily() {
+        try {
+            JsonArray merged = new JsonArray();
+            java.util.Set<String> ours = new java.util.HashSet<>();
+            if (ourDaily != null) {
+                for (JsonElement el : ourDaily) {
+                    merged.add(el);
+                    JsonObject o = el.getAsJsonObject();
+                    if (o.has("fileName")) ours.add(o.get("fileName").getAsString());
+                }
+            }
+            if (paidDaily != null && paidDaily.has("data")) merged.addAll(paidDaily.getAsJsonArray("data"));
+            JsonObject all = new JsonObject();
+            all.add("data", merged);
+
+            List<Object> items = processApiData(all);
+            if (items == null || items.isEmpty()) {
+                Log.e(TAG, "Processed items list is empty");
+                uiState.postValue(UiState.ERROR);
+                return;
+            }
+            for (Object it : items) {
+                if (it instanceof Level && ours.contains(((Level) it).getFileName())) {
+                    ((Level) it).setColorForge(true);
+                }
+            }
+            Log.d(TAG, "Daily loaded " + items.size() + " items (" + ours.size() + " ours)");
+            dailyItems.postValue(items);
+            uiState.postValue(UiState.SUCCESS);
+        } catch (Exception e) {
+            Log.e(TAG, "Error processing daily data", e);
+            uiState.postValue(UiState.ERROR);
+        }
     }
 
     // ─── Normal Category Loading ───
