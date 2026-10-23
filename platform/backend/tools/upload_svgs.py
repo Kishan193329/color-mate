@@ -42,23 +42,45 @@ def call(base, path, token=None, method="GET", body=None, files=None, fields=Non
         return json.loads(r.read() or b"null")
 
 
+TOK = [None]
+
+
 def main():
-    base, email, pw = sys.argv[1].rstrip("/"), sys.argv[2], sys.argv[3]
+    import os
+    base, email = sys.argv[1].rstrip("/"), sys.argv[2]
+    pw = os.environ.get("CF_PW") or sys.argv[3]
     publish = "--no-publish" not in sys.argv
-    tok = call(base, "/api/auth/login", body={"email": email, "password": pw}, method="POST")
-    tok = tok.get("access") or tok.get("token")
-    have = {i["title"]: i for i in call(base, "/api/items", tok)}
+
+    def login():
+        t = call(base, "/api/auth/login", body={"email": email, "password": pw}, method="POST")
+        TOK[0] = t.get("access") or t.get("token")
+    login()
+
+    def api(path, method="GET", **kw):
+        import urllib.error
+        for attempt in range(3):
+            try:
+                return call(base, path, TOK[0], method, **kw)
+            except urllib.error.HTTPError as e:
+                if e.code == 401 and attempt < 2:
+                    login(); continue
+                raise
+            except Exception:
+                if attempt < 2:
+                    time.sleep(5); continue
+                raise
+    have = {i["title"]: i for i in api("/api/items")}
     for k, (title, cat) in M.items():
         it = have.get(title)
         if not it:
             blob = (HERE / f"{k}.svg").read_bytes()
-            it = call(base, "/api/items", tok, "POST",
+            it = api("/api/items", "POST",
                       files={"file": (f"{k}.svg", blob, "image/svg+xml")},
-                      fields={"title": title, "category": cat, "type": "colour"})
+                      fields={"title": title, "category": cat, "type": "colour", "vectorize": ""})
             print("uploaded", title, "->", cat, flush=True)
         iid = it["id"]
         for _ in range(240):                         # up to ~20 min for one picture
-            it = next(i for i in call(base, "/api/items", tok) if i["id"] == iid)
+            it = next(i for i in api("/api/items") if i["id"] == iid)
             if it["status"] != "processing":
                 break
             time.sleep(5)
@@ -68,7 +90,7 @@ def main():
             print("   left in review for the owner (warning above)", flush=True)
             continue
         if publish and it["status"] in ("review", "submitted", "rejected"):
-            call(base, f"/api/items/{iid}/approve", tok, "POST", body={})
+            api(f"/api/items/{iid}/approve", "POST", body={})
             print("   approved & publishing", flush=True)
 
 

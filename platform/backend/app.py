@@ -703,6 +703,8 @@ def _publish(iid: str) -> None:
             with zipfile.ZipFile(info["zip"]) as z:
                 bd = cv2.imdecode(np.frombuffer(z.read("border.png"), np.uint8),
                                   cv2.IMREAD_UNCHANGED)
+            if svg_item:
+                bd = svg_builder.thumb_image(folder)          # sketch + outline, not bare ink
             if bd is not None:
                 sc = 420.0 / max(bd.shape[:2])
                 if sc < 1:

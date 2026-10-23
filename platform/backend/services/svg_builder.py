@@ -397,6 +397,21 @@ def start_image(master: np.ndarray) -> np.ndarray:
     return cv2.cvtColor(g, cv2.COLOR_GRAY2BGR)
 
 
+def thumb_image(folder: Path, size: int = 420) -> np.ndarray:
+    """Grid thumbnail: the grey sketch with the chosen outline on top — the picture as the player
+    will open it. A bare ink layer reads as scattered specks on pictures with thin outlines."""
+    folder = Path(folder)
+    master = cv2.imread(str(folder / "reveal_master.png"))
+    ink = np.load(folder / "svg_game.npz")["ink"].astype(np.float32)[..., None] / 255.0
+    col = np.array(OUTLINES[outline_of(folder)][::-1], np.float32)
+    img = (start_image(master).astype(np.float32) * (1 - ink) + col * ink).astype(np.uint8)
+    sc = size / max(img.shape[:2])
+    if sc < 1:
+        img = cv2.resize(img, (round(img.shape[1] * sc), round(img.shape[0] * sc)),
+                         interpolation=cv2.INTER_AREA)
+    return img
+
+
 def write_previews(folder: Path) -> None:
     """start.jpg (the app canvas) + preview_black.jpg / preview_soft.jpg for the admin chooser."""
     folder = Path(folder)

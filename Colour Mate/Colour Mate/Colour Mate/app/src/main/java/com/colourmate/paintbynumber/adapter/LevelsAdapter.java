@@ -107,8 +107,15 @@ public class LevelsAdapter extends RecyclerView.Adapter<LevelsAdapter.LevelHolde
         h.progressBar.setVisibility(View.VISIBLE);
         h.ivResult.setImageBitmap(null);
 
-        File preview = DataManager.getInstance().getPreview(level);
-        String url = Manager.BASE_URL + "thumb/" + level.getCategory() + "/t/" + level.getFileName() + ".png";
+        // Our own pictures (mixed into the daily list) come from our server, and their progress
+        // lives in the reveal game — the flat game's preview file never exists for them.
+        boolean ours = level.isColorForge();
+        File preview = ours ? null : DataManager.getInstance().getPreview(level);
+        String url = ours
+                ? com.colourmate.paintbynumber.Utils.ColorForgeApi.borderThumbUrl(
+                        h.itemView.getContext(), level.getCategory(), level.getFileName())
+                : Manager.BASE_URL + "thumb/" + level.getCategory() + "/t/" + level.getFileName() + ".png";
+        h.ivResult.setBackgroundColor(ours ? android.graphics.Color.WHITE : android.graphics.Color.TRANSPARENT);
 
         if (preview != null) {
             // fit()+centerCrop = decode to the cell size, matching the layout's scaleType
