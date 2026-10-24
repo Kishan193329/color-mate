@@ -1,0 +1,57 @@
+# Upload the "Colour by Number" SVG set into the live admin — from the phone, no PC needed.
+#
+# Actions → "Upload SVGs" → Run workflow. The SVG files live on the VPS in
+# /root/svg_upload/source/pics (copied there once); the admin password never leaves the VPS
+# (read from /root/colorforge-admin-password.txt there). Already-uploaded titles are skipped.
+name: Upload SVGs
+
+on:
+  workflow_dispatch:
+    inputs:
+      only:
+        description: "Picture ids, comma separated (e.g. 35_2,35_232838). Empty = all of manifest.py"
+        required: false
+        default: ""
+      publish:
+        description: "Publish straight away (unticked = leave them in review)"
+        type: boolean
+        default: false
+
+concurrency:
+  group: upload-svgs
+  cancel-in-progress: false
+
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: SSH key
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          printf '%s\n' "${{ secrets.VPS_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+
+      - name: Copy the uploader (this branch's version)
+        run: |
+          scp -i ~/.ssh/deploy_key platform/backend/tools/upload_svgs.py platform/backend/tools/manifest.py \
+            root@${{ secrets.VPS_HOST }}:/root/svg_upload/
+
+      - name: Upload on the VPS
+        env:
+          ONLY: ${{ inputs.only }}
+          PUBLISH: ${{ inputs.publish }}
+        run: |
+          ssh -i ~/.ssh/deploy_key root@${{ secrets.VPS_HOST }} "ONLY='${ONLY//[^A-Za-z0-9_,]/}' PUBLISH='$PUBLISH' bash -s" <<'EOF'
+          set -euo pipefail
+          cd /root/svg_upload
+          E=$(grep -i '^email' /root/colorforge-admin-password.txt | cut -d: -f2- | xargs)
+          export CF_PW=$(grep -i '^pass' /root/colorforge-admin-password.txt | cut -d: -f2- | xargs)
+          args=(http://127.0.0.1:8000 "$E" x --dir=/root/svg_upload/source/pics)
+          [ -n "$ONLY" ] && args+=(--only="$ONLY")
+          [ "$PUBLISH" = "true" ] || args+=(--no-publish)
+          python3 upload_svgs.py "${args[@]}"
+          EOF
