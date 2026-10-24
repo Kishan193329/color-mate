@@ -35,6 +35,7 @@ import db
 import diamond_builder as DIA
 import ad_config
 import diamond_tab
+import legacy
 import multiplayer
 import number_tab
 import referral
@@ -971,6 +972,27 @@ padding:14px;border-radius:14px;font-weight:600}}p{{color:#5b5470}}</style></hea
 Then open the app and enter the code.</p></div></body></html>"""
 
 
+# ── The old By Number catalogue, now hosted here (legacy.py) ─────────────────────────
+
+@app.get("/api/legacy")
+def legacy_stats(user: dict = Depends(require_boss)):
+    return legacy.stats()
+
+
+@app.get("/api/legacy/{category}")
+def legacy_items(category: str, q: str = "", offset: int = 0, limit: int = 60,
+                 user: dict = Depends(require_boss)):
+    return {"items": legacy.items(category, q, max(0, offset), max(1, min(limit, 200)))}
+
+
+@app.patch("/api/legacy/{category}/{file_name}")
+def legacy_hide(category: str, file_name: str, payload: dict = Body(...),
+                user: dict = Depends(require_boss)):
+    if not legacy.set_hidden(category, file_name, bool(payload.get("hidden"))):
+        raise HTTPException(404, "no such picture")
+    return {"ok": True}
+
+
 @app.get("/api/hit")
 def get_hit(user: dict = Depends(current_user)):
     return db.get_config().get("hit") or {}
@@ -1098,6 +1120,10 @@ def diamond_grid(category: str, file_name: str):
 
 
 app.include_router(number_router)                            # base URL = http://host:port/
+# /ColoringBook/ is the old ionicsolutions catalogue now hosted here (legacy.py). Registered
+# BEFORE the number_router copy at the same prefix, so its category/gimg/thumb routes win; the
+# rest of number_router (App/ads, mp, ...) stays reachable under /ColoringBook/ as before.
+app.include_router(legacy.router, prefix="/ColoringBook")
 app.include_router(number_router, prefix="/ColoringBook")    # base URL = http://host:port/ColoringBook/
 app.include_router(diamond_router)
 app.include_router(diamond_router, prefix="/ColoringBook")

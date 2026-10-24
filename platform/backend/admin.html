@@ -479,6 +479,7 @@ function shell(){const boss=isBoss();
       <a data-v="queue">${ic('check')}<span class="txt">Review queue</span><span class="cnt" id="qn">0</span></a>
       <a data-v="library">${ic('images')}<span class="txt">Library</span></a>
       <a data-v="upload">${ic('upload')}<span class="txt">Upload</span></a>
+      <a data-v="legacy">${ic('grid')}<span class="txt">By Number (old)</span></a>
       <div class="lbl">Team &amp; security</div>
       <a data-v="employees">${ic('users')}<span class="txt">Employees</span></a>
       <a data-v="audit">${ic('shield')}<span class="txt">Audit log</span></a>
@@ -940,6 +941,45 @@ async function vAudit(){
         <button class="btn sm bad" data-revoke="${x.jti}">Revoke</button></div>`).join('')||'<div class="empty">None</div>'}</div></div>
   </div>`;}
 
+/* The old ionicsolutions By Number catalogue, now served from this server (legacy.py).
+   Browse it by category and hide a picture from the app; nothing is deleted. */
+let LEG={cat:'',q:'',shown:60};
+async function vLegacy(){
+  if(!isBoss())return '<div class="blank"><h4>Owner only</h4></div>';
+  let st={categories:[]};try{st=await API.call('/api/legacy');}catch(e){}
+  const cats=st.categories||[];
+  if(!cats.length)return `<div class="pagehead"><div><h2 class="t">By Number (old)</h2></div></div>
+    <div class="blank"><h4>Not copied yet</h4><p>Run <code>tools/legacy_mirror.py</code> on the server to bring the
+    old catalogue here.</p></div>`;
+  if(!cats.some(c=>c.name===LEG.cat))LEG.cat=cats[0].name;
+  let items=[];
+  try{items=(await API.call(`/api/legacy/${encodeURIComponent(LEG.cat)}?q=${encodeURIComponent(LEG.q)}&limit=${LEG.shown}`)).items;}catch(e){toast(e.message,'bad');}
+  const total=cats.reduce((a,c)=>a+c.total,0);
+  const cur=cats.find(c=>c.name===LEG.cat);
+  return `<div class="pagehead"><div><h2 class="t">By Number (old)</h2>
+      <div class="d">${total.toLocaleString()} pictures from the old server, now hosted here. The app shows them in this
+        order. <b>Hide</b> takes a picture out of the app; nothing is deleted.</div></div></div>
+    <div class="filters" style="margin-bottom:14px;display:flex;flex-wrap:wrap;gap:8px">
+      ${cats.map(c=>`<button class="fchip ${c.name===LEG.cat?'on':''}" data-legcat="${esc(c.name)}">${esc(c.name)}<span class="n tnum">${c.total-c.hidden}</span></button>`).join('')}
+      <input id="legq" placeholder="Search file name" value="${esc(LEG.q)}" style="margin-left:auto;max-width:220px"/></div>
+    ${cur&&cur.hidden?`<p class="hint">${cur.hidden} hidden in this category.</p>`:''}
+    <div class="cards">${items.map(it=>`<div class="card ${it.hidden?'dim':''}" style="${it.hidden?'opacity:.45':''}">
+      <div class="thumb" style="background:#fff url('/ColoringBook/thumb/${encodeURIComponent(LEG.cat)}/t/${encodeURIComponent(it.fileName)}.png') center/cover"></div>
+      <div class="cbody"><div class="cmeta" title="${esc(it.fileName)}">#${it.ord+1} · ${esc((it.timeStamp||'').slice(0,10))}${it.hidden?' · hidden':''}</div>
+      <button class="btn sm" data-leghide="${esc(it.fileName)}" data-h="${it.hidden?0:1}">${it.hidden?'Show in app':'Hide'}</button></div></div>`).join('')
+      ||'<div class="empty">Nothing matches</div>'}</div>
+    ${items.length>=LEG.shown?'<button class="btn" id="legMore" style="margin:18px auto;display:block">Show more</button>':''}`;
+}
+function bindLegacy(){
+  $$('[data-legcat]').forEach(b=>b.onclick=()=>{LEG.cat=b.dataset.legcat;LEG.shown=60;go('legacy');});
+  const q=$('#legq');if(q)q.onchange=()=>{LEG.q=q.value.trim();LEG.shown=60;go('legacy');};
+  const m=$('#legMore');if(m)m.onclick=()=>{LEG.shown+=60;go('legacy');};
+  $$('[data-leghide]').forEach(b=>b.onclick=async()=>{
+    try{await API.call(`/api/legacy/${encodeURIComponent(LEG.cat)}/${encodeURIComponent(b.dataset.leghide)}`,
+      {method:'PATCH',body:{hidden:b.dataset.h==='1'}});toast(b.dataset.h==='1'?'Hidden from the app':'Back in the app','good');go('legacy');}
+    catch(e){toast(e.message,'bad');}});
+}
+
 async function vAds(){
   if(!isBoss())return '<div class="blank"><h4>Owner only</h4><p>Ad settings control revenue.</p></div>';
   let d={config:{},warnings:[]};
@@ -1050,7 +1090,7 @@ async function vSettings(){
 /* ---------------- router ---------------- */
 const TITLES={dashboard:['Overview','Dashboard'],queue:['Overview','Review queue'],library:['Content','Library'],
   upload:['My work','Upload'],employees:['Team','Employees'],audit:['Security','Audit log'],
-  ads:['Monetisation','Ads'],settings:['Settings','Settings']};
+  ads:['Monetisation','Ads'],settings:['Settings','Settings'],legacy:['Content','By Number (old)']};
 async function go(v){
   VIEW=v;const t=TITLES[v]||['',v];$('#crumb').textContent=t[0];$('#ptitle').textContent=t[1];
   $$('#nav a').forEach(a=>a.classList.toggle('on',a.dataset.v===v));
@@ -1062,6 +1102,7 @@ async function go(v){
   else if(v==='employees')html=vEmployees();
   else if(v==='audit')html=await vAudit();
   else if(v==='ads')html=await vAds();
+  else if(v==='legacy')html=await vLegacy();
   else if(v==='settings')html=await vSettings();
   $('#content').innerHTML=html;bindView();schedulePoll();
 }
@@ -1093,6 +1134,7 @@ function bindView(){
   $$('[data-bulkout]').forEach(b=>b.onclick=()=>doBulkOutline(b.dataset.bulkout));
   const bd=$('#bulkDel');if(bd)bd.onclick=()=>doBulkDelete();
   lazyThumbs();
+  bindLegacy();
   $$('[data-retry]').forEach(b=>b.onclick=e=>{e.stopPropagation();doRetry(b.dataset.retry);});
   $$('[data-toggle]').forEach(b=>b.onclick=async()=>{try{await API.call('/api/users/'+b.dataset.toggle,{method:'PATCH',body:{active:+b.dataset.act}});toast('Updated','good');go('employees');}catch(e){toast(e.message,'bad');}});
   $$('[data-rmuser]').forEach(b=>b.onclick=()=>confirmModal({title:`Remove ${b.dataset.name}?`,danger:true,ok:'Remove employee',

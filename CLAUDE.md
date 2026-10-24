@@ -2750,6 +2750,38 @@ Owner asked for all three modes. Everything is reached ONLY through a 6-letter c
   free RAM) and the phone was in use by another session. Test plan: `C:/Users/User/cmci/bot.py`
   plays the friend over WebSocket (`python bot.py coop CODE fill 20`).
 
+### 8.5ce 🏠 The old ionicsolutions catalogue moves to our server (2026-10-24, branch `2026-10-24-own-domain`)
+
+**Owner, correcting §3.1:** *"e maru j che, e domain mare re-new nathi karvu"* — ionicsolutions.in
+is HIS domain; he is retiring it and wants everything on one domain (our VPS + S3).
+
+- **Inventory** (`tools/legacy_inventory.py`): 9 categories, **10,720 pictures** (daily 1,847 ·
+  other 1,793 · animals 1,614 · people 1,532 · flowers 1,124 · mandalas 1,090 · nature 739 · love 736
+  · kids 310), 3 files each (`thumb/{cat}/t/{f}.png`, `{f}.png`, `{f}.colored.png`), ~1.5 MB per
+  picture → **~16-18 GB**, plus 5 mp3s (~45 MB, Settings music). Newest `timeStamp` is 2024-04-30.
+  Some files 404 on the old server itself (the app already shows those tiles broken); the mirror
+  leaves such pictures out of the lists.
+- **`legacy.py`** serves the SAME paths, mounted at **`/ColoringBook/`** (registered before the
+  `number_router` copy at that prefix, so category/gimg/thumb resolve to the old catalogue while
+  App/ads, mp, … still work there). Rows are stored as the raw JSON the old server sent (table
+  `legacy_items`, `hidden` flag), whole list per category, `next: ""`. Images/audio from storage key
+  `legacy/thumb/…`, `legacy/audios/…` (S3 → 302). Category lookup is case-insensitive (`DAILY`).
+- **`tools/legacy_mirror.py`** — run ON THE VPS with `storage.env` loaded; resumable
+  (`data/legacy_done.txt`), 8 threads, rewrites the DB lists from the old server's order each run.
+  `--limit=N` for a trial. Trial locally: 27 pictures + 5 mp3s, all endpoints 200.
+- **Admin → "By Number (old)"**: category chips with counts, search, Hide / Show in app
+  (`/api/legacy*`, boss only). Nothing is deleted.
+- **App**: every ionicsolutions URL in `cpp/colorbynumber.cpp` now points at
+  `https://srv1919471.hstgr.cloud/` (BASE_URL = `…/ColoringBook/`, music likewise). Builds; **not
+  device-tested** (no device free that day).
+- 🔴 **Order matters:** deploy backend → run the full mirror → only then ship the app. Until the
+  mirror runs, `/ColoringBook/` on production serves an empty catalogue.
+- 🔴 **Installed apps (v16 and older) still call ionicsolutions.in** — they break the day the domain
+  lapses. Keep it alive until most users have updated, and/or point its DNS at the VPS before it
+  expires (nginx `server_name` + certbot), and use the forced-update dialog.
+- 💸 Serving ~17 GB of images from S3 means **S3 egress is billed per GB downloaded** — the old host
+  carried that before. Watch the AWS bill; CloudFront or serving from the VPS disk are the levers.
+
 ### 8.6 Performance audit — findings + fix plan (2026-07-21, code-verified)
 
 Root cause of "app not smooth": the team already found the worst jank source (**per-item
