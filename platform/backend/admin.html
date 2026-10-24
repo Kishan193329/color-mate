@@ -480,6 +480,8 @@ function shell(){const boss=isBoss();
       <a data-v="library">${ic('images')}<span class="txt">Library</span></a>
       <a data-v="upload">${ic('upload')}<span class="txt">Upload</span></a>
       <a data-v="legacy">${ic('grid')}<span class="txt">By Number (old)</span></a>
+      <a data-v="pixel">${ic('grid')}<span class="txt">Pixel</span></a>
+      <a data-v="book">${ic('images')}<span class="txt">Colour Book</span></a>
       <div class="lbl">Team &amp; security</div>
       <a data-v="employees">${ic('users')}<span class="txt">Employees</span></a>
       <a data-v="audit">${ic('shield')}<span class="txt">Audit log</span></a>
@@ -941,6 +943,93 @@ async function vAudit(){
         <button class="btn sm bad" data-revoke="${x.jti}">Revoke</button></div>`).join('')||'<div class="empty">None</div>'}</div></div>
   </div>`;}
 
+/* Our own Pixel pictures (pixel_tab.py) — any image becomes pixel art the app's Pixel tab plays. */
+async function vPixel(){
+  let items=[];try{items=(await API.call('/api/pixel')).items;}catch(e){toast(e.message,'bad');}
+  const opt=(vals,sel)=>vals.map(v=>`<option ${v===sel?'selected':''}>${v}</option>`).join('');
+  return `<div class="pagehead"><div><h2 class="t">Pixel</h2>
+      <div class="d">Upload any picture — it becomes pixel art in the format the app's <b>By Pixel</b> tab plays
+        (one square per cell, a number per colour). ${items.length} pictures so far.</div></div></div>
+    <div class="grid2"><div class="col">
+      <div class="panel"><div class="ph"><h3>New pixel picture</h3></div><div class="pb" style="padding:16px 20px 20px">
+        <div class="field"><label>Picture</label><input type="file" id="pxf" accept="image/*"/></div>
+        <div class="field"><label>Title</label><input id="pxt" placeholder="e.g. Happy cat"/></div>
+        <div class="uprow" style="margin:0;padding:0;border:0">
+          <div class="field"><label>Size (cells across)</label><select id="pxs">${opt([32,48,64,80,96,128],64)}</select>
+            <div class="hint">Small = quick to finish. 64 suits most pictures.</div></div>
+          <div class="field"><label>Colours</label><select id="pxc">${opt([8,12,16,20,24,32],16)}</select>
+            <div class="hint">Fewer colours = easier.</div></div></div>
+        <label class="toggle" style="padding:9px 0"><input type="checkbox" id="pxbg" checked/><span class="tk"></span>
+          <span class="tl"><b>Remove plain background</b><em>A white or flat backdrop becomes empty cells.</em></span></label>
+        <label class="toggle" style="padding:9px 0"><input type="checkbox" id="pxfree" checked/><span class="tk"></span>
+          <span class="tl"><b>Free</b><em>Off = locked behind the usual unlock in the app.</em></span></label>
+        <div class="field"><label>Goes live on (optional)</label><input type="date" id="pxd"/></div>
+        <button class="btn pri" id="pxgo">${ic('upload')}Make pixel art</button>
+      </div></div></div>
+      <div class="col"><div class="panel"><div class="ph"><h3>How it works</h3></div><div class="pb" style="padding:16px 20px;font-size:13px;color:var(--muted);line-height:1.6">
+        The app reads <code>/pixel/images2.json</code> and <code>/pixel/images/&lt;id&gt;.png</code> from this server.
+        Until the app is switched to this source, these pictures are stored and listed here only.</div></div></div></div>
+    <div class="cards" style="margin-top:18px">${items.map(it=>`<div class="card" style="${it.hidden?'opacity:.45':''}">
+      <div class="thumb" style="background:#fff url('${it.preview}') center/contain no-repeat;image-rendering:pixelated"></div>
+      <div class="cbody"><div class="ct">${esc(it.title)}</div>
+        <div class="cmeta">${it.w}×${it.h} · ${it.colours} colours · ${esc(it.release_date.slice(0,10))}${it.free?'':' · locked'}${it.hidden?' · hidden':''}</div>
+        <div style="display:flex;gap:6px;margin-top:8px">
+          <button class="btn sm" data-pxhide="${it.id}" data-h="${it.hidden?0:1}">${it.hidden?'Show in app':'Hide'}</button>
+          <button class="btn sm" data-pxdel="${it.id}">Delete</button></div></div></div>`).join('')
+      ||'<div class="empty">No pixel pictures yet</div>'}</div>`;
+}
+function bindPixel(){
+  const go_=$('#pxgo');if(go_)go_.onclick=async()=>{
+    const f=$('#pxf').files[0];if(!f)return toast('Choose a picture first','bad');
+    const fd=new FormData();fd.append('file',f);fd.append('title',$('#pxt').value.trim());
+    fd.append('size',$('#pxs').value);fd.append('colours',$('#pxc').value);
+    fd.append('remove_bg',$('#pxbg').checked);fd.append('free',$('#pxfree').checked);fd.append('release_date',$('#pxd').value);
+    go_.disabled=true;
+    try{await API.call('/api/pixel',{method:'POST',body:fd});toast('Pixel art made','good');go('pixel');}
+    catch(e){toast(e.message,'bad');go_.disabled=false;}};
+  $$('[data-pxhide]').forEach(b=>b.onclick=async()=>{try{await API.call('/api/pixel/'+b.dataset.pxhide,
+    {method:'PATCH',body:{hidden:b.dataset.h==='1'}});go('pixel');}catch(e){toast(e.message,'bad');}});
+  $$('[data-pxdel]').forEach(b=>b.onclick=()=>confirmModal({title:'Delete this pixel picture?',danger:true,ok:'Delete',
+    body:'Players who already started it keep their copy; it disappears from the list.',
+    onOk:async()=>{try{await API.call('/api/pixel/'+b.dataset.pxdel,{method:'DELETE'});go('pixel');}catch(e){toast(e.message,'bad');}}}));
+}
+
+/* Our own Colour Book pages (book_tab.py) — line art for free colouring. */
+async function vBook(){
+  let items=[];try{items=(await API.call('/api/book')).items;}catch(e){toast(e.message,'bad');}
+  const cats=[...new Set(items.map(i=>i.category))];
+  return `<div class="pagehead"><div><h2 class="t">Colour Book</h2>
+      <div class="d">Line-art pages for free colouring (choose any colour, tap a shape). ${items.length} pages.
+        The app mode that plays these is the next step; until then they are stored and listed here.</div></div></div>
+    <div class="panel"><div class="pb" style="padding:16px 20px 20px">
+      <div class="uprow" style="margin:0;padding:0;border:0">
+        <div class="field"><label>Line-art pictures (you can pick many)</label><input type="file" id="bkf" accept="image/*" multiple/>
+          <div class="hint">Black outlines on white work best. Each file becomes one page, titled by its file name.</div></div>
+        <div class="field"><label>Category</label><input id="bkc" list="bkcats" placeholder="e.g. animals"/>
+          <datalist id="bkcats">${cats.map(c=>`<option value="${esc(c)}">`).join('')}</datalist></div></div>
+      <button class="btn pri" id="bkgo" style="margin-top:12px">${ic('upload')}Add pages</button></div></div>
+    <div class="cards" style="margin-top:18px">${items.map(it=>`<div class="card" style="${it.hidden?'opacity:.45':''}">
+      <div class="thumb" style="background:#fff url('${it.thumb}') center/contain no-repeat"></div>
+      <div class="cbody"><div class="ct">${esc(it.title)}</div>
+        <div class="cmeta">${esc(it.category)}${it.hidden?' · hidden':''}</div>
+        <div style="display:flex;gap:6px;margin-top:8px">
+          <button class="btn sm" data-bkhide="${it.id}" data-h="${it.hidden?0:1}">${it.hidden?'Show':'Hide'}</button>
+          <button class="btn sm" data-bkdel="${it.id}">Delete</button></div></div></div>`).join('')
+      ||'<div class="empty">No pages yet</div>'}</div>`;
+}
+function bindBook(){
+  const b0=$('#bkgo');if(b0)b0.onclick=async()=>{
+    const files=[...$('#bkf').files];if(!files.length)return toast('Choose pictures first','bad');
+    const cat=$('#bkc').value.trim()||'other';b0.disabled=true;let ok=0,bad=0;
+    for(const f of files){const fd=new FormData();fd.append('file',f);fd.append('title',f.name.replace(/\.[^.]+$/,''));fd.append('category',cat);
+      try{await API.call('/api/book',{method:'POST',body:fd});ok++;}catch(e){bad++;}}
+    toast(`${ok} added${bad?`, ${bad} failed`:''}`,bad?'bad':'good');go('book');};
+  $$('[data-bkhide]').forEach(b=>b.onclick=async()=>{try{await API.call('/api/book/'+b.dataset.bkhide,
+    {method:'PATCH',body:{hidden:b.dataset.h==='1'}});go('book');}catch(e){toast(e.message,'bad');}});
+  $$('[data-bkdel]').forEach(b=>b.onclick=()=>confirmModal({title:'Delete this page?',danger:true,ok:'Delete',body:'It is removed from the Colour Book list.',
+    onOk:async()=>{try{await API.call('/api/book/'+b.dataset.bkdel,{method:'DELETE'});go('book');}catch(e){toast(e.message,'bad');}}}));
+}
+
 /* The old ionicsolutions By Number catalogue, now served from this server (legacy.py).
    Browse it by category and hide a picture from the app; nothing is deleted. */
 let LEG={cat:'',q:'',shown:60};
@@ -1090,7 +1179,7 @@ async function vSettings(){
 /* ---------------- router ---------------- */
 const TITLES={dashboard:['Overview','Dashboard'],queue:['Overview','Review queue'],library:['Content','Library'],
   upload:['My work','Upload'],employees:['Team','Employees'],audit:['Security','Audit log'],
-  ads:['Monetisation','Ads'],settings:['Settings','Settings'],legacy:['Content','By Number (old)']};
+  ads:['Monetisation','Ads'],settings:['Settings','Settings'],legacy:['Content','By Number (old)'],pixel:['Content','Pixel'],book:['Content','Colour Book']};
 async function go(v){
   VIEW=v;const t=TITLES[v]||['',v];$('#crumb').textContent=t[0];$('#ptitle').textContent=t[1];
   $$('#nav a').forEach(a=>a.classList.toggle('on',a.dataset.v===v));
@@ -1103,6 +1192,8 @@ async function go(v){
   else if(v==='audit')html=await vAudit();
   else if(v==='ads')html=await vAds();
   else if(v==='legacy')html=await vLegacy();
+  else if(v==='pixel')html=await vPixel();
+  else if(v==='book')html=await vBook();
   else if(v==='settings')html=await vSettings();
   $('#content').innerHTML=html;bindView();schedulePoll();
 }
@@ -1134,7 +1225,7 @@ function bindView(){
   $$('[data-bulkout]').forEach(b=>b.onclick=()=>doBulkOutline(b.dataset.bulkout));
   const bd=$('#bulkDel');if(bd)bd.onclick=()=>doBulkDelete();
   lazyThumbs();
-  bindLegacy();
+  bindLegacy();bindPixel();bindBook();
   $$('[data-retry]').forEach(b=>b.onclick=e=>{e.stopPropagation();doRetry(b.dataset.retry);});
   $$('[data-toggle]').forEach(b=>b.onclick=async()=>{try{await API.call('/api/users/'+b.dataset.toggle,{method:'PATCH',body:{active:+b.dataset.act}});toast('Updated','good');go('employees');}catch(e){toast(e.message,'bad');}});
   $$('[data-rmuser]').forEach(b=>b.onclick=()=>confirmModal({title:`Remove ${b.dataset.name}?`,danger:true,ok:'Remove employee',

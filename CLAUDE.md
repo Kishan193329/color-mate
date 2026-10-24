@@ -2782,6 +2782,31 @@ is HIS domain; he is retiring it and wants everything on one domain (our VPS + S
 - 💸 Serving ~17 GB of images from S3 means **S3 egress is billed per GB downloaded** — the old host
   carried that before. Watch the AWS bill; CloudFront or serving from the VPS disk are the levers.
 
+### 8.5cf 🧩 Own Pixel + Colour Book sections (2026-10-24, branch `2026-10-24-pixel-book`)
+
+Owner wanted the Pixel (fungames) and Colour Book (Recolor) content copied to our server too. **Not
+done, deliberately:** those are other companies' catalogues with no licence (unlike ionicsolutions,
+which is his own domain — §8.5ce). Instead, separate admin pages for OUR OWN content in those formats:
+
+- **Pixel** — `services/pixel_builder.py` turns any picture into the format the app's Pixel engine
+  plays (`OpenGL/GroupTexture`: one PNG pixel = one cell, each distinct ARGB = one number,
+  value 0 = empty cell). Colours are chosen on a ~512 px work copy, then each cell takes the
+  majority colour of its block (shrinking straight to the grid invented in-between shades: a
+  2-colour drawing came back with 6 numbers; now 2). Tiny/close clusters fold into bigger ones;
+  a plain backdrop becomes empty cells. `pixel_tab.py` stores `pixel/images/{id}.png` +
+  `pixel/preview/{id}.png` (ids `cm_YYYYMMDD_slug`, never colliding with old ids) and serves
+  **`/pixel/images2.json`** + **`/pixel/images/{id}.png`** — the exact shape `ContentProvider`
+  reads, so switching the app = pointing `GetContentBaseUrl()` at `{host}/pixel/`. **Not switched**:
+  that would replace the whole current Pixel catalogue; do it once there is enough own content.
+- **Colour Book** — the Recolor engine needs its own binary index files we cannot produce, so this
+  is our own shelf: `book_tab.py` stores line-art pages (`book/art|thumb/{id}.png`) and serves
+  `/book/feed.json`. **The app has no mode that plays these yet** (a free-colour mode is the next
+  step).
+- Admin: "Pixel" (upload + size/colours/background/free/date, preview grid, hide/delete) and
+  "Colour Book" (multi-upload into a category, hide/delete). Upload = any logged-in user;
+  hide/delete = boss. Verified on a local server: upload → feed JSON → PNG 48×48 with exactly the
+  chosen colours; hide drops it from `images2.json`; book feed/art/thumb 200; no token → 401.
+
 ### 8.6 Performance audit — findings + fix plan (2026-07-21, code-verified)
 
 Root cause of "app not smooth": the team already found the worst jank source (**per-item

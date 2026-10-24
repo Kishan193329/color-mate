@@ -34,6 +34,8 @@ import auth
 import db
 import diamond_builder as DIA
 import ad_config
+import book_tab
+import pixel_tab
 import diamond_tab
 import legacy
 import multiplayer
@@ -972,6 +974,83 @@ padding:14px;border-radius:14px;font-weight:600}}p{{color:#5b5470}}</style></hea
 Then open the app and enter the code.</p></div></body></html>"""
 
 
+# ── Our own Pixel and Colour Book pictures (pixel_tab.py, book_tab.py) ───────────────
+
+MAX_SECTION_UPLOAD = 25 * 1024 * 1024
+
+
+@app.get("/api/pixel")
+def pixel_list(user: dict = Depends(current_user)):
+    return {"items": pixel_tab.items()}
+
+
+@app.post("/api/pixel")
+async def pixel_create(file: UploadFile = File(...), title: str = Form(""), size: int = Form(64),
+                       colours: int = Form(16), remove_bg: bool = Form(True), free: bool = Form(True),
+                       release_date: str = Form(""), user: dict = Depends(current_user)):
+    data = await file.read()
+    if not data or len(data) > MAX_SECTION_UPLOAD:
+        raise HTTPException(400, "empty or too large (25 MB max)")
+    try:
+        return pixel_tab.create(data, title or Path(file.filename or "").stem, size, colours,
+                                remove_bg, free, release_date, user["email"])
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+
+
+@app.patch("/api/pixel/{iid}")
+def pixel_update(iid: str, payload: dict = Body(...), user: dict = Depends(require_boss)):
+    try:
+        return pixel_tab.update(iid, payload)
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+    except LookupError as e:
+        raise HTTPException(404, str(e))
+
+
+@app.delete("/api/pixel/{iid}")
+def pixel_delete(iid: str, user: dict = Depends(require_boss)):
+    try:
+        pixel_tab.delete(iid)
+    except LookupError as e:
+        raise HTTPException(404, str(e))
+    return {"ok": True}
+
+
+@app.get("/api/book")
+def book_list(user: dict = Depends(current_user)):
+    return {"items": book_tab.items()}
+
+
+@app.post("/api/book")
+async def book_create(file: UploadFile = File(...), title: str = Form(""), category: str = Form("other"),
+                      user: dict = Depends(current_user)):
+    data = await file.read()
+    if not data or len(data) > MAX_SECTION_UPLOAD:
+        raise HTTPException(400, "empty or too large (25 MB max)")
+    try:
+        return book_tab.create(data, title or Path(file.filename or "").stem, category, user["email"])
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+
+
+@app.patch("/api/book/{iid}")
+def book_update(iid: str, payload: dict = Body(...), user: dict = Depends(require_boss)):
+    try:
+        return book_tab.update(iid, payload)
+    except LookupError as e:
+        raise HTTPException(404, str(e))
+
+
+@app.delete("/api/book/{iid}")
+def book_delete(iid: str, user: dict = Depends(require_boss)):
+    try:
+        book_tab.delete(iid)
+    except LookupError as e:
+        raise HTTPException(404, str(e))
+    return {"ok": True}
+
+
 # ── The old By Number catalogue, now hosted here (legacy.py) ─────────────────────────
 
 @app.get("/api/legacy")
@@ -1126,6 +1205,8 @@ app.include_router(number_router)                            # base URL = http:/
 app.include_router(legacy.router, prefix="/ColoringBook")
 app.include_router(number_router, prefix="/ColoringBook")    # base URL = http://host:port/ColoringBook/
 app.include_router(diamond_router)
+app.include_router(pixel_tab.router)      # /pixel/images2.json, /pixel/images/{id}.png
+app.include_router(book_tab.router)       # /book/feed.json, /book/art|thumb/{id}.png
 app.include_router(diamond_router, prefix="/ColoringBook")
 
 
