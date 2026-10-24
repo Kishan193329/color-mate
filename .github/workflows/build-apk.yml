@@ -1,0 +1,89 @@
+# Build the Android app's debug APK in the cloud, so the app can be worked on without the PC.
+#
+#  - automatic: any push that changes the Android project.
+#  - manual: Actions → "Build APK" → Run workflow → pick a branch.
+#
+# The APK is attached to a pre-release named "apk-<branch>" (download it straight on the phone
+# from the repo's Releases page) and kept as a workflow artifact too.
+#
+# Secret DEBUG_KEYSTORE_B64 = the PC's ~/.android/debug.keystore, base64. Signing with the same
+# key means the APK installs OVER the debug build already on the test phones (no uninstall).
+name: Build APK
+
+on:
+  push:
+    paths:
+      - "Colour Mate/Colour Mate/Colour Mate/**"
+      - ".github/workflows/build-apk.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: build-apk-${{ github.ref_name }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    defaults:
+      run:
+        working-directory: "Colour Mate/Colour Mate/Colour Mate"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Machine settings (the project's gradle.properties pins a Windows JDK path)
+        run: |
+          mkdir -p ~/.gradle ~/.android
+          # user-level gradle.properties wins over the project's
+          echo "org.gradle.java.home=$JAVA_HOME" >> ~/.gradle/gradle.properties
+          echo "sdk.dir=$ANDROID_HOME" > local.properties
+          if [ -n "${{ secrets.DEBUG_KEYSTORE_B64 }}" ]; then
+            echo "${{ secrets.DEBUG_KEYSTORE_B64 }}" | base64 -d > ~/.android/debug.keystore
+          fi
+
+      - name: Build debug APK
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon --stacktrace
+
+      - name: Name the APK
+        id: apk
+        run: |
+          safe=$(echo "${{ github.ref_name }}" | tr -c 'A-Za-z0-9._-' '-' | sed 's/-*$//')
+          out="ColourMate-${safe}-${GITHUB_SHA::7}.apk"
+          cp app/build/outputs/apk/debug/app-debug.apk "$GITHUB_WORKSPACE/$out"
+          echo "file=$out" >> "$GITHUB_OUTPUT"
+          echo "tag=apk-${safe}" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.apk.outputs.file }}
+          path: ${{ steps.apk.outputs.file }}
+          retention-days: 14
+
+      - name: Publish to the "apk-<branch>" pre-release
+        working-directory: ${{ github.workspace }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="${{ steps.apk.outputs.tag }}"
+          note="Debug APK of ${{ github.ref_name }} @ ${GITHUB_SHA::7} — built $(date -u +%F' '%H:%M) UTC. Test ads, not for the Play Store."
+          if gh release view "$tag" >/dev/null 2>&1; then
+            # one rolling release per branch: replace the old APK, move the tag to this commit
+            for a in $(gh release view "$tag" --json assets --jq '.assets[].name'); do gh release delete-asset "$tag" "$a" -y; done
+            git tag -f "$tag" "$GITHUB_SHA" && git push -f origin "refs/tags/$tag"
+            gh release edit "$tag" --notes "$note"
+          else
+            gh release create "$tag" --target "$GITHUB_SHA" --prerelease --title "APK · ${{ github.ref_name }}" --notes "$note"
+          fi
+          gh release upload "$tag" "${{ steps.apk.outputs.file }}" --clobber
