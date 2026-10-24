@@ -210,6 +210,20 @@
             android:screenOrientation="portrait"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
         <activity
+            android:name=".activity.JoinActivity"
+            android:exported="true"
+            android:excludeFromRecents="true"
+            android:launchMode="singleTop"
+            android:theme="@style/Theme.Join">
+            <!-- A friend's invite: the server's /j/CODE page opens colourmate://j/CODE -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="colourmate" android:host="j" />
+            </intent-filter>
+        </activity>
+        <activity
             android:name=".activity.RevealActivity"
             android:exported="false"
             android:hardwareAccelerated="true"

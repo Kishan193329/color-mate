@@ -27,7 +27,7 @@ from pathlib import Path
 import cv2
 import numpy as np
 from fastapi import (APIRouter, BackgroundTasks, Body, Depends, FastAPI, File, Form, Header,
-                     HTTPException, Request, UploadFile)
+                     HTTPException, Request, UploadFile, WebSocket)
 from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse
 
 import auth
@@ -35,6 +35,7 @@ import db
 import diamond_builder as DIA
 import ad_config
 import diamond_tab
+import multiplayer
 import number_tab
 import referral
 import simplify as simplify_mod
@@ -899,6 +900,75 @@ def app_referral(action: str, payload: dict = Body(...)):
         return fn()
     except ValueError as e:
         raise HTTPException(400, str(e))
+
+
+# ── Multiplayer (multiplayer.py): Challenge over plain HTTP, Race / Co-op over a WebSocket ──
+
+@number_router.post("/index.php/App/mp/challenge")
+def mp_challenge_create(payload: dict = Body(...)):
+    try:
+        return multiplayer.create_challenge(payload.get("fileName"), payload.get("category"),
+                                            payload.get("device"), payload.get("name"),
+                                            payload.get("ms"))
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+
+
+@number_router.post("/index.php/App/mp/challenge/{code}/result")
+def mp_challenge_result(code: str, payload: dict = Body(...)):
+    try:
+        return multiplayer.challenge_result(multiplayer.normalise_code(code), payload.get("device"),
+                                            payload.get("name"), payload.get("ms"))
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+    except LookupError as e:
+        raise HTTPException(404, str(e))
+
+
+# async on purpose: live rooms are only ever touched on the event loop.
+@number_router.post("/index.php/App/mp/room")
+async def mp_room_create(payload: dict = Body(...)):
+    try:
+        return multiplayer.create_room(payload.get("mode"), payload.get("fileName"),
+                                       payload.get("category"), payload.get("device"))
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+
+
+@number_router.get("/index.php/App/mp/{code}")
+async def mp_lookup(code: str):
+    found = multiplayer.lookup(code)
+    if not found:
+        raise HTTPException(404, "no such code")
+    return found
+
+
+@number_router.websocket("/index.php/App/mp/{code}/ws")
+async def mp_room_socket(ws: WebSocket, code: str, device: str = "", name: str = ""):
+    await multiplayer.serve(ws, code, device, name)
+
+
+@app.get("/j/{code}", response_class=HTMLResponse)
+def mp_join_page(code: str):
+    """What a shared invite link opens: a button that hands the code to the app (custom scheme,
+    so no domain verification is needed), falling back to the Play Store when it is not installed."""
+    code = multiplayer.normalise_code(code)
+    pkg = "com.pixel.art.coloring.color.number.paint"
+    store = f"https://play.google.com/store/apps/details?id={pkg}"
+    intent = (f"intent://j/{code}#Intent;scheme=colourmate;package={pkg};"
+              f"S.browser_fallback_url={store};end")
+    return f"""<!doctype html><html><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>Colour Mate</title>
+<style>body{{margin:0;font-family:system-ui,sans-serif;background:#F6F3FC;color:#201636;
+display:flex;min-height:100vh;align-items:center;justify-content:center;text-align:center}}
+.c{{background:#fff;border-radius:24px;padding:32px 24px;max-width:340px;margin:16px;
+box-shadow:0 8px 30px rgba(32,22,54,.08)}}.k{{font-size:34px;letter-spacing:6px;font-weight:700;
+color:#7A5CFF;margin:12px 0 20px}}a{{display:block;background:#7A5CFF;color:#fff;text-decoration:none;
+padding:14px;border-radius:14px;font-weight:600}}p{{color:#5b5470}}</style></head>
+<body><div class="c"><h2>Colour Mate</h2><p>A friend wants to colour with you.</p>
+<div class="k">{code}</div><a href="{intent}">Open in Colour Mate</a>
+<p style="font-size:13px;margin-top:16px">No app yet? The button takes you to Google Play.
+Then open the app and enter the code.</p></div></body></html>"""
 
 
 @app.get("/api/hit")

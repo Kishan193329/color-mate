@@ -225,6 +225,7 @@ public class MainActivity extends BaseActivity {
         binding.getRoot().postDelayed(() -> RatingPrompt.maybeShow(this), 2500);
         binding.ivSetting.setOnClickListener(v ->
                 startActivity(new Intent(this, SettingsActivity.class)));
+        binding.flJoin.setOnClickListener(v -> startActivity(JoinActivity.ask(this)));
         // Saved is back in the bottom bar (nav_item_saved, 2026-10-14); the top-bar button is
         // gone in the layout but its listener is kept so the view stays harmless if re-shown.
         binding.ivSavedTop.setOnClickListener(v -> {

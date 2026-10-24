@@ -172,6 +172,24 @@ Tap here for unlimited scanning</string>
     <string name="diamond_done_title">Picture complete! \uD83D\uDC8E</string>
     <string name="diamond_done_sub">Every diamond is in its place</string>
     <string name="reveal_done_close">Done</string>
+
+    <!-- Multiplayer (util/Multiplayer, RevealActivity, JoinActivity) -->
+    <string name="mp_play_with_friends">Play with friends</string>
+    <string name="mp_race">Race a friend 🏁</string>
+    <string name="mp_race_desc">Same picture, your own copy. First to 100% wins.</string>
+    <string name="mp_coop">Colour together 🤝</string>
+    <string name="mp_coop_desc">One picture, filled by everyone at once.</string>
+    <string name="mp_challenge_friend">Challenge a friend ⏱</string>
+    <string name="mp_invite">Invite a friend</string>
+    <string name="mp_start_race">Start the race</string>
+    <string name="mp_start_coop">Start colouring</string>
+    <string name="mp_waiting_host">Waiting for the host to start…</string>
+    <string name="mp_join">Join a friend</string>
+    <string name="mp_join_hint">Enter the 6-letter code</string>
+    <string name="mp_your_name">Your name (friends see it)</string>
+    <string name="mp_no_server">Could not reach the server. Check your internet and try again.</string>
+    <string name="mp_bad_code">No game with that code. Check it and try again.</string>
+    <string name="mp_room_full">That game is full (4 players).</string>
     <string name="hit_badge">🔥 HIT PICTURE</string>
     <string name="hit_play">Play</string>
     <string name="hit_locked">Soon</string>

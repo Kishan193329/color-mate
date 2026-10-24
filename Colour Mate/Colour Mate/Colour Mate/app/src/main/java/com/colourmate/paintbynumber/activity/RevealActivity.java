@@ -24,6 +24,7 @@ import com.colourmate.paintbynumber.ads.MediationManager;
 import com.colourmate.paintbynumber.model.reveal.RevealAssetCache;
 import com.colourmate.paintbynumber.model.reveal.RevealLevel;
 import com.colourmate.paintbynumber.model.reveal.RevealView;
+import com.colourmate.paintbynumber.util.Multiplayer;
 
 
 /**
@@ -43,6 +44,12 @@ public class RevealActivity extends AppCompatActivity
     // going back through the grid. Parallel arrays: url[i] plays under name[i].
     private static final String EXTRA_QUEUE_URLS = "reveal_queue_urls";
     private static final String EXTRA_QUEUE_NAMES = "reveal_queue_names";
+    // Multiplayer (util/Multiplayer): mode challenge|race|coop, the code, and for a challenge
+    // the time to beat and who set it.
+    private static final String EXTRA_MP_MODE = "mp_mode";
+    private static final String EXTRA_MP_CODE = "mp_code";
+    private static final String EXTRA_MP_TARGET_MS = "mp_target_ms";
+    private static final String EXTRA_MP_TARGET_BY = "mp_target_by";
 
     private static final String PREFS = "reveal_progress";
 
@@ -58,6 +65,12 @@ public class RevealActivity extends AppCompatActivity
     private RevealLevel level;
 
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
+
+    /** Null when playing alone. */
+    private RevealMultiplayer multiplayer;
+    /** Solo play time for this picture, kept across sittings so a challenge carries the real time. */
+    private long soloMs;
+    private long soloResumedAt = -1;
 
     /** Opens a picture bundled in assets, e.g. the sample under {@code assets/reveal/}. */
     public static Intent fromAssets(Context context, String assetDirectory) {
@@ -84,6 +97,18 @@ public class RevealActivity extends AppCompatActivity
         return intent;
     }
 
+    /** A multiplayer game on a picture: a fresh board, never the player's solo progress. */
+    public static Intent forMultiplayer(Context context, String baseUrl, String fileName,
+                                        String mode, String code, long targetMs, String targetBy) {
+        Intent intent = fromUrl(context, baseUrl);
+        intent.putExtra(EXTRA_FILE_NAME, fileName);
+        intent.putExtra(EXTRA_MP_MODE, mode);
+        intent.putExtra(EXTRA_MP_CODE, code);
+        intent.putExtra(EXTRA_MP_TARGET_MS, targetMs);
+        intent.putExtra(EXTRA_MP_TARGET_BY, targetBy);
+        return intent;
+    }
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -101,6 +126,16 @@ public class RevealActivity extends AppCompatActivity
         findViewById(R.id.btn_done_share).setOnClickListener(v -> shareFinishedArtwork());
         findViewById(R.id.btn_reveal_fit).setOnClickListener(v -> revealView.fitToScreen());
         findViewById(R.id.btn_reveal_next).setOnClickListener(v -> requestHint());
+        findViewById(R.id.btn_reveal_friends).setOnClickListener(v -> askPlayWithFriends());
+        findViewById(R.id.btn_done_challenge).setOnClickListener(v -> createChallenge());
+
+        String mpMode = getIntent().getStringExtra(EXTRA_MP_MODE);
+        if (mpMode != null) {
+            multiplayer = new RevealMultiplayer(this, revealView, mpMode,
+                    getIntent().getStringExtra(EXTRA_MP_CODE),
+                    getIntent().getLongExtra(EXTRA_MP_TARGET_MS, 0),
+                    getIntent().getStringExtra(EXTRA_MP_TARGET_BY));
+        }
 
         paletteView.setLayoutManager(
                 new LinearLayoutManager(this, RecyclerView.HORIZONTAL, false));
@@ -159,7 +194,7 @@ public class RevealActivity extends AppCompatActivity
                         ? name -> getAssets().open(assetDirectory + "/" + name)
                         : RevealAssetCache.source(this, baseUrl);
                 loaded = RevealLevel.load(source);
-                loaded.restoreProgress(savedProgress());
+                if (multiplayer == null) loaded.restoreProgress(savedProgress());
             } catch (Exception e) {
                 Log.e(TAG, "Reveal level load failed", e);
             }
@@ -191,6 +226,16 @@ public class RevealActivity extends AppCompatActivity
         paletteView.setAdapter(paletteAdapter);
 
         updateProgress();
+
+        if (multiplayer != null) {
+            multiplayer.start(loaded);
+        } else {
+            soloResumedAt = android.os.SystemClock.elapsedRealtime();
+            String key = progressKey();
+            if (key != null) soloMs = getSharedPreferences(PREFS, MODE_PRIVATE).getLong(key + "#ms", 0);
+            findViewById(R.id.btn_reveal_friends).setVisibility(
+                    canPlayTogether() ? View.VISIBLE : View.GONE);
+        }
     }
 
     private int firstUnfinishedNumber() {
@@ -244,6 +289,12 @@ public class RevealActivity extends AppCompatActivity
         }
 
         if (level.isNumberFinished(number)) jumpToNextNumber();
+        if (multiplayer != null) multiplayer.onProgress(level.progressPercent());
+    }
+
+    @Override
+    public void onRegionFilled(RevealLevel.Region region, boolean byFriend) {
+        if (multiplayer != null) multiplayer.onFilled(region, byFriend);
     }
 
     /**
@@ -325,10 +376,22 @@ public class RevealActivity extends AppCompatActivity
         saveFinishedArtwork();
         rewardCoins(getIntent().getStringExtra(EXTRA_FILE_NAME));
 
+        setDoneText(getString(R.string.reveal_done_title), getString(R.string.reveal_done_sub));
+        if (multiplayer != null) {
+            multiplayer.onFinished();
+            findViewById(R.id.btn_done_next).setVisibility(View.GONE);
+        } else {
+            pauseSoloClock();
+            findViewById(R.id.btn_done_challenge).setVisibility(
+                    canPlayTogether() ? View.VISIBLE : View.GONE);
+        }
+
         View sheet = findViewById(R.id.fl_reveal_done);
         View card = findViewById(R.id.ll_done_card);
-        findViewById(R.id.btn_done_next).setVisibility(
-                nextUnfinished() != null ? View.VISIBLE : View.GONE);
+        if (multiplayer == null) {
+            findViewById(R.id.btn_done_next).setVisibility(
+                    nextUnfinished() != null ? View.VISIBLE : View.GONE);
+        }
         sheet.setAlpha(0f);
         sheet.setVisibility(View.VISIBLE);
         // Let the player look at their finished picture first; the sheet slides up after.
@@ -468,17 +531,105 @@ public class RevealActivity extends AppCompatActivity
                 : getSharedPreferences(PREFS, MODE_PRIVATE).getString(key, null);
     }
 
+    // ─── Multiplayer ───
+
+    /** The finish sheet's two lines; multiplayer rewrites them as results arrive. */
+    void setDoneText(CharSequence title, CharSequence sub) {
+        ((TextView) findViewById(R.id.tv_done_title)).setText(title);
+        ((TextView) findViewById(R.id.tv_done_sub)).setText(sub);
+    }
+
+    /** Only a published server picture can be shared: friends need its fileName and category. */
+    private boolean canPlayTogether() {
+        return getIntent().getStringExtra(EXTRA_FILE_NAME) != null && category() != null
+                && com.colourmate.paintbynumber.Utils.ColorForgeApi.hasExplicitServer(this);
+    }
+
+    /** The category segment of {base}index.php/Number/reveal/{category}/{fileName}/. */
+    private String category() {
+        String url = getIntent().getStringExtra(EXTRA_BASE_URL);
+        if (url == null) return null;
+        java.util.List<String> parts = android.net.Uri.parse(url).getPathSegments();
+        int at = parts.indexOf("reveal");
+        return at >= 0 && at + 1 < parts.size() ? parts.get(at + 1) : null;
+    }
+
+    private void askPlayWithFriends() {
+        String[] items = {getString(R.string.mp_race) + "\n" + getString(R.string.mp_race_desc),
+                getString(R.string.mp_coop) + "\n" + getString(R.string.mp_coop_desc)};
+        new androidx.appcompat.app.AlertDialog.Builder(this)
+                .setTitle(R.string.mp_play_with_friends)
+                .setItems(items, (d, which) -> JoinActivity.withName(this, () ->
+                        openRoom(which == 0 ? Multiplayer.RACE : Multiplayer.COOP)))
+                .show();
+    }
+
+    private void openRoom(String mode) {
+        final String fileName = getIntent().getStringExtra(EXTRA_FILE_NAME);
+        final String baseUrl = getIntent().getStringExtra(EXTRA_BASE_URL);
+        Multiplayer.createRoom(this, mode, fileName, category(), r -> {
+            if (isFinishing()) return;
+            if (r == null || !r.has("code")) {
+                Toast.makeText(this, R.string.mp_no_server, Toast.LENGTH_LONG).show();
+                return;
+            }
+            String code = r.optString("code");
+            startActivity(forMultiplayer(this, baseUrl, fileName, mode, code, 0, null));
+        });
+    }
+
+    /** Solo finish: send this picture and its time to friends to beat. */
+    private void createChallenge() {
+        JoinActivity.withName(this, () -> {
+            long ms = Math.max(5000, soloMs);
+            Multiplayer.createChallenge(this, getIntent().getStringExtra(EXTRA_FILE_NAME), category(), ms,
+                    r -> {
+                        if (isFinishing()) return;
+                        if (r == null || !r.has("code")) {
+                            Toast.makeText(this, R.string.mp_no_server, Toast.LENGTH_LONG).show();
+                            return;
+                        }
+                        Multiplayer.share(this, r.optString("code"), Multiplayer.CHALLENGE);
+                    });
+        });
+    }
+
+    private void pauseSoloClock() {
+        if (soloResumedAt >= 0) {
+            soloMs += android.os.SystemClock.elapsedRealtime() - soloResumedAt;
+            soloResumedAt = -1;
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (multiplayer == null && level != null && !level.isFinished() && soloResumedAt < 0) {
+            soloResumedAt = android.os.SystemClock.elapsedRealtime();
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (multiplayer != null) multiplayer.stop();
+        super.onDestroy();
+    }
+
     @Override
     protected void onPause() {
         super.onPause();
 
+        // A multiplayer board is the room's, not the player's own copy of this picture.
+        if (multiplayer != null) return;
+        pauseSoloClock();
         String key = progressKey();
         if (level != null && key != null) {
             // The percent is stored beside the progress string so the GRID can show it
             // without decoding region lists (ColoringsAdapter reads key + "#pct").
             getSharedPreferences(PREFS, MODE_PRIVATE).edit()
                     .putString(key, level.encodeProgress())
-                    .putInt(key + "#pct", level.progressPercent()).apply();
+                    .putInt(key + "#pct", level.progressPercent())
+                    .putLong(key + "#ms", soloMs).apply();
         }
     }
 

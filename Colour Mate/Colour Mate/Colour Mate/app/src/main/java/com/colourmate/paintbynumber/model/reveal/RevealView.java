@@ -45,6 +45,65 @@ public class RevealView extends View {
         void onNumberPicked(int number);
 
         void onFinished();
+
+        /** Every fill, with the region — multiplayer sends co-op fills on from here. */
+        default void onRegionFilled(RevealLevel.Region region, boolean byFriend) { }
+    }
+
+    /** False while a race is counting down: the board still pans and zooms, nothing fills. */
+    private boolean fillEnabled = true;
+
+    public void setFillEnabled(boolean enabled) {
+        fillEnabled = enabled;
+    }
+
+    /**
+     * Fills many regions at once with no animation — what a co-op friend joining late receives:
+     * everything the others filled before they arrived.
+     */
+    public void revealSilently(int[] regionIds) {
+        if (level == null || regionIds == null || regionIds.length == 0) return;
+        boolean any = false;
+        for (int id : regionIds) {
+            RevealLevel.Region region = level.regionsById.get(id);
+            if (region == null || region.revealed) continue;
+            level.markRevealed(region);
+            if (level.vector == null) level.paintRegion(region, 1f);
+            any = true;
+            if (listener != null) listener.onRegionRevealed(region.number);
+        }
+        if (!any) return;
+        if (level.vector == null) {
+            highlightDirty = true;
+            pushPixels();
+        } else {
+            requestArt();
+        }
+        invalidate();
+        if (listener != null && level.isFinished()) listener.onFinished();
+    }
+
+    /**
+     * A co-op friend filled a region: fill it here too, with the same spreading animation and a
+     * small burst in that friend's colour so it reads as theirs.
+     */
+    public void revealByFriend(int regionId, int friendColour) {
+        if (level == null) return;
+        RevealLevel.Region region = level.regionsById.get(regionId);
+        if (region == null || region.revealed) return;
+        level.markRevealed(region);
+        clearHighlightRegion(region);
+        floodFill(region, region.cx, region.cy);
+        for (int i = 0; i < 10; i++) {
+            particles.add(new Particle(offsetX + region.cx * scale, offsetY + region.cy * scale,
+                    friendColour, random.nextInt(2), random));
+        }
+        postInvalidateOnAnimation();
+        if (listener != null) {
+            listener.onRegionRevealed(region.number);
+            listener.onRegionFilled(region, true);
+            if (level.isFinished()) listener.onFinished();
+        }
     }
 
     private static final long FILL_MS = 420;          // flood-fill duration (ease-out, 300–500ms)
@@ -750,6 +809,7 @@ public class RevealView extends View {
         int x = (int) ((viewX - offsetX) / scale);
         int y = (int) ((viewY - offsetY) / scale);
 
+        if (!fillEnabled) return;
         RevealLevel.Region region = findTarget(x, y);
         if (region == null) return;
 
@@ -768,13 +828,14 @@ public class RevealView extends View {
 
         if (listener != null) {
             listener.onRegionRevealed(region.number);
+            listener.onRegionFilled(region, false);
             if (level.isFinished()) listener.onFinished();
         }
     }
 
     /** True when the point lands exactly on an unrevealed region of the selected colour. */
     private boolean startsOnSelected(float viewX, float viewY) {
-        if (level == null) return false;
+        if (level == null || !fillEnabled) return false;
         int x = (int) ((viewX - offsetX) / scale);
         int y = (int) ((viewY - offsetY) / scale);
         RevealLevel.Region r = level.regionAt(x, y);
@@ -800,6 +861,7 @@ public class RevealView extends View {
         fillFeedback(region);
         if (listener != null) {
             listener.onRegionRevealed(region.number);
+            listener.onRegionFilled(region, false);
             if (level.isFinished()) listener.onFinished();
         }
     }

@@ -2718,6 +2718,38 @@ later, and the **game rules written once in C++** both link. Step 1 (this branch
   when ads show.
 - Next: Diamond logic into the core; then the iOS SwiftUI app (needs a Mac + Xcode).
 
+### 8.5cd 👥 Multiplayer: Challenge, Race, Co-op (2026-10-24, branch `2026-10-24-multiplayer`)
+
+Owner asked for all three modes. Everything is reached ONLY through a 6-letter code (alphabet without
+0/O/1/I) — no stranger matching, no chat (moderation + the 18+ pictures). Own server, not Firebase.
+
+- **Backend `multiplayer.py`** + routes in `app.py` (on `number_router`):
+  `POST /index.php/App/mp/challenge` {fileName,category,device,name,ms} → {code};
+  `POST …/mp/challenge/{code}/result` → {rank, beat, board} (keeps each device's BEST time);
+  `POST …/mp/room` {mode race|coop,…} → {code} (async route — rooms only touched on the event loop);
+  `GET …/mp/{code}` → {kind, fileName, category, …}; `WS …/mp/{code}/ws?device=&name=`;
+  `GET /j/{code}` = invite page whose button opens `colourmate://j/CODE` (Play Store fallback).
+  Challenges live in DB tables `challenges` / `challenge_results` (created lazily). **Rooms are in
+  memory** (single uvicorn process; a restart drops live rooms — acceptable). Max 4 players, idle
+  rooms swept after 15 min. Race start = server clock + 3 s countdown, and the race time is measured
+  by the SERVER, not the phone. Challenge times ARE client-reported (casual; clamped 5 s..24 h).
+  Close codes: 4404 no room, 4409 full, 4400 bad device, 4000 same phone reconnected.
+  Tests: `tests/test_multiplayer.py` (TestClient; needs `httpx2` — run it in a COPY of the backend,
+  since `db.DB_PATH` is next to the code). 5/5 pass.
+- **App**: `util/Multiplayer` (HTTP + OkHttp WebSocket `Room` with auto-reconnect),
+  `activity/RevealMultiplayer` (lobby card, status pill, timer, results text),
+  `activity/JoinActivity` (translucent; handles `colourmate://j/CODE` and the Home 👥 "Join a friend"
+  button; asks the player's name once), `RevealView.setFillEnabled / revealSilently / revealByFriend`
+  + `Listener.onRegionFilled`, `RevealActivity.forMultiplayer` (fresh board, never touches solo
+  progress; solo play time now saved as `key#ms` so a challenge carries the real time). Tool rail
+  👥 → Race / Colour together; finish sheet → "Challenge a friend ⏱".
+- 🔴 **Deploy needs nginx WebSocket headers** on the VPS (`proxy_http_version 1.1;
+  proxy_set_header Upgrade $http_upgrade; proxy_set_header Connection "upgrade";`) or Race/Co-op
+  fail to connect over HTTPS. Challenge works without it.
+- ⚠️ **NOT yet tested on a device**: the app builds, but the emulator could not start (PC had <1 GB
+  free RAM) and the phone was in use by another session. Test plan: `C:/Users/User/cmci/bot.py`
+  plays the friend over WebSocket (`python bot.py coop CODE fill 20`).
+
 ### 8.6 Performance audit — findings + fix plan (2026-07-21, code-verified)
 
 Root cause of "app not smooth": the team already found the worst jank source (**per-item

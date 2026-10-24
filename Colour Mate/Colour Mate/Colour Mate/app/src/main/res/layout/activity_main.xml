@@ -144,6 +144,26 @@
                     app:tint="@color/cm_ink" />
             </FrameLayout>
 
+            <!-- Join a friend's game with a code (activity/JoinActivity). -->
+            <FrameLayout
+                android:id="@+id/fl_join"
+                android:layout_width="@dimen/cm_icon_btn"
+                android:layout_height="@dimen/cm_icon_btn"
+                android:layout_gravity="center_vertical"
+                android:layout_marginStart="6dp"
+                android:background="@drawable/cm_icon_btn"
+                android:contentDescription="@string/mp_join"
+                android:elevation="2dp">
+
+                <ImageView
+                    android:layout_width="@dimen/cm_icon"
+                    android:layout_height="@dimen/cm_icon"
+                    android:layout_gravity="center"
+                    android:contentDescription="@string/mp_join"
+                    android:src="@drawable/ic_friends"
+                    app:tint="@color/cm_violet" />
+            </FrameLayout>
+
             <FrameLayout
                 android:layout_width="@dimen/cm_icon_btn"
                 android:layout_height="@dimen/cm_icon_btn"

@@ -42,6 +42,7 @@
 
     <!-- Progress, where the game keeps its hint counter -->
     <FrameLayout
+        android:id="@+id/fl_reveal_progress"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignBottom="@id/fl_reveal_back"
@@ -99,7 +100,43 @@
             android:padding="13dp"
             android:src="@drawable/ic_magic_wand"
             app:tint="@color/cm_ink_2" />
+
+        <!-- Play with friends (race / colour together). Hidden for pictures that cannot be
+             shared, e.g. the bundled sample, and while already in a multiplayer game. -->
+        <ImageView
+            android:id="@+id/btn_reveal_friends"
+            android:layout_width="52dp"
+            android:layout_height="52dp"
+            android:layout_marginTop="4dp"
+            android:background="@drawable/cm_tool_bg"
+            android:contentDescription="@string/mp_play_with_friends"
+            android:padding="13dp"
+            android:src="@drawable/ic_friends"
+            android:visibility="gone"
+            app:tint="@color/cm_violet" />
     </LinearLayout>
+
+    <!-- Multiplayer status: code, who is playing, their percent / the time to beat. Tap = invite. -->
+    <TextView
+        android:id="@+id/tv_mp_status"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@id/fl_reveal_back"
+        android:layout_alignTop="@id/fl_reveal_back"
+        android:layout_marginHorizontal="10dp"
+        android:layout_toEndOf="@id/fl_reveal_back"
+        android:layout_toStartOf="@id/fl_reveal_progress"
+        android:background="@drawable/cm_glass_panel"
+        android:elevation="@dimen/cm_elev_card"
+        android:ellipsize="end"
+        android:fontFamily="@font/quicksand_bold"
+        android:fontFeatureSettings="tnum"
+        android:gravity="center"
+        android:maxLines="2"
+        android:paddingHorizontal="12dp"
+        android:textColor="@color/cm_ink"
+        android:textSize="13sp"
+        android:visibility="gone" />
 
     <!-- Palette strip — sits just above the ad banner, not at the very bottom -->
     <FrameLayout
@@ -211,12 +248,100 @@
                 android:textSize="15sp" />
 
             <Button
+                android:id="@+id/btn_done_challenge"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/cm_btn_soft"
+                android:text="@string/mp_challenge_friend"
+                android:textAllCaps="false"
+                android:textColor="@color/cm_violet"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                android:visibility="gone" />
+
+            <Button
                 android:id="@+id/btn_done_close"
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
                 android:layout_marginTop="10dp"
                 android:background="@drawable/cm_btn_ghost"
                 android:text="@string/reveal_done_close"
+                android:textAllCaps="false"
+                android:textColor="@color/cm_ink"
+                android:textSize="15sp" />
+        </LinearLayout>
+    </FrameLayout>
+
+    <!-- Multiplayer lobby: the code to share, who has joined, and (race host) Start. The board
+         underneath already pans and zooms, so players can look the picture over while waiting. -->
+    <FrameLayout
+        android:id="@+id/fl_mp_wait"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#66201636"
+        android:clickable="true"
+        android:focusable="true"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:layout_margin="18dp"
+            android:background="@drawable/cm_card"
+            android:elevation="10dp"
+            android:orientation="vertical"
+            android:padding="22dp">
+
+            <TextView
+                android:id="@+id/tv_mp_wait_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:textColor="@color/cm_ink"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tv_mp_code"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:fontFamily="@font/quicksand_bold"
+                android:gravity="center"
+                android:letterSpacing="0.25"
+                android:textColor="@color/cm_violet"
+                android:textSize="34sp" />
+
+            <TextView
+                android:id="@+id/tv_mp_players"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:gravity="center"
+                android:lineSpacingExtra="4dp"
+                android:textColor="@color/cm_ink_2"
+                android:textSize="15sp" />
+
+            <Button
+                android:id="@+id/btn_mp_start"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:layout_marginTop="18dp"
+                android:background="@drawable/cm_btn_primary"
+                android:textAllCaps="false"
+                android:textColor="#FFFFFF"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/btn_mp_invite"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/cm_btn_soft"
+                android:text="@string/mp_invite"
                 android:textAllCaps="false"
                 android:textColor="@color/cm_ink"
                 android:textSize="15sp" />
