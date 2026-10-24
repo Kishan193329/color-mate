@@ -2800,8 +2800,14 @@ which is his own domain — §8.5ce). Instead, separate admin pages for OUR OWN 
   that would replace the whole current Pixel catalogue; do it once there is enough own content.
 - **Colour Book** — the Recolor engine needs its own binary index files we cannot produce, so this
   is our own shelf: `book_tab.py` stores line-art pages (`book/art|thumb/{id}.png`) and serves
-  `/book/feed.json`. **The app has no mode that plays these yet** (a free-colour mode is the next
-  step).
+  `/book/feed.json`. **App mode built 2026-10-24 (not device-tested):** By Images tab shows a
+  "✨ New: Colour Book" card only when the feed has pages (the pager is re-anchored under it in code —
+  anchoring a RelativeLayout view to a GONE sibling pulls it to the top, the §8.5cc bug again) →
+  `BookGalleryActivity` (category chips + grid, progress chip) → `BookActivity` + `model/book/BookView`:
+  the page (max 1600 px) is split once into shapes (light pixels between dark line art, luma < 160 =
+  wall), a tap colours a whole shape with the chosen palette colour (taps on the line snap to the
+  nearest shape), line art drawn over with MULTIPLY, undo (40), progress `book_progress` prefs as
+  `shape:colour`, Done saves to My Works. Page PNGs cached in `cacheDir/book/`.
 - Admin: "Pixel" (upload + size/colours/background/free/date, preview grid, hide/delete) and
   "Colour Book" (multi-upload into a category, hide/delete). Upload = any logged-in user;
   hide/delete = boss. Verified on a local server: upload → feed JSON → PNG 48×48 with exactly the

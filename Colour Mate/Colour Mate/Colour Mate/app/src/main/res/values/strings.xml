@@ -173,6 +173,15 @@ Tap here for unlimited scanning</string>
     <string name="diamond_done_sub">Every diamond is in its place</string>
     <string name="reveal_done_close">Done</string>
 
+    <!-- Our Colour Book (BookGalleryActivity, BookActivity) -->
+    <string name="book_title">Colour Book</string>
+    <string name="book_all">All</string>
+    <string name="book_empty">No pages here yet.</string>
+    <string name="book_undo">Undo</string>
+    <string name="book_done">Done</string>
+    <string name="book_banner_title">✨ New: Colour Book</string>
+    <string name="book_banner_sub">Pick any colour you like and tap a shape</string>
+
     <!-- Multiplayer (util/Multiplayer, RevealActivity, JoinActivity) -->
     <string name="mp_play_with_friends">Play with friends</string>
     <string name="mp_race">Race a friend 🏁</string>

@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/ll_book_gallery"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/cm_bg_paper"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:id="@+id/ll_book_header"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="@dimen/main_content_padding_h"
+        android:paddingTop="@dimen/main_top_bar_margin_top"
+        android:paddingBottom="12dp">
+
+        <FrameLayout
+            android:id="@+id/fl_gallery_back"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/cm_glass_panel"
+            android:elevation="@dimen/cm_elev_card"
+            android:padding="12dp">
+
+            <ImageView
+                android:layout_width="@dimen/main_nav_icon_size"
+                android:layout_height="@dimen/main_nav_icon_size"
+                android:contentDescription="@string/todo"
+                android:src="@drawable/round_arrow_back_24"
+                app:tint="@color/cm_ink" />
+        </FrameLayout>
+
+        <TextView
+            style="@style/CmText.Title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="14dp"
+            android:layout_weight="1"
+            android:text="@string/book_title" />
+    </LinearLayout>
+
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:id="@+id/ll_book_cats"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingHorizontal="@dimen/main_content_padding_h" />
+    </HorizontalScrollView>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_book"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:paddingHorizontal="10dp"
+            android:paddingTop="10dp"
+            android:paddingBottom="24dp" />
+
+        <TextView
+            android:id="@+id/tv_book_message"
+            style="@style/CmText.Body"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:padding="24dp"
+            android:visibility="gone" />
+
+        <ProgressBar
+            android:id="@+id/pb_book_gallery"
+            android:layout_width="@dimen/tab_loading_size"
+            android:layout_height="@dimen/tab_loading_size"
+            android:layout_gravity="center"
+            android:indeterminate="true"
+            android:indeterminateTint="@color/cm_violet"
+            android:indeterminateTintMode="src_in" />
+    </FrameLayout>
+</LinearLayout>

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- One Colour Book page in the gallery — same flat tile as the other grids (§8.5bd). -->
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="@dimen/grid_item_margins"
+    app:cardBackgroundColor="@color/cm_surface"
+    app:cardCornerRadius="@dimen/cm_radius_md"
+    app:cardElevation="0dp">
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <com.colourmate.paintbynumber.views.AspectRatioImageView
+            android:id="@+id/iv_book_thumb"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#FFFFFF"
+            android:contentDescription="@string/todo"
+            android:scaleType="fitCenter" />
+
+        <TextView
+            android:id="@+id/tv_book_pct"
+            style="@style/CmChip"
+            android:layout_gravity="top|end"
+            android:layout_margin="8dp"
+            android:visibility="gone" />
+    </FrameLayout>
+</androidx.cardview.widget.CardView>

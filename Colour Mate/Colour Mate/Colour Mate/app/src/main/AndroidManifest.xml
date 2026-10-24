@@ -210,6 +210,17 @@
             android:screenOrientation="portrait"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
         <activity
+            android:name=".activity.BookGalleryActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.Game.FullScreen" />
+        <activity
+            android:name=".activity.BookActivity"
+            android:exported="false"
+            android:hardwareAccelerated="true"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.Game.FullScreen" />
+        <activity
             android:name=".activity.JoinActivity"
             android:exported="true"
             android:excludeFromRecents="true"

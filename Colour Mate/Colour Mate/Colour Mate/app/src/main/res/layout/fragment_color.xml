@@ -41,6 +41,49 @@
             app:tabTextColor="#171717" />
     </androidx.cardview.widget.CardView>
 
+    <!-- Our own Colour Book (BookGalleryActivity). Shown only when the server has pages. -->
+    <LinearLayout
+        android:id="@+id/ll_book_banner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/tab_blur_container"
+        android:layout_marginHorizontal="@dimen/main_content_padding_h"
+        android:layout_marginTop="10dp"
+        android:background="@drawable/cm_card"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="12dp"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                style="@style/CmText.Card"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/book_banner_title" />
+
+            <TextView
+                style="@style/CmText.Caption"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/book_banner_sub" />
+        </LinearLayout>
+
+        <ImageView
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:contentDescription="@string/book_title"
+            android:rotation="180"
+            android:src="@drawable/round_arrow_back_24"
+            app:tint="@color/cm_violet" />
+    </LinearLayout>
+
     <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/viewPager_allbook"
         android:layout_width="match_parent"

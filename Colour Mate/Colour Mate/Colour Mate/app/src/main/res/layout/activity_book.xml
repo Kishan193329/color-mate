@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Our Colour Book page: free colouring. Same chrome as the reveal game (glass back button,
+     counter chip, tool rail, palette strip at the bottom). -->
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/cm_surface_dim"
+    android:clipChildren="false">
+
+    <com.colourmate.paintbynumber.model.book.BookView
+        android:id="@+id/book_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/fl_book_palette"
+        android:layout_below="@+id/fl_book_back" />
+
+    <FrameLayout
+        android:id="@+id/fl_book_back"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_marginStart="@dimen/main_content_padding_h"
+        android:layout_marginTop="@dimen/main_top_bar_margin_top"
+        android:layout_marginBottom="8dp"
+        android:background="@drawable/cm_glass_panel"
+        android:elevation="@dimen/cm_elev_card"
+        android:padding="14dp">
+
+        <ImageView
+            android:layout_width="@dimen/main_nav_icon_size"
+            android:layout_height="@dimen/main_nav_icon_size"
+            android:contentDescription="@string/todo"
+            android:src="@drawable/round_arrow_back_24"
+            app:tint="@color/cm_ink" />
+    </FrameLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@id/fl_book_back"
+        android:layout_alignParentEnd="true"
+        android:layout_alignTop="@id/fl_book_back"
+        android:layout_marginEnd="@dimen/main_content_padding_h"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:id="@+id/btn_book_undo"
+            android:layout_width="52dp"
+            android:layout_height="52dp"
+            android:background="@drawable/cm_glass_panel"
+            android:contentDescription="@string/book_undo"
+            android:elevation="@dimen/cm_elev_card"
+            android:padding="14dp"
+            android:rotationY="0"
+            android:src="@drawable/ic_undo_book"
+            app:tint="@color/cm_ink" />
+
+        <TextView
+            android:id="@+id/tv_book_progress"
+            android:layout_width="wrap_content"
+            android:layout_height="52dp"
+            android:layout_marginStart="8dp"
+            android:background="@drawable/cm_glass_panel"
+            android:elevation="@dimen/cm_elev_card"
+            android:fontFamily="@font/quicksand_bold"
+            android:gravity="center"
+            android:paddingHorizontal="16dp"
+            android:text="0%"
+            android:textColor="@color/cm_violet"
+            android:textSize="16sp" />
+
+        <TextView
+            android:id="@+id/btn_book_done"
+            android:layout_width="wrap_content"
+            android:layout_height="52dp"
+            android:layout_marginStart="8dp"
+            android:background="@drawable/cm_btn_primary"
+            android:fontFamily="@font/quicksand_bold"
+            android:gravity="center"
+            android:paddingHorizontal="18dp"
+            android:text="@string/book_done"
+            android:textColor="#FFFFFF"
+            android:textSize="15sp" />
+    </LinearLayout>
+
+    <FrameLayout
+        android:id="@+id/fl_book_palette"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_marginHorizontal="@dimen/main_content_padding_h"
+        android:layout_marginBottom="18dp"
+        android:background="@drawable/cm_glass_panel"
+        android:elevation="@dimen/cm_elev_raised"
+        android:paddingVertical="10dp">
+
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:scrollbars="none">
+
+            <LinearLayout
+                android:id="@+id/ll_book_palette"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingHorizontal="8dp" />
+        </HorizontalScrollView>
+    </FrameLayout>
+
+    <ProgressBar
+        android:id="@+id/pb_book_loading"
+        android:layout_width="@dimen/tab_loading_size"
+        android:layout_height="@dimen/tab_loading_size"
+        android:layout_centerInParent="true"
+        android:indeterminate="true"
+        android:indeterminateTint="@color/cm_violet"
+        android:indeterminateTintMode="src_in" />
+</RelativeLayout>

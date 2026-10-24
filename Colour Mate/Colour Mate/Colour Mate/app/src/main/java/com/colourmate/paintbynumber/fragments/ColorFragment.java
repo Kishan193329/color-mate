@@ -88,6 +88,33 @@ public class ColorFragment extends Fragment {
 
         loadingView.setVisibility(View.VISIBLE);
         fetchLibraryData();
+        showBookBannerIfAny(view.findViewById(R.id.ll_book_banner));
+    }
+
+    /** Our own Colour Book sits above this tab's books, but only once the server has pages. */
+    private void showBookBannerIfAny(View banner) {
+        if (banner == null) return;
+        banner.setOnClickListener(v -> startActivity(
+                new android.content.Intent(requireContext(),
+                        com.colourmate.paintbynumber.activity.BookGalleryActivity.class)));
+        final android.content.Context app = requireContext().getApplicationContext();
+        new Thread(() -> {
+            org.json.JSONObject feed =
+                    com.colourmate.paintbynumber.activity.BookGalleryActivity.fetchFeedPublic(app);
+            org.json.JSONArray items = feed == null ? null : feed.optJSONArray("items");
+            if (items != null && items.length() > 0 && mainHandler != null) {
+                mainHandler.post(() -> {
+                    if (rootView == null || viewPager == null) return;
+                    banner.setVisibility(View.VISIBLE);
+                    // The pager sits under the tabs; move it under the banner only now. Anchoring it
+                    // to a GONE banner would have pulled it to the top of the screen.
+                    android.widget.RelativeLayout.LayoutParams lp =
+                            (android.widget.RelativeLayout.LayoutParams) viewPager.getLayoutParams();
+                    lp.addRule(android.widget.RelativeLayout.BELOW, R.id.ll_book_banner);
+                    viewPager.setLayoutParams(lp);
+                });
+            }
+        }, "book-banner").start();
     }
 
     @Override

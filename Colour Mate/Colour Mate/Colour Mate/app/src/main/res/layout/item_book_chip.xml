@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Category chip in the Colour Book gallery; selected = violet, others = white. -->
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="36dp"
+    android:background="@drawable/bg_book_chip"
+    android:fontFamily="@font/quicksand_bold"
+    android:gravity="center"
+    android:paddingHorizontal="16dp"
+    android:textColor="@color/book_chip_text"
+    android:textSize="14sp" />
