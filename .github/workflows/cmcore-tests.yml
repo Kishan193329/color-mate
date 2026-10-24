@@ -1,0 +1,28 @@
+# Builds and tests the shared C++ game core (shared/cmcore) on Linux and macOS — the same code
+# the Android app links through JNI and the iOS app is meant to compile into Xcode.
+name: Core tests
+
+on:
+  push:
+    paths:
+      - "shared/cmcore/**"
+      - ".github/workflows/cmcore-tests.yml"
+  workflow_dispatch:
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build
+        run: |
+          cmake -S shared/cmcore -B build/cmcore -DCMAKE_BUILD_TYPE=Debug \
+                -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined -fno-omit-frame-pointer"
+          cmake --build build/cmcore -j
+      - name: Test
+        run: ctest --test-dir build/cmcore --output-on-failure

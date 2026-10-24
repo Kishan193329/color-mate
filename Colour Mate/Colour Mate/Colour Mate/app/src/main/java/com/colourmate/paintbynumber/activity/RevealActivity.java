@@ -295,8 +295,8 @@ public class RevealActivity extends AppCompatActivity
     private void showHint() {
         if (level == null || revealView == null) return;
 
-        RevealLevel.Region target = firstUnfilledRegion(revealView.getSelectedNumber());
-        if (target == null) target = firstUnfilledRegion(0);      // 0 = any colour
+        RevealLevel.Region target = level.hintRegion(revealView.getSelectedNumber());
+        if (target == null) target = level.hintRegion(0);          // 0 = any colour
         if (target == null) return;                                // picture is finished
 
         if (target.number != revealView.getSelectedNumber()) {
@@ -308,22 +308,6 @@ public class RevealActivity extends AppCompatActivity
             }
         }
         revealView.showHint(target);
-    }
-
-    /**
-     * The unfilled region most worth pointing at, of {@code number}, or of any colour when 0.
-     *
-     * <p>The SMALLEST one: a player asking for a hint has already found the obvious shapes, and a
-     * hint aimed at the big background helps nobody. Smallest = hardest to spot.
-     */
-    private RevealLevel.Region firstUnfilledRegion(int number) {
-        RevealLevel.Region best = null;
-        for (RevealLevel.Region region : level.regions) {
-            if (number != 0 && region.number != number) continue;
-            if (region.revealed) continue;
-            if (best == null || region.radius < best.radius) best = region;
-        }
-        return best;
     }
 
     @Override

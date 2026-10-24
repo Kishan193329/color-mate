@@ -5,9 +5,6 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.util.SparseArray;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
-
 import java.io.InputStream;
 
 /**
@@ -27,11 +24,17 @@ import java.io.InputStream;
  *
  * <p>Deliberately separate from the flat {@code GameView} engine: the four existing tabs are paid
  * ionicsolutions content with no original photo, so they must keep working exactly as they do.
+ *
+ * <p>The rules of the game (regions, taps, progress, saving, hints) are the shared C++ core,
+ * {@link RevealCore}, which the iOS app is meant to use too. This class holds the pixels and
+ * bitmaps the Android board draws, and keeps {@link Region#revealed} in step with the core.
  */
 public class RevealLevel {
 
     /** One tappable area of the picture. */
     public static class Region {
+        /** Position in regions.json order, which is the core's index for this region. */
+        public final int index;
         public final int id;
         public final int number;
         public final int cx, cy;
@@ -41,20 +44,24 @@ public class RevealLevel {
         public final String label;
         public boolean revealed;
 
-        Region(int id, int number, int cx, int cy, float radius, int[] bbox) {
-            this.id = id;
-            this.number = number;
-            this.cx = cx;
-            this.cy = cy;
+        /**
+         * From the core's 8-int row: id, number, cx, cy, left, top, right, bottom. The core has
+         * already turned regions.json's bbox [x, y, width, height] into inclusive corners;
+         * reading it as corners made right < left and the photo never revealed.
+         */
+        Region(int index, int[] rows, float radius) {
+            int o = index * 8;
+            this.index = index;
+            this.id = rows[o];
+            this.number = rows[o + 1];
+            this.cx = rows[o + 2];
+            this.cy = rows[o + 3];
+            this.left = rows[o + 4];
+            this.top = rows[o + 5];
+            this.right = rows[o + 6];
+            this.bottom = rows[o + 7];
             this.radius = radius;
             this.label = Integer.toString(number);
-            // bbox is [x, y, width, height] (NOT [left, top, right, bottom]). Reading it as corners
-            // made right<left for most regions, so paintRegion's loop never ran and the photo never
-            // revealed even though the tap registered. Convert to inclusive corners here.
-            this.left = bbox[0];
-            this.top = bbox[1];
-            this.right = bbox[0] + bbox[2];
-            this.bottom = bbox[1] + bbox[3];
         }
     }
 
@@ -89,17 +96,16 @@ public class RevealLevel {
     /** Palette colour per number (index 0 unused, so palette[n] matches the printed number). */
     public final int[] palette;
 
-    private int revealedCount;
-    private final int[] totalPerNumber;
-    private final int[] revealedPerNumber;
+    private final RevealCore core;
 
     public interface Source {
         InputStream open(String name) throws Exception;
     }
 
-    private RevealLevel(int width, int height, char[] idMap, int[] original, int[] start,
-                        Bitmap border, BorderVector borderVector,
+    private RevealLevel(RevealCore core, int width, int height, char[] idMap, int[] original,
+                        int[] start, Bitmap border, BorderVector borderVector,
                         Region[] regions, int[] palette, VectorArt vector, String look) {
+        this.core = core;
         this.vector = vector;
         this.look = look;
         this.width = width;
@@ -121,47 +127,23 @@ public class RevealLevel {
             java.util.Arrays.fill(display, Color.WHITE);
         }
 
-        this.totalPerNumber = new int[palette.length];
-        this.revealedPerNumber = new int[palette.length];
-        for (Region region : regions) {
-            regionsById.put(region.id, region);
-            if (region.number > 0 && region.number < totalPerNumber.length) {
-                totalPerNumber[region.number]++;
-            }
-        }
+        for (Region region : regions) regionsById.put(region.id, region);
     }
 
     public static RevealLevel load(Source source) throws Exception {
-        JSONObject meta;
+        RevealCore core;
         try (InputStream in = source.open("regions.json")) {
-            meta = new JSONObject(readAll(in));
+            core = new RevealCore(readAll(in));
         }
 
-        int width = meta.getInt("w");
-        int height = meta.getInt("h");
+        int width = core.width();
+        int height = core.height();
+        int[] palette = core.palette();
 
-        JSONArray paletteJson = meta.getJSONArray("palette");
-        int maxNumber = 0;
-        for (int i = 0; i < paletteJson.length(); i++) {
-            maxNumber = Math.max(maxNumber, paletteJson.getJSONObject(i).getInt("number"));
-        }
-        int[] palette = new int[maxNumber + 1];
-        for (int i = 0; i < paletteJson.length(); i++) {
-            JSONObject entry = paletteJson.getJSONObject(i);
-            palette[entry.getInt("number")] = Color.parseColor(entry.getString("color"));
-        }
-
-        JSONArray regionsJson = meta.getJSONArray("regions");
-        Region[] regions = new Region[regionsJson.length()];
-        for (int i = 0; i < regionsJson.length(); i++) {
-            JSONObject entry = regionsJson.getJSONObject(i);
-            JSONArray bboxJson = entry.getJSONArray("bbox");
-            int[] bbox = {bboxJson.getInt(0), bboxJson.getInt(1),
-                    bboxJson.getInt(2), bboxJson.getInt(3)};
-            regions[i] = new Region(entry.getInt("id"), entry.getInt("number"),
-                    entry.getInt("cx"), entry.getInt("cy"),
-                    (float) entry.optDouble("r", 12), bbox);
-        }
+        int[] rows = core.regionInts();
+        float[] radii = core.regionRadii();
+        Region[] regions = new Region[radii.length];
+        for (int i = 0; i < regions.length; i++) regions[i] = new Region(i, rows, radii[i]);
 
         int[] original = readPixels(source, "original.jpg", "original.png", width, height);
         int[] idPixels = readPixels(source, "id_map.png", null, width, height);
@@ -206,8 +188,8 @@ public class RevealLevel {
             // photo picture, or published before the vector engine — the rasters play
         }
 
-        return new RevealLevel(width, height, idMap, original, start, border, borderVector,
-                regions, palette, vector, meta.optString("look", "black"));
+        return new RevealLevel(core, width, height, idMap, original, start, border, borderVector,
+                regions, palette, vector, core.look());
     }
 
     private static int[] readPixels(Source source, String name, String fallback,
@@ -254,6 +236,27 @@ public class RevealLevel {
         return regionsById.get(idMap[y * width + x]);
     }
 
+    /** The unfilled region of {@code selected} a tap at (x, y) means: the exact pixel, else the
+     *  nearest within {@code tolerance} picture pixels, so small spots never need a zoom. */
+    public Region tapTarget(int x, int y, int selected, int tolerance) {
+        return at(core.tapTarget(idMap, x, y, selected, tolerance));
+    }
+
+    /** The nearest unfilled region within {@code tolerance}, of {@code number} when
+     *  {@code onlyNumber}, of any colour otherwise. */
+    public Region nearestUnfilled(int x, int y, int tolerance, int number, boolean onlyNumber) {
+        return at(core.nearestUnfilled(idMap, x, y, tolerance, number, onlyNumber));
+    }
+
+    /** The smallest unfilled region of {@code number} (any colour when 0); what a hint points at. */
+    public Region hintRegion(int number) {
+        return at(core.hintRegion(number));
+    }
+
+    private Region at(int index) {
+        return index >= 0 && index < regions.length ? regions[index] : null;
+    }
+
     /**
      * Writes the region into {@link #display}, blended {@code progress} of the way from its flat
      * palette colour to the photograph — that blend IS the morph the admin preview shows.
@@ -295,12 +298,7 @@ public class RevealLevel {
 
     public void markRevealed(Region region) {
         if (region.revealed) return;
-
-        region.revealed = true;
-        revealedCount++;
-        if (region.number > 0 && region.number < revealedPerNumber.length) {
-            revealedPerNumber[region.number]++;
-        }
+        if (core.reveal(region.index)) region.revealed = true;
     }
 
     private static int blend(int from, int to, float t) {
@@ -367,30 +365,19 @@ public class RevealLevel {
 
     /** Just the revealed region ids — a few hundred numbers, small enough for prefs. */
     public String encodeProgress() {
-        StringBuilder sb = new StringBuilder();
-        for (Region region : regions) {
-            if (!region.revealed) continue;
-            if (sb.length() > 0) sb.append(',');
-            sb.append(region.id);
-        }
-        return sb.toString();
+        return core.encodeProgress();
     }
 
     /** Re-reveals saved regions and paints them straight to the photo (no morph on restore). */
     public void restoreProgress(String encoded) {
         if (encoded == null || encoded.isEmpty()) return;
 
-        for (String part : encoded.split(",")) {
-            try {
-                Region region = regionsById.get(Integer.parseInt(part.trim()));
-                // An id that is not in this picture means the save belongs to another one.
-                if (region == null || region.revealed) continue;
-
-                markRevealed(region);
-                paintRegion(region, 1f);
-            } catch (NumberFormatException ignored) {
-                // skip a corrupt entry rather than lose the whole save
-            }
+        // The core skips ids this picture does not have (a save from another picture) and corrupt
+        // entries, and hands back what it filled.
+        for (int index : core.restoreProgress(encoded)) {
+            Region region = regions[index];
+            region.revealed = true;
+            paintRegion(region, 1f);
         }
     }
 
@@ -399,22 +386,23 @@ public class RevealLevel {
     }
 
     public int totalOf(int number) {
-        return number > 0 && number < totalPerNumber.length ? totalPerNumber[number] : 0;
+        return core.totalOf(number);
     }
 
     public int revealedOf(int number) {
-        return number > 0 && number < revealedPerNumber.length ? revealedPerNumber[number] : 0;
+        return core.revealedOf(number);
     }
 
     public boolean isNumberFinished(int number) {
-        return totalOf(number) > 0 && revealedOf(number) >= totalOf(number);
+        int total = totalOf(number);
+        return total > 0 && revealedOf(number) >= total;
     }
 
     public int progressPercent() {
-        return regions.length == 0 ? 0 : Math.round(revealedCount * 100f / regions.length);
+        return core.progressPercent();
     }
 
     public boolean isFinished() {
-        return revealedCount >= regions.length;
+        return core.isFinished();
     }
 }

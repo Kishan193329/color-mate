@@ -33,7 +33,7 @@ Two **separate** products that need to be connected:
   = the full tree (app + `platform/backend` + Flutter + docs).
   **🔴 Owner's rule since 2026-10-23: do NOT merge or re-split into `main`.** New work goes on a named
   branch and is pushed there. **Name a new branch `YYYY-MM-DD-<feature>`** (owner, 2026-10-23) —
-  latest is **`2026-10-23-svg-vector-engine`** (§8.5bz, branched from `svg-daily-hit-v16` @ `9cd99f5`). `main` stays at `b48fb2b` until
+  latest is **`2026-10-24-cpp-core`** (§8.5cc, on top of `2026-10-23-svg-vector-engine` §8.5bz). `main` stays at `b48fb2b` until
   the owner says otherwise. **VPS = git:** on 2026-10-23 all 21 tracked backend files on the VPS
   were made byte-identical to this branch (deployed `1ee361f`/`cbd2507`/`72e03e1` incl. the new
   `referral.py`; its table is created lazily on the first `/index.php/App/ref/*` call; backup in
@@ -2681,6 +2681,42 @@ the old raster path otherwise (photo pictures unchanged):
 ✅ **Verified on the device against a local test server** (2 real SVGs): correct z-order, crisp at
 hint zoom (~2.4x+), tap fills with true colour, violet blink visible, progress saved and restored.
 **Not yet on the VPS** — needs deploy + republishing every published SVG item to produce the vector.
+
+### 8.5cc 🧱 Shared C++ game core for Android + iOS (2026-10-24, branch `2026-10-24-cpp-core`)
+
+Owner wants the app on iOS too. Decided: native Java Android stays, a native **Swift** iOS app
+later, and the **game rules written once in C++** both link. Step 1 (this branch) = the reveal game.
+
+- **`shared/cmcore/`** (repo root, outside the Android project): `json.*` (tiny reader, no deps),
+  `reveal_game.*` (`cm::RevealGame`: regions.json, tap target = exact pixel else nearest unfilled
+  of the selected number within tolerance, reveal, per-number counts, percent with Java's rounding,
+  hint = smallest unfilled, `encodeProgress`/`restoreProgress` — same "12,40,7" format as before,
+  so old saves restore), `vector_art.*` (streaming parser for `vector.json.gz` → flat arrays; gzip
+  via zlib, decided by magic bytes). C++17 + zlib only. **Drawing stays per platform.**
+- The id map is NOT copied into the core — calls get a pinned view of Java's `char[]`
+  (`GetPrimitiveArrayCritical`), so no extra 3 MB.
+- **Android**: compiled into the existing `libcolorbynumber.so` (`app/src/main/cpp/CMakeLists.txt`
+  does `add_subdirectory(shared/cmcore)` — listing the sources directly broke the Windows build on
+  path length). Bridge `cpp/reveal_core_jni.cpp` ↔ `model/reveal/RevealCore.java`. `RevealLevel`
+  now builds its Regions from the core and delegates counts/progress/save/restore/tap/hint;
+  `RevealView.findTarget`/`nearestRegion` and `RevealActivity.firstUnfilledRegion` are gone;
+  `VectorArt.parse` uses the core and only builds `Path`s. `Region.revealed` is kept as a mirror
+  for the renderer. ⚠️ **The Android build now needs the full repo tree** (the `main` branch,
+  which is the Android project alone, would not have `shared/`).
+- **Tests**: `shared/cmcore/tests/core_test.cpp` — synthetic checks + optional real
+  `regions.json`/`vector.json.gz`. CI `.github/workflows/cmcore-tests.yml` (Linux + macOS,
+  ASan/UBSan). Locally there is no host compiler: build it with the NDK clang
+  (`--target=aarch64-linux-android24 ... -lz -static-libstdc++`), `adb push`, run in `adb shell`.
+  Passed on CPH2333 incl. a real SVG picture (549 regions, 1111 shapes).
+- ✅ **App verified on the emulator** against a throwaway local server (`C:/cmtest`, port 8011,
+  `localtest.me` + `adb reverse`): Moonlit Cat vector picture draws, hint zooms to the smallest
+  region, an off-target tap still fills it, count 4→3, progress saved as the region id and restored.
+- 🐞 **Found on the way, fixed: Premium users got a BLANK reveal/diamond game.** With ads off the
+  ad strip is `GONE`; the palette was `layout_above` that strip, so RelativeLayout put the palette
+  at the top and squeezed the board to 0 px. `layout_alignWithParentIfMissing="true"` added to the
+  six ad-anchored layouts (reveal, diamond, game, editor, favorites, pixels_by_number) — no change
+  when ads show.
+- Next: Diamond logic into the core; then the iOS SwiftUI app (needs a Mac + Xcode).
 
 ### 8.6 Performance audit — findings + fix plan (2026-07-21, code-verified)
 

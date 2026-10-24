@@ -789,7 +789,7 @@ public class RevealView extends View {
         RevealLevel.Region region = level.regionAt(x, y);
         if (region == null || region.revealed || region.number != selectedNumber) {
             int tol = Math.max(3, (int) (dp(SWEEP_TOLERANCE_DP) / Math.max(scale, 0.0001f)));
-            region = nearestRegion(x, y, tol, true);
+            region = level.nearestUnfilled(x, y, tol, selectedNumber, true);
         }
         if (region == null || region.revealed || region.number != selectedNumber) return;
         level.markRevealed(region);
@@ -834,7 +834,7 @@ public class RevealView extends View {
 
         RevealLevel.Region region = level.regionAt(x, y);
         if (region == null || region.revealed) {
-            region = nearestRegion(x, y, tolerance(), false);
+            region = level.nearestUnfilled(x, y, tolerance(), 0, false);
         }
         if (region == null) return;
         if (region.number != selectedNumber) {
@@ -846,33 +846,7 @@ public class RevealView extends View {
     /** The unrevealed region of the SELECTED colour the tap meant — exact pixel, else nearest one
      *  within a forgiving radius (so you never have to zoom in to hit a small spot). */
     private RevealLevel.Region findTarget(int x, int y) {
-        RevealLevel.Region direct = level.regionAt(x, y);
-        if (direct != null && !direct.revealed && direct.number == selectedNumber) return direct;
-        return nearestRegion(x, y, tolerance(), true);
-    }
-
-    private RevealLevel.Region nearestRegion(int x, int y, int tol, boolean onlySelected) {
-        int w = level.width, h = level.height;
-        int x0 = Math.max(0, x - tol), x1 = Math.min(w - 1, x + tol);
-        int y0 = Math.max(0, y - tol), y1 = Math.min(h - 1, y + tol);
-        RevealLevel.Region best = null;
-        long bestDist = Long.MAX_VALUE;
-        for (int yy = y0; yy <= y1; yy++) {
-            int row = yy * w;
-            for (int xx = x0; xx <= x1; xx++) {
-                int id = level.idMap[row + xx];
-                if (id == 0) continue;
-                RevealLevel.Region cand = level.regionsById.get(id);
-                if (cand == null || cand.revealed) continue;
-                if (onlySelected && cand.number != selectedNumber) continue;
-                long dx = xx - x, dy = yy - y, dist = dx * dx + dy * dy;
-                if (dist < bestDist) {
-                    bestDist = dist;
-                    best = cand;
-                }
-            }
-        }
-        return best;
+        return level.tapTarget(x, y, selectedNumber, tolerance());
     }
 
     private int tolerance() {

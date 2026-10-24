@@ -5,15 +5,10 @@ import android.graphics.Path;
 import android.graphics.RectF;
 import android.util.SparseArray;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
-
-import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.zip.GZIPInputStream;
 
 /**
  * An SVG picture as shapes — the input of the vector engine (backend: svg_builder.write_vector).
@@ -76,45 +71,35 @@ public final class VectorArt {
     }
 
     /**
-     * Reads vector.json.gz. The server may or may not have already undone the gzip in transit,
-     * so the magic bytes decide — unzipping twice would fail and unzipping never would too.
+     * Reads vector.json.gz. Parsing (gzip or not, decided by the magic bytes, since a server may
+     * or may not undo the gzip in transit) is the shared C++ core; this only turns its flat
+     * arrays into Android paths.
      */
-    public static VectorArt parse(InputStream raw) throws Exception {
-        BufferedInputStream in = new BufferedInputStream(raw);
-        in.mark(2);
-        int b0 = in.read(), b1 = in.read();
-        in.reset();
-        InputStream body = (b0 == 0x1f && b1 == 0x8b) ? new GZIPInputStream(in) : in;
+    public static VectorArt parse(InputStream in) throws Exception {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         byte[] buf = new byte[16384];
         int n;
-        while ((n = body.read(buf)) != -1) out.write(buf, 0, n);
+        while ((n = in.read(buf)) != -1) out.write(buf, 0, n);
 
-        JSONObject js = new JSONObject(out.toString("UTF-8"));
-        int w = js.getInt("w"), h = js.getInt("h");
-        JSONArray shapes = js.getJSONArray("s");
-        int count = shapes.length();
+        Object[] parsed = RevealCore.parseVector(out.toByteArray());
+        int[] size = (int[]) parsed[0];
+        int[] region = (int[]) parsed[1];
+        int[] colour = (int[]) parsed[2];
+        int[] shapeStart = (int[]) parsed[3];
+        int[] pathStart = (int[]) parsed[4];
+        float[] points = (float[]) parsed[5];
+
+        int count = region.length;
         Path[] paths = new Path[count];
         RectF[] bounds = new RectF[count];
-        int[] region = new int[count];
-        int[] colour = new int[count];
-
         for (int i = 0; i < count; i++) {
-            // [region, "rrggbb", [x0, y0, dx1, dy1, ...], ...]  coordinates are tenths of a pixel
-            JSONArray s = shapes.getJSONArray(i);
-            region[i] = s.getInt(0);
-            colour[i] = Color.parseColor("#" + s.getString(1));
             Path p = new Path();
             p.setFillType(Path.FillType.EVEN_ODD);
-            for (int k = 2; k < s.length(); k++) {
-                JSONArray sub = s.getJSONArray(k);
-                int x = sub.getInt(0), y = sub.getInt(1);
-                p.moveTo(x / 10f, y / 10f);
-                for (int j = 2; j + 1 < sub.length(); j += 2) {
-                    x += sub.getInt(j);
-                    y += sub.getInt(j + 1);
-                    p.lineTo(x / 10f, y / 10f);
-                }
+            for (int sub = shapeStart[i]; sub < shapeStart[i + 1]; sub++) {
+                int first = pathStart[sub], end = pathStart[sub + 1];
+                if (first >= end) continue;
+                p.moveTo(points[first * 2], points[first * 2 + 1]);
+                for (int k = first + 1; k < end; k++) p.lineTo(points[k * 2], points[k * 2 + 1]);
                 p.close();
             }
             RectF r = new RectF();
@@ -122,6 +107,6 @@ public final class VectorArt {
             paths[i] = p;
             bounds[i] = r;
         }
-        return new VectorArt(w, h, paths, bounds, region, colour);
+        return new VectorArt(size[0], size[1], paths, bounds, region, colour);
     }
 }
