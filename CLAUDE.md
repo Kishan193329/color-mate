@@ -2807,6 +2807,19 @@ which is his own domain — §8.5ce). Instead, separate admin pages for OUR OWN 
   hide/delete = boss. Verified on a local server: upload → feed JSON → PNG 48×48 with exactly the
   chosen colours; hide drops it from `images2.json`; book feed/art/thumb 200; no token → 401.
 
+### 8.5cg 🚀 Deployed: multiplayer + own-domain catalogue + Pixel/Book (2026-10-24)
+
+- Backend `2026-10-24-pixel-book` @ `0071e1a` deployed with the **Deploy backend** workflow
+  (`gh workflow run deploy-backend.yml --ref <branch>`); `/opt/colorforge/DEPLOYED` says so. All
+  existing feeds still 200 (Number, daily, ads, hit, Diamond, admin).
+- **nginx**: `location /index.php/App/mp/` with `Upgrade`/`Connection "upgrade"` added to
+  `/etc/nginx/sites-enabled/colorforge` (backup `/root/nginx_colorforge_*.bak`). Verified a live
+  co-op room over `wss://` — two clients, a fill relayed.
+- **Mirror** of the ionicsolutions catalogue started on the VPS (`/root/legacy_mirror.log`,
+  32,086 files, ~6 files/s ≈ 1.5 h, resumable — just run it again if it stops). Trial first: S3
+  `legacy/...` objects served through `/ColoringBook/...` 302s, audio URLs come back `https://`.
+- SSH from the PC: `ssh -i ~/.ssh/colorforge_vps root@187.77.141.63` (plain `ssh root@…` is refused).
+
 ### 8.6 Performance audit — findings + fix plan (2026-07-21, code-verified)
 
 Root cause of "app not smooth": the team already found the worst jank source (**per-item
