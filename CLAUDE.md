@@ -46,6 +46,20 @@ Two **separate** products that need to be connected:
   committed deliberately. Put `ADMOB_APP_ID` in `~/.gradle/gradle.properties`, never the project.
   *(Historical: before this date `platform/` and `Colour Mate/` were untracked — see §8.5al for
   what that cost.)*
+- **🌐 WORKING WITHOUT THE PC (set up 2026-10-24).** Everything below runs on GitHub, so a cloud
+  session (claude.ai/code, the Claude mobile app) can carry the project with no PC:
+  | Need | How |
+  |---|---|
+  | Backend live | `.github/workflows/deploy-backend.yml` — push to the branch in repo variable **`DEPLOY_BRANCH`** (Settings → Variables; unset = push deploys nothing), or Actions → *Deploy backend* → Run workflow on any branch. Server side `.github/deploy/vps_deploy.sh`: waits for the generation queue, backs up code to `/root/deploy_backups/`, copies, `pip install` only if `requirements.txt` changed (CPU torch index), `import app`, restart, health check, **auto-rollback**. Writes `/opt/colorforge/DEPLOYED` (sha/branch/time). First run 2026-10-24 on `quality-fixes` @ `7c95531`: success, no-op (that backend == live). |
+  | App APK | `.github/workflows/build-apk.yml` — any push touching the Android project (or Run workflow) builds the debug APK and puts it on the rolling pre-release **`apk-<branch>`** (Releases page → download on the phone). Signed with the PC's debug key (secret `DEBUG_KEYSTORE_B64`), so it installs over the test phones' debug build. CI overrides the project's Windows `org.gradle.java.home` via `~/.gradle/gradle.properties`. Release AABs still need the owner's upload keystore (not in CI). |
+  | SVG uploads | `.github/workflows/upload-svgs.yml` — Run workflow with ids (or empty = all) and publish on/off. The 53 SVGs are on the VPS in `/root/svg_upload/source/pics`; the admin password stays on the VPS. |
+  | Admin | the web admin, as always: https://srv1919471.hstgr.cloud/ |
+  Secrets: `VPS_HOST`, `VPS_SSH_KEY` (key `github-actions-deploy@color-mate`, used only by CI; its
+  public half is in the VPS `authorized_keys`), `VPS_KNOWN_HOSTS`, `DEBUG_KEYSTORE_B64`. **The repo is
+  PUBLIC** — never commit a secret; APK pre-releases are publicly downloadable. A cloud session has
+  no SSH to the VPS: change the server only through these workflows.
+  ⚠️ Workflow files only show "Run workflow" when they are on the default branch (`quality-fixes`),
+  so new workflows go there as well as on the feature branch.
 - Root has ~40 `*_REPORT.md` files from earlier work. Mostly historical, low value.
 - `flutter_app/` was **deleted on 2026-07-20** at the owner's explicit request. It was an
   old Flutter prototype, not the real product. Do not recreate it. (An empty locked folder
