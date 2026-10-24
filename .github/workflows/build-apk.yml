@@ -48,13 +48,28 @@ jobs:
           echo "org.gradle.java.home=$JAVA_HOME" >> ~/.gradle/gradle.properties
           echo "sdk.dir=$ANDROID_HOME" > local.properties
           if [ -n "${{ secrets.DEBUG_KEYSTORE_B64 }}" ]; then
-            echo "${{ secrets.DEBUG_KEYSTORE_B64 }}" | base64 -d > ~/.android/debug.keystore
+            echo "${{ secrets.DEBUG_KEYSTORE_B64 }}" | base64 -d > "$RUNNER_TEMP/debug.keystore"
           fi
 
       - name: Build debug APK
         run: |
           chmod +x gradlew
-          ./gradlew assembleDebug --no-daemon --stacktrace
+          # Name the key explicitly. Writing ~/.android/debug.keystore was NOT enough: on the runner
+          # AGP looked elsewhere and signed with a fresh key, so the APK refused to install over the
+          # phones' build ("signatures do not match"). Injected signing wins over any default.
+          sign=()
+          if [ -f "$RUNNER_TEMP/debug.keystore" ]; then
+            sign=(-Pandroid.injected.signing.store.file="$RUNNER_TEMP/debug.keystore"
+                  -Pandroid.injected.signing.store.password=android
+                  -Pandroid.injected.signing.key.alias=androiddebugkey
+                  -Pandroid.injected.signing.key.password=android)
+          fi
+          ./gradlew assembleDebug --no-daemon --stacktrace "${sign[@]}"
+
+      - name: Check the signing key
+        run: |
+          bt=$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)
+          "$bt/apksigner" verify --print-certs app/build/outputs/apk/debug/app-debug.apk | grep SHA-256
 
       - name: Name the APK
         id: apk
