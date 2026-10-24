@@ -1,0 +1,79 @@
+# Push the ColorForge backend (platform/backend) to the Hostinger VPS.
+#
+#  - automatic: a push to the branch named in the repo variable DEPLOY_BRANCH that changes
+#    platform/backend/** (Settings → Secrets and variables → Actions → Variables). Unset = nothing
+#    deploys on push.
+#  - manual: Actions → "Deploy backend" → Run workflow → pick any branch.
+#
+# Secrets: VPS_HOST, VPS_SSH_KEY (a key used only by this workflow), VPS_KNOWN_HOSTS.
+# The server-side steps (wait for the queue, backup, copy, import check, restart, health check,
+# rollback) are in .github/deploy/vps_deploy.sh.
+name: Deploy backend
+
+on:
+  push:
+    paths:
+      - "platform/backend/**"
+      - ".github/deploy/**"
+      - ".github/workflows/deploy-backend.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-backend
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: github.event_name == 'workflow_dispatch' || (vars.DEPLOY_BRANCH != '' && github.ref_name == vars.DEPLOY_BRANCH)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Syntax check
+        run: python3 -m compileall -q platform/backend -x '(\.venv|data|tests)/'
+
+      - name: SSH key
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          printf '%s\n' "${{ secrets.VPS_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+
+      - name: Did requirements.txt change since the live deploy?
+        id: req
+        run: |
+          live=$(ssh -i ~/.ssh/deploy_key root@${{ secrets.VPS_HOST }} \
+                 "sed -n 's/^sha=//p' /opt/colorforge/DEPLOYED 2>/dev/null" || true)
+          if [ -n "$live" ] && git cat-file -e "$live" 2>/dev/null; then
+            if git diff --quiet "$live" HEAD -- platform/backend/requirements.txt; then
+              echo "changed=0" >> "$GITHUB_OUTPUT"
+            else
+              echo "changed=1" >> "$GITHUB_OUTPUT"
+            fi
+          else
+            # first run, or the live commit is not in this branch: compare file contents instead
+            remote=$(ssh -i ~/.ssh/deploy_key root@${{ secrets.VPS_HOST }} \
+                     "cat /opt/colorforge/requirements.txt" | sha1sum)
+            here=$(sha1sum < platform/backend/requirements.txt)
+            [ "$remote" = "$here" ] && echo "changed=0" >> "$GITHUB_OUTPUT" || echo "changed=1" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Upload
+        run: |
+          rsync -az --delete -e "ssh -i ~/.ssh/deploy_key" \
+            --exclude data/ --exclude .venv/ --exclude models/ --exclude storage.env \
+            --exclude __pycache__/ \
+            platform/backend/ root@${{ secrets.VPS_HOST }}:/opt/colorforge-incoming/
+          scp -i ~/.ssh/deploy_key .github/deploy/vps_deploy.sh \
+            root@${{ secrets.VPS_HOST }}:/opt/colorforge-incoming-deploy.sh
+
+      - name: Deploy on the VPS
+        run: |
+          ssh -i ~/.ssh/deploy_key root@${{ secrets.VPS_HOST }} \
+            "bash /opt/colorforge-incoming-deploy.sh '${{ github.sha }}' '${{ github.ref_name }}' '${{ steps.req.outputs.changed }}'"
+
+      - name: Public check
+        run: curl -fsS -o /dev/null -w '%{http_code}\n' https://srv1919471.hstgr.cloud/index.php/Number/category/
