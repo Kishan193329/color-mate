@@ -2854,7 +2854,19 @@ Owner wants his own model that turns any picture into a clean border (colouring-
   closed); `A_raw` keeps more mandala detail; **`D_sketch` is unreliable** (kitchen fell apart into
   dashes, Krishna lost half the face). **Not solved by any variant:** busy photos (Krishna, the
   bead-texture cat) — that needs flat source art or a trained colour→line ControlNet.
-- Spend so far ~$1.65 of $15 (balance $13.37 after this run).
+- **"Line first, colour second" test (2026-10-25, `redraw_test.py`, A100 80GB):** the picture is
+  REDRAWN by **Qwen-Image-Edit** (Apache-2.0, commercial OK; FLUX Kontext dev is non-commercial —
+  avoid) with a colouring-page prompt. **The line art is the breakthrough** — clean, closed, bold
+  outer / thin inner, solid-black pupils, the look of the owner's reference apps, on all 8 pictures
+  incl. Krishna and the bead-cat that every canny variant failed. Caveat: it REDRAWS, so it drops
+  backgrounds and restyles (Krishna got cuter, Jagannath simplified) — not aligned to the photo.
+  **The colour step failed**: SDXL canny-ControlNet img2img from the photo gave washed, blurry
+  colour that ignores the lines (woman, Jagannath worst). Next: colour the LINE ART with
+  Qwen-Image-Edit too (edit models keep structure), then put the lines back on top.
+  Needs pins `torch 2.6 (cu124)`, `diffusers>=0.35.1`, `transformers>=4.51.3,<5`; ~75 GB disk.
+- Spend so far ~$5.70 of $15 (balance $9.31). The A100 run cost **$4.06**, double the estimate:
+  the ~58 GB model download and a hung ssh session kept the pod up longer. Download weights once to
+  a RunPod network volume before the next GPU run.
 
 ### 8.6 Performance audit — findings + fix plan (2026-07-21, code-verified)
 
