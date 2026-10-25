@@ -33,6 +33,12 @@ def colour_edges(im, dark):
     """Edges between flat colours. The drawn outline itself is given to the colours on either side
     first, so where two fills meet across an outline the edge lands ON it, not as a second line
     beside it (which is what doubled every outline)."""
+    lbl = colour_labels(im, dark)
+    return cv2.dilate(lbl, np.ones((3, 3), np.uint8)) != cv2.erode(lbl, np.ones((3, 3), np.uint8))
+
+
+def colour_labels(im, dark):
+    """One flat-colour label per pixel, outline and slivers folded into the fills beside them."""
     h, w = im.shape[:2]
     lab = cv2.cvtColor(cv2.bilateralFilter(im, 7, 30, 7), cv2.COLOR_BGR2LAB).astype(np.float32)
     small = cv2.resize(lab, (512, round(512 * h / w)), interpolation=cv2.INTER_AREA).reshape(-1, 3)
@@ -60,8 +66,7 @@ def colour_edges(im, dark):
         bad = (st[:, cv2.CC_STAT_AREA] < MIN_PATCH) | (thick < MIN_THICK)
         bad[0] = False
         sliver |= bad[cc]
-    lbl = cv2.medianBlur(_fill_from_nearest(lbl, sliver), 9)
-    return cv2.dilate(lbl, np.ones((3, 3), np.uint8)) != cv2.erode(lbl, np.ones((3, 3), np.uint8))
+    return cv2.medianBlur(_fill_from_nearest(lbl, sliver), 9)
 
 
 def to_lines(im):
