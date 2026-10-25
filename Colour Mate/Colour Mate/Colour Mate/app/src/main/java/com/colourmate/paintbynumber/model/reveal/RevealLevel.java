@@ -96,7 +96,13 @@ public class RevealLevel {
     /** Palette colour per number (index 0 unused, so palette[n] matches the printed number). */
     public final int[] palette;
 
+    /** The picture starts on a grey sketch of its own colours (start.jpg), not on white. */
+    public final boolean sketchStart;
+
     private final RevealCore core;
+    /** Region ids in the order the player filled them — what the finish replay plays back.
+     *  The core's progress string is in region order, so it cannot carry this. */
+    private final java.util.ArrayList<Integer> fillOrder = new java.util.ArrayList<>();
 
     public interface Source {
         InputStream open(String name) throws Exception;
@@ -117,6 +123,7 @@ public class RevealLevel {
         this.regions = regions;
         this.palette = palette;
 
+        this.sketchStart = start != null && start.length == original.length;
         this.display = new int[original.length];
         // Unrevealed picture = paper, so the line art and numbers read cleanly — or, for a
         // Figma-SVG picture, start.jpg: a light grey sketch of its own colours, so the picture is
@@ -298,7 +305,27 @@ public class RevealLevel {
 
     public void markRevealed(Region region) {
         if (region.revealed) return;
-        if (core.reveal(region.index)) region.revealed = true;
+        if (core.reveal(region.index)) {
+            region.revealed = true;
+            fillOrder.add(region.id);
+        }
+    }
+
+    /** Filled region ids, in fill order. */
+    public int[] fillOrder() {
+        int[] out = new int[fillOrder.size()];
+        for (int i = 0; i < out.length; i++) out[i] = fillOrder.get(i);
+        return out;
+    }
+
+    /** {@link #fillOrder()} as "12,40,7" for prefs. */
+    public String encodeFillOrder() {
+        StringBuilder sb = new StringBuilder();
+        for (int id : fillOrder) {
+            if (sb.length() > 0) sb.append(',');
+            sb.append(id);
+        }
+        return sb.toString();
     }
 
     private static int blend(int from, int to, float t) {
@@ -369,16 +396,32 @@ public class RevealLevel {
     }
 
     /** Re-reveals saved regions and paints them straight to the photo (no morph on restore). */
-    public void restoreProgress(String encoded) {
+    public void restoreProgress(String encoded, String order) {
         if (encoded == null || encoded.isEmpty()) return;
 
         // The core skips ids this picture does not have (a save from another picture) and corrupt
         // entries, and hands back what it filled.
+        java.util.LinkedHashSet<Integer> filled = new java.util.LinkedHashSet<>();
         for (int index : core.restoreProgress(encoded)) {
             Region region = regions[index];
             region.revealed = true;
             paintRegion(region, 1f);
+            filled.add(region.id);
         }
+
+        // Fill order: the saved order first (only ids that really are filled), then anything a
+        // save from before the order existed left out, in region order.
+        if (order != null) {
+            for (String part : order.split(",")) {
+                try {
+                    Integer id = Integer.valueOf(part.trim());
+                    if (filled.remove(id)) fillOrder.add(id);
+                } catch (NumberFormatException ignored) {
+                    // corrupt entry
+                }
+            }
+        }
+        fillOrder.addAll(filled);
     }
 
     public int numberCount() {

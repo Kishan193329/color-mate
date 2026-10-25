@@ -169,6 +169,10 @@ Tap here for unlimited scanning</string>
     <string name="reveal_done_sub">Saved to your gallery</string>
     <string name="reveal_done_next">Next picture</string>
     <string name="reveal_done_share">Share</string>
+    <string name="reveal_done_replay">▶ Replay</string>
+    <string name="reveal_done_video">Share video</string>
+    <string name="reveal_video_making">Making your video…</string>
+    <string name="reveal_video_failed">Could not make the video on this phone</string>
     <string name="diamond_done_title">Picture complete! \uD83D\uDC8E</string>
     <string name="diamond_done_sub">Every diamond is in its place</string>
     <string name="reveal_done_close">Done</string>

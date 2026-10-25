@@ -2885,6 +2885,36 @@ Owner wants his own model that turns any picture into a clean border (colouring-
   the ~58 GB model download and a hung ssh session kept the pod up longer. Download weights once to
   a RunPod network volume before the next GPU run.
 
+### 8.5ci 🎬 Finish replay time-lapse + MP4 share (2026-10-25, branch `2026-10-25-reveal-replay`)
+
+Owner sent a 9 s video of the reference game's finish (blank page → fills appear → outline fades →
+the painting alone) and said build it. Reveal game only (New 2026 / mixed / SVG pictures).
+- `RevealLevel` now records **fill order** (`markRevealed` appends; `encodeFillOrder`), saved as
+  `key + "#order"` beside the progress string. The core's progress string is in REGION order, so it
+  could not carry this. Old saves without `#order` replay in region order. `sketchStart` = the
+  picture began on start.jpg.
+- `model/reveal/ReplayRenderer` — small copy (long side 720, even sizes for H.264): blank (white, or
+  the grey sketch recomputed from `original` as 255-(255-L)/2, so start.jpg need not be kept in RAM)
+  → regions in fill order over 7 s (smoothstep) → pixels under the outline + outline alpha fading
+  over 1 s → 1 s hold. Pixels no filled region owns go in at the fade, else the finished picture
+  had white cracks where the lines were.
+- `ReplayView` plays it full screen (tap = skip); `ReplayEncoder` writes MP4 (MediaCodec AVC,
+  `lockHardwareCanvas` on the input surface — the docs call `lockCanvas` there unreliable — and pts
+  from the frame number, since encoding runs faster than real time). Shared via FileProvider
+  (`cache/replay/<fileName>.mp4`) with `setClipData` so the share sheet can preview it.
+- Finish flow: burst → 1.2 s → replay → sheet. Sheet gained **▶ Replay** and **Share video**.
+- 🐞 Fixed on the way: every finish-sheet button rendered solid violet with dark text (unreadable)
+  — the screen's theme is MaterialComponents, so `<Button>` is a MaterialButton that tints over
+  `android:background`. `app:backgroundTint="@null"` on all six. Replay/sheet overlays got
+  elevation 30/40dp: the tool rail has elevation and drew on top of a flat overlay.
+- ✅ Verified on the emulator against the live server (Paris, 1,974 regions, seeded to one left):
+  replay played full screen, sheet readable, MP4 = 270 frames / 9.0 s / 720×720 and decodes.
+  SVG pictures bake their ink into `original`, so their outline does not visibly fade — only
+  photo pictures show the fade. Not tested on a real phone.
+- ⚠️ Noticed, not fixed: on the emulator **SplashActivity took 23.6 s** to display and an input
+  during it caused an ANR. Prefs file `colorbynumber.xml` is 4.4 MB on a fresh install — worth
+  checking whether it is read on the main thread at start.
+
 ### 8.6 Performance audit — findings + fix plan (2026-07-21, code-verified)
 
 Root cause of "app not smooth": the team already found the worst jank source (**per-item

@@ -124,6 +124,8 @@ public class RevealActivity extends AppCompatActivity
         findViewById(R.id.btn_done_close).setOnClickListener(v -> leaveWithAd());
         findViewById(R.id.btn_done_next).setOnClickListener(v -> openNextPicture());
         findViewById(R.id.btn_done_share).setOnClickListener(v -> shareFinishedArtwork());
+        findViewById(R.id.btn_done_replay).setOnClickListener(v -> playReplay());
+        findViewById(R.id.btn_done_video).setOnClickListener(v -> shareReplayVideo());
         findViewById(R.id.btn_reveal_fit).setOnClickListener(v -> revealView.fitToScreen());
         findViewById(R.id.btn_reveal_next).setOnClickListener(v -> requestHint());
         findViewById(R.id.btn_reveal_friends).setOnClickListener(v -> askPlayWithFriends());
@@ -194,7 +196,7 @@ public class RevealActivity extends AppCompatActivity
                         ? name -> getAssets().open(assetDirectory + "/" + name)
                         : RevealAssetCache.source(this, baseUrl);
                 loaded = RevealLevel.load(source);
-                if (multiplayer == null) loaded.restoreProgress(savedProgress());
+                if (multiplayer == null) loaded.restoreProgress(savedProgress(""), savedProgress("#order"));
             } catch (Exception e) {
                 Log.e(TAG, "Reveal level load failed", e);
             }
@@ -386,19 +388,106 @@ public class RevealActivity extends AppCompatActivity
                     canPlayTogether() ? View.VISIBLE : View.GONE);
         }
 
-        View sheet = findViewById(R.id.fl_reveal_done);
-        View card = findViewById(R.id.ll_done_card);
         if (multiplayer == null) {
             findViewById(R.id.btn_done_next).setVisibility(
                     nextUnfinished() != null ? View.VISIBLE : View.GONE);
         }
+        // Let the player see their finished picture and the burst, then the time-lapse of how
+        // they coloured it (the reference game's finish), then the sheet.
+        mainHandler.postDelayed(() -> {
+            if (!isFinishing()) playReplay();
+        }, 1200);
+    }
+
+    // ─── Finish replay ───
+
+    private com.colourmate.paintbynumber.model.reveal.ReplayRenderer replay;
+    private java.io.File replayVideo;
+    private boolean encodingVideo;
+    /** Long side of the replay, on screen and in the shared video. */
+    private static final int REPLAY_SIDE = 720;
+
+    private com.colourmate.paintbynumber.model.reveal.ReplayRenderer replayRenderer() {
+        if (replay == null && level != null && level.fillOrder().length > 0) {
+            replay = new com.colourmate.paintbynumber.model.reveal.ReplayRenderer(level, REPLAY_SIDE);
+        }
+        return replay;
+    }
+
+    private void playReplay() {
+        com.colourmate.paintbynumber.model.reveal.ReplayRenderer r = replayRenderer();
+        if (r == null) { showDoneSheet(); return; }
+        findViewById(R.id.fl_reveal_done).setVisibility(View.GONE);
+        View frame = findViewById(R.id.fl_reveal_replay);
+        frame.setAlpha(0f);
+        frame.setVisibility(View.VISIBLE);
+        frame.animate().alpha(1f).setDuration(250).start();
+        ((com.colourmate.paintbynumber.model.reveal.ReplayView) findViewById(R.id.rv_reveal_replay))
+                .play(r, this::showDoneSheet);
+    }
+
+    private void showDoneSheet() {
+        if (isFinishing()) return;
+        View sheet = findViewById(R.id.fl_reveal_done);
+        View card = findViewById(R.id.ll_done_card);
+        findViewById(R.id.btn_done_replay).setVisibility(replayRenderer() != null ? View.VISIBLE : View.GONE);
+        findViewById(R.id.btn_done_video).setVisibility(replayRenderer() != null ? View.VISIBLE : View.GONE);
         sheet.setAlpha(0f);
         sheet.setVisibility(View.VISIBLE);
-        // Let the player look at their finished picture first; the sheet slides up after.
         card.setTranslationY(dp(160));
-        sheet.animate().alpha(1f).setStartDelay(900).setDuration(260).start();
-        card.animate().translationY(0f).setStartDelay(900).setDuration(320)
+        sheet.animate().alpha(1f).setStartDelay(500).setDuration(260).start();
+        card.animate().translationY(0f).setStartDelay(500).setDuration(320)
                 .setInterpolator(new android.view.animation.DecelerateInterpolator()).start();
+    }
+
+    /** The replay as an MP4 through the system share sheet. Encoded once, off the UI thread,
+     *  from its own renderer (the on-screen one may be playing). */
+    private void shareReplayVideo() {
+        if (replayVideo != null && replayVideo.exists()) { sendVideo(replayVideo); return; }
+        if (encodingVideo || level == null) return;
+        encodingVideo = true;
+        Toast.makeText(this, R.string.reveal_video_making, Toast.LENGTH_SHORT).show();
+        final RevealLevel done = level;
+        final String name = artworkName() == null ? "replay" : artworkName();
+        new Thread(() -> {
+            java.io.File out = null;
+            try {
+                java.io.File dir = new java.io.File(getCacheDir(), "replay");
+                //noinspection ResultOfMethodCallIgnored
+                dir.mkdirs();
+                out = new java.io.File(dir, name + ".mp4");
+                com.colourmate.paintbynumber.model.reveal.ReplayRenderer r =
+                        new com.colourmate.paintbynumber.model.reveal.ReplayRenderer(done, REPLAY_SIDE);
+                com.colourmate.paintbynumber.model.reveal.ReplayEncoder.encode(r, out);
+                r.release();
+            } catch (Exception e) {
+                Log.w(TAG, "replay video failed", e);
+                out = null;
+            }
+            final java.io.File result = out;
+            mainHandler.post(() -> {
+                encodingVideo = false;
+                if (isFinishing()) return;
+                if (result == null || result.length() == 0) {
+                    Toast.makeText(this, R.string.reveal_video_failed, Toast.LENGTH_LONG).show();
+                    return;
+                }
+                replayVideo = result;
+                sendVideo(result);
+            });
+        }, "reveal-video").start();
+    }
+
+    private void sendVideo(java.io.File file) {
+        android.net.Uri uri = androidx.core.content.FileProvider.getUriForFile(
+                this, getPackageName() + ".provider", file);
+        Intent send = new Intent(Intent.ACTION_SEND)
+                .setType("video/mp4")
+                .putExtra(Intent.EXTRA_STREAM, uri)
+                .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        // lets the share sheet read the file for its preview
+        send.setClipData(android.content.ClipData.newRawUri(null, uri));
+        startActivity(Intent.createChooser(send, getString(R.string.reveal_done_video)));
     }
 
     private float dp(float v) {
@@ -525,10 +614,11 @@ public class RevealActivity extends AppCompatActivity
         return asset != null ? asset : getIntent().getStringExtra(EXTRA_BASE_URL);
     }
 
-    private String savedProgress() {
+    /** "" = the filled regions, "#order" = the order they were filled in (for the replay). */
+    private String savedProgress(String suffix) {
         String key = progressKey();
         return key == null ? null
-                : getSharedPreferences(PREFS, MODE_PRIVATE).getString(key, null);
+                : getSharedPreferences(PREFS, MODE_PRIVATE).getString(key + suffix, null);
     }
 
     // ─── Multiplayer ───
@@ -628,6 +718,7 @@ public class RevealActivity extends AppCompatActivity
             // without decoding region lists (ColoringsAdapter reads key + "#pct").
             getSharedPreferences(PREFS, MODE_PRIVATE).edit()
                     .putString(key, level.encodeProgress())
+                    .putString(key + "#order", level.encodeFillOrder())
                     .putInt(key + "#pct", level.progressPercent())
                     .putLong(key + "#ms", soloMs).apply();
         }

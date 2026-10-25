@@ -182,10 +182,29 @@
         android:indeterminate="true"
         android:indeterminateTint="@color/cm_violet"
         android:indeterminateTintMode="src_in" />
+    <!-- Finish replay: a time-lapse of the player's fills, then the outline fading away.
+         Plays once before the completion sheet; a tap skips it. -->
+    <FrameLayout
+        android:id="@+id/fl_reveal_replay"
+        android:elevation="30dp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#FFFFFF"
+        android:clickable="true"
+        android:focusable="true"
+        android:visibility="gone">
+
+        <com.colourmate.paintbynumber.model.reveal.ReplayView
+            android:id="@+id/rv_reveal_replay"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </FrameLayout>
+
     <!-- Completion sheet. Hidden until the last region is revealed; the finish used to be a
          two-second Toast, which threw away the best moment of the whole session. -->
     <FrameLayout
         android:id="@+id/fl_reveal_done"
+        android:elevation="40dp"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="#66201636"
@@ -230,6 +249,7 @@
                 android:layout_height="52dp"
                 android:layout_marginTop="18dp"
                 android:background="@drawable/cm_btn_primary"
+                app:backgroundTint="@null"
                 android:text="@string/reveal_done_next"
                 android:textAllCaps="false"
                 android:textColor="#FFFFFF"
@@ -242,10 +262,46 @@
                 android:layout_height="48dp"
                 android:layout_marginTop="10dp"
                 android:background="@drawable/cm_btn_soft"
+                app:backgroundTint="@null"
                 android:text="@string/reveal_done_share"
                 android:textAllCaps="false"
                 android:textColor="@color/cm_ink"
                 android:textSize="15sp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/btn_done_replay"
+                    android:layout_width="0dp"
+                    android:layout_height="48dp"
+                    android:layout_marginEnd="5dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/cm_btn_soft"
+                    app:backgroundTint="@null"
+                    android:text="@string/reveal_done_replay"
+                    android:textAllCaps="false"
+                    android:textColor="@color/cm_ink"
+                    android:textSize="15sp"
+                    android:visibility="gone" />
+
+                <Button
+                    android:id="@+id/btn_done_video"
+                    android:layout_width="0dp"
+                    android:layout_height="48dp"
+                    android:layout_marginStart="5dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/cm_btn_soft"
+                    app:backgroundTint="@null"
+                    android:text="@string/reveal_done_video"
+                    android:textAllCaps="false"
+                    android:textColor="@color/cm_ink"
+                    android:textSize="15sp"
+                    android:visibility="gone" />
+            </LinearLayout>
 
             <Button
                 android:id="@+id/btn_done_challenge"
@@ -253,6 +309,7 @@
                 android:layout_height="48dp"
                 android:layout_marginTop="10dp"
                 android:background="@drawable/cm_btn_soft"
+                app:backgroundTint="@null"
                 android:text="@string/mp_challenge_friend"
                 android:textAllCaps="false"
                 android:textColor="@color/cm_violet"
@@ -266,6 +323,7 @@
                 android:layout_height="48dp"
                 android:layout_marginTop="10dp"
                 android:background="@drawable/cm_btn_ghost"
+                app:backgroundTint="@null"
                 android:text="@string/reveal_done_close"
                 android:textAllCaps="false"
                 android:textColor="@color/cm_ink"
