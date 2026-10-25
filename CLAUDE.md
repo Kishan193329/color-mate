@@ -2864,6 +2864,14 @@ Owner wants his own model that turns any picture into a clean border (colouring-
   colour that ignores the lines (woman, Jagannath worst). Next: colour the LINE ART with
   Qwen-Image-Edit too (edit models keep structure), then put the lines back on top.
   Needs pins `torch 2.6 (cu124)`, `diffusers>=0.35.1`, `transformers>=4.51.3,<5`; ~75 GB disk.
+- **`line_cleanup.py` (CPU, no cost)** makes the redrawn line art a colour-by-number board: 2048 px
+  with smoothed edges; a solid mass is opened to a 6 px outline only when its THICK CORE (ink
+  > 28 px wide) covers > 0.4% of the canvas — Krishna's hair opens, pupils / a lion's nose stay
+  solid (judging by the whole ink piece was wrong: the pupil is joined to the eye outline, so the
+  eyes got hollowed too); crumbs thinner than 3.5 px become ink, specks < 60 px dropped.
+  ⚠️ Inking every cell under r 7 turned beaded jewellery into black blotches — those small cells
+  (Krishna 258, Jagannath 177) must instead be MERGED into a neighbouring region by the game builder.
+  Result: Krishna 696 → 404 cells, hair colourable, eyes intact.
 - Spend so far ~$5.70 of $15 (balance $9.31). The A100 run cost **$4.06**, double the estimate:
   the ~58 GB model download and a hung ssh session kept the pod up longer. Download weights once to
   a RunPod network volume before the next GPU run.
