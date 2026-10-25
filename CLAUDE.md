@@ -2826,6 +2826,29 @@ which is his own domain — §8.5ce). Instead, separate admin pages for OUR OWN 
   `legacy/...` objects served through `/ColoringBook/...` 302s, audio URLs come back `https://`.
 - SSH from the PC: `ssh -i ~/.ssh/colorforge_vps root@187.77.141.63` (plain `ssh root@…` is refused).
 
+### 8.5ch 🤖 Own line-art AI: SDXL + ControlNet + trained LoRA on RunPod (2026-10-25, branch `2026-10-25-lineart-ai`)
+
+Owner wants his own model that turns any picture into a clean border (colouring-page) image.
+- **No GPU on the VPS** (2 vCPU EPYC, 8 GB). PC has a GTX 1650 4 GB. GPU work runs on **RunPod**;
+  the API key lives ONLY in `~/.runpod_key` on the PC (never in the repo — the repo is public).
+  The key was once pasted in chat: the owner should rotate it in the RunPod console.
+  Helper `C:/Users/User/cmci/pod.py` (create/wait/stop/status); SSH key `~/.ssh/runpod_ed25519`.
+  **Always terminate pods** (`python pod.py stop <id>`), they bill by the hour.
+- `tools/lineart_ai/proto_sdxl.py` — SDXL base + `xinsir/controlnet-canny-sdxl-1.0` + sdxl-vae-fp16-fix,
+  ~5 s/image on a 4090, plus `hollow()` post-process (solid black areas → 3 px outline, specks
+  dropped) which was the single biggest improvement. Pins: diffusers 0.31.0 + transformers 4.46.3
+  (newer transformers breaks diffusers 0.31 imports).
+- `prep_data.py` → 1,437 of the owner's own By Number line-art pages (160/category, from
+  `/ColoringBook/`), `train_lora.sh` → LoRA rank 16, 1200 steps, 1024 px (A40, ~1 h 45 m, ~$1).
+  ⚠️ Do NOT pass `--variant fp16` with a separate VAE (the fp16-fix VAE has no fp16 variant file).
+  Weights: `cmlineart_v1.safetensors` (93 MB) on the VPS in `/opt/colorforge/models/lineart_lora/`
+  and on the PC in `C:/Users/User/colourmate_models/` — not in git. Trigger word `cmlineart`.
+- **Result (eval_lora.py, 8 test images): a MODEST gain, not a leap.** Mandala and lion bolder and
+  cleaner, snow globe simpler; Krishna about the same; busy photos still carry texture noise because
+  ControlNet canny copies the photo's texture. Next levers, cheapest first: flatten/posterise the
+  photo before canny; higher canny thresholds; a ControlNet trained on the owner's colour→line pairs.
+- Spend so far ~$1.40 of $15.
+
 ### 8.6 Performance audit — findings + fix plan (2026-07-21, code-verified)
 
 Root cause of "app not smooth": the team already found the worst jank source (**per-item
