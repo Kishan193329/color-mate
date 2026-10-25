@@ -2847,7 +2847,14 @@ Owner wants his own model that turns any picture into a clean border (colouring-
   cleaner, snow globe simpler; Krishna about the same; busy photos still carry texture noise because
   ControlNet canny copies the photo's texture. Next levers, cheapest first: flatten/posterise the
   photo before canny; higher canny thresholds; a ControlNet trained on the owner's colour→line pairs.
-- Spend so far ~$1.40 of $15.
+- **Control-map test (2026-10-25, `control.py` + `eval_controls.py`, sheet = original | A | C | D):**
+  `A_raw` = bilateral + canny 70/170; `C_flatter` = mean-shift + 9-colour k-means + canny 50/150,
+  pieces < 60 px dropped; `D_sketch` = the server's own `lineart_sk_model` output as the control.
+  **`C_flatter` wins on most pictures** (kitchen, snow globe, Jagannath, woman, lion clean and
+  closed); `A_raw` keeps more mandala detail; **`D_sketch` is unreliable** (kitchen fell apart into
+  dashes, Krishna lost half the face). **Not solved by any variant:** busy photos (Krishna, the
+  bead-texture cat) — that needs flat source art or a trained colour→line ControlNet.
+- Spend so far ~$1.65 of $15 (balance $13.37 after this run).
 
 ### 8.6 Performance audit — findings + fix plan (2026-07-21, code-verified)
 
