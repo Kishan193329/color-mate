@@ -2872,6 +2872,15 @@ Owner wants his own model that turns any picture into a clean border (colouring-
   ⚠️ Inking every cell under r 7 turned beaded jewellery into black blotches — those small cells
   (Krishna 258, Jagannath 177) must instead be MERGED into a neighbouring region by the game builder.
   Result: Krishna 696 → 404 cells, hair colourable, eyes intact.
+- **`line_style.py` (CPU) — the reference look.** Measured on the owner's reference apps at 1272 px:
+  strokes 2 / 4 / 9–26 px (three weights), anti-aliased, thousands of open detail strokes; ours was
+  one weight (6–10 px). Every skeleton pixel is classed by what it separates (nearest-region map,
+  min/max across the stroke): background edge → silhouette r 9, two regions > 0.4% → major r 6,
+  other boundary → minor r 3.2, separates nothing → detail capped r 1.6 keeping its own taper; then
+  redrawn at 2x with each pixel taking its nearest skeleton pixel's half-width. Two fixes that were
+  needed: widths eased along the stroke (σ 6) — a hard class change drew a knot; skeleton spurs
+  < 8 px pruned (prune then regrow from surviving ends) — they drew thorns on bumpy edges.
+  Pipeline so far: Qwen redraw (GPU) → `line_cleanup` → `line_style` → (next) vectorize + game.
 - Spend so far ~$5.70 of $15 (balance $9.31). The A100 run cost **$4.06**, double the estimate:
   the ~58 GB model download and a hung ssh session kept the pod up longer. Download weights once to
   a RunPod network volume before the next GPU run.
