@@ -1032,7 +1032,7 @@ function bindBook(){
 
 /* The old ionicsolutions By Number catalogue, now served from this server (legacy.py).
    Browse it by category and hide a picture from the app; nothing is deleted. */
-let LEG={cat:'',q:'',shown:60};
+let LEG={cat:'',q:'',shown:60,colour:false};
 async function vLegacy(){
   if(!isBoss())return '<div class="blank"><h4>Owner only</h4></div>';
   let st={categories:[]};try{st=await API.call('/api/legacy');}catch(e){}
@@ -1050,10 +1050,14 @@ async function vLegacy(){
         order. <b>Hide</b> takes a picture out of the app; nothing is deleted.</div></div></div>
     <div class="filters" style="margin-bottom:14px;display:flex;flex-wrap:wrap;gap:8px">
       ${cats.map(c=>`<button class="fchip ${c.name===LEG.cat?'on':''}" data-legcat="${esc(c.name)}">${esc(c.name)}<span class="n tnum">${c.total-c.hidden}</span></button>`).join('')}
-      <input id="legq" placeholder="Search file name" value="${esc(LEG.q)}" style="margin-left:auto;max-width:220px"/></div>
+      <span style="margin-left:auto;display:inline-flex;gap:6px">
+        <button class="fchip ${LEG.colour?'':'on'}" data-legview="line">Line art</button>
+        <button class="fchip ${LEG.colour?'on':''}" data-legview="colour">Colour</button></span>
+      <input id="legq" placeholder="Search file name" value="${esc(LEG.q)}" style="max-width:220px"/></div>
     ${cur&&cur.hidden?`<p class="hint">${cur.hidden} hidden in this category.</p>`:''}
     <div class="cards">${items.map(it=>`<div class="card ${it.hidden?'dim':''}" style="${it.hidden?'opacity:.45':''}">
-      <div class="thumb" style="background:#fff url('/ColoringBook/thumb/${encodeURIComponent(LEG.cat)}/t/${encodeURIComponent(it.fileName)}.png') center/cover"></div>
+      <div class="thumb" style="background:#fff url('/ColoringBook/thumb/${encodeURIComponent(LEG.cat)}/${LEG.colour
+        ?encodeURIComponent(it.fileName)+'.colored.png':'t/'+encodeURIComponent(it.fileName)+'.png'}') center/cover"></div>
       <div class="cbody"><div class="cmeta" title="${esc(it.fileName)}">#${it.ord+1} · ${esc((it.timeStamp||'').slice(0,10))}${it.hidden?' · hidden':''}</div>
       <button class="btn sm" data-leghide="${esc(it.fileName)}" data-h="${it.hidden?0:1}">${it.hidden?'Show in app':'Hide'}</button></div></div>`).join('')
       ||'<div class="empty">Nothing matches</div>'}</div>
@@ -1061,6 +1065,7 @@ async function vLegacy(){
 }
 function bindLegacy(){
   $$('[data-legcat]').forEach(b=>b.onclick=()=>{LEG.cat=b.dataset.legcat;LEG.shown=60;go('legacy');});
+  $$('[data-legview]').forEach(b=>b.onclick=()=>{LEG.colour=b.dataset.legview==='colour';go('legacy');});
   const q=$('#legq');if(q)q.onchange=()=>{LEG.q=q.value.trim();LEG.shown=60;go('legacy');};
   const m=$('#legMore');if(m)m.onclick=()=>{LEG.shown+=60;go('legacy');};
   $$('[data-leghide]').forEach(b=>b.onclick=async()=>{
