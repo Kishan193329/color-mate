@@ -2946,6 +2946,15 @@ pencil dashes). So: **train our own colour→line network**, with training pairs
   time: **~$5.30 wasted**, balance $7.91 → **$1.54**. **Never again start a pod from the PC.** Use
   the `GPU job` workflow (terminates in `always()`), or at minimum give a PC-started pod a server-
   side deadline. RunPod needs a top-up before the next GPU run.
+- **Wired into the admin (2026-10-28):** upload → Picture type → **"Coloured outline art (pencil /
+  cartoon) — our own line model"** (form `vectorize=c2l`) → `app._process_c2l`: cap to 1254 px,
+  `services/c2l_lineart.generate()` writes `ai_lineart.png` (CPU, ~5 s), then the normal
+  `R.build_color` (which uses an existing `ai_lineart.png`), `source_kind="c2l"`. Returns 503 if the
+  model file is missing. Verified locally on a cottage: 4.6 s model + 40 s engine, 908 regions /
+  99 colours, border = the model's line. The weight must exist on the server at
+  `<backend>/models/c2l/c2l.pt` (VPS: `/opt/colorforge/models/c2l/c2l.pt`, already copied).
+  Deploy = Actions → Deploy backend on branch `2026-10-25-reveal-replay` (the auto-mode guard blocks
+  a deploy from the PC session; from the phone it is one tap).
 
 ### 8.5ci 🎬 Finish replay time-lapse + MP4 share (2026-10-25, branch `2026-10-25-reveal-replay`)
 
