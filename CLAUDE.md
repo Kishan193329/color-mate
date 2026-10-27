@@ -2934,6 +2934,18 @@ pencil dashes). So: **train our own colour→line network**, with training pairs
   `RUNPOD_SSH_PUBKEY`. `infer_c2l` expects the model at `/opt/colorforge/models/c2l/c2l.pt` on the
   VPS — copy a trained `c2l.pt` there once. Workflow files must also be on `quality-fixes` to show
   "Run workflow".
+- **✅ RESULT (c2l_v1, 450 pairs / 6000 steps):** on the owner's 3 pencil-coloured cottages the
+  output is **close to his hand-made reference** — stone joints, shingles, leaf veins, window bars
+  all present, clean closed strokes, ink 18% vs reference 18–19%. First real win on this problem.
+  **It is NOT a photo model**: on photographs/paintings (Krishna, lion, mandala) it falls apart —
+  the training pairs are all outlined art. For photos keep the Qwen-redraw route (§8.5ch).
+  Weights: `C:/Users/User/colourmate_models/c2l_v1.pt` and VPS `/opt/colorforge/models/c2l/c2l.pt`
+  (25 MB, not in git). Inference is CPU-fine (fully conv U-Net at 1254 px).
+- 🔴 **Cost lesson, the expensive kind:** the PC "watcher" loop finished at 17:06 UTC but its
+  notification only reached the session on the next user turn, ~6 h later — the pod idled the whole
+  time: **~$5.30 wasted**, balance $7.91 → **$1.54**. **Never again start a pod from the PC.** Use
+  the `GPU job` workflow (terminates in `always()`), or at minimum give a PC-started pod a server-
+  side deadline. RunPod needs a top-up before the next GPU run.
 
 ### 8.5ci 🎬 Finish replay time-lapse + MP4 share (2026-10-25, branch `2026-10-25-reveal-replay`)
 
