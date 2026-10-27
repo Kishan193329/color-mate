@@ -2900,10 +2900,40 @@ skips its own model; `COLOR_K` lowered for that picture only — the server defa
   **`INK_CUT=95`** (new env knob in `line_cleanup.py`; drops the grey shading, keeps strokes).
   Published locally as `20261027_fox_fairy_bright`: 36 colours, 942 regions (416 under r 8 — the
   line art has too many small cells; next lever).
+- **`outline_only.py`** — for art that already has a drawn outline (coloured-pencil cottages, 2026-10-27):
+  grey < 60 → cleanup → style, no AI, ~1 min/picture on the PC, clean coloring pages. `flat_to_lines`
+  on the same pictures was unusable (a line along every pencil shade); an HSV saturation gate drops
+  the whole outline because it is dark brown, not black. Lighter inner lines (stone joints, shingles)
+  are lost at 60 — raise to ~75 if those matter more than the texture noise they bring.
 - `cells_to_curves` on a SHADED painting gives the contour-map look (lines across the face) — only
   use it on flat art.
 - Cost: run 1 $0.22, run 2 $0.05 (LoRA staged in S3 via the VPS, presigned URL, deleted after).
   Balance $9.03. Not yet played in the app: emulator crashes with <1 GB free RAM, phone was locked.
+
+### 8.5ck 🤖 Own colour→line model (`train_c2l.py`) + GPU work from the phone (2026-10-27)
+
+Owner, with 3 reference pairs (pencil-coloured cottage → its clean line art): *"model ne improve
+karvu pade"* — threshold tricks cannot reach that (hysteresis brought the tile lines back WITH
+pencil dashes). So: **train our own colour→line network**, with training pairs we make ourselves.
+- `make_pairs.py` — our own line-art pages (prep_data.py, 60/category = 539) coloured by SDXL +
+  canny ControlNet in 5 styles (pencil / painting / flat / watercolour / fantasy), the page's own
+  line drawn back on top at random strength → (colour, exact line) pairs. 450 pairs ≈ 50 min on a
+  4090. Checked: aligned and varied.
+- `train_c2l.py` — 5-level U-Net (32→384 ch), 512 crops with scale/flip/colour jitter, BCE
+  (pos_weight 3) + dice, 6000 steps ≈ 1 h. `infer_c2l.py` runs it on CPU at 1254 px (fully conv).
+- 🐞 First run burned ~$1.1 for nothing: the pod could not reach the VPS at that moment (prep_data
+  got a connection error), the run script had no `set -e`, so training ran on 0 pairs and the pod
+  idled. Now: pages are prepared ON the VPS, tarred, staged through a presigned S3 URL (same trick as
+  the LoRA), and every job script is `set -euo pipefail`.
+- **GPU jobs from the phone — `.github/workflows/gpu-job.yml`** ("GPU job" → Run workflow →
+  `train_c2l` / `infer_c2l` / `gen_original`, optional `args` like `PAIRS=450 STEPS=6000`). It rents
+  the pod (`tools/lineart_ai/runpod.py`, key from the secret), stages inputs from the VPS through S3,
+  copies `tools/lineart_ai/*.py` + `jobs/<job>.sh` + `tools/lineart_ai/test/*` to the pod, streams
+  the log, pulls `/workspace/out` as the run artifact, and **terminates the pod in an `always()`
+  step** (also deletes the tmp S3 objects). Secrets added: `RUNPOD_API_KEY`, `RUNPOD_SSH_KEY`,
+  `RUNPOD_SSH_PUBKEY`. `infer_c2l` expects the model at `/opt/colorforge/models/c2l/c2l.pt` on the
+  VPS — copy a trained `c2l.pt` there once. Workflow files must also be on `quality-fixes` to show
+  "Run workflow".
 
 ### 8.5ci 🎬 Finish replay time-lapse + MP4 share (2026-10-25, branch `2026-10-25-reveal-replay`)
 

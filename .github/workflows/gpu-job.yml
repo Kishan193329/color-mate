@@ -1,0 +1,131 @@
+# Run a GPU job on RunPod from the phone — no PC needed.
+#
+# Actions → "GPU job" → Run workflow → pick the job. The workflow rents a pod, copies
+# platform/backend/tools/lineart_ai onto it, stages any big inputs from the VPS through S3
+# (presigned URLs; nothing secret reaches the pod), runs jobs/<job>.sh, uploads /workspace/out as
+# the run's artifact, and ALWAYS terminates the pod — on success, failure, or cancel. Pods bill by
+# the hour, so the terminate step is the one that must never be skipped.
+#
+# Secrets: RUNPOD_API_KEY, RUNPOD_SSH_KEY (private), RUNPOD_SSH_PUBKEY, plus the VPS trio.
+name: GPU job
+
+on:
+  workflow_dispatch:
+    inputs:
+      job:
+        description: "Which job"
+        type: choice
+        options: [train_c2l, infer_c2l, gen_original]
+        default: train_c2l
+      args:
+        description: "Env for the job, space separated (e.g. PAIRS=450 STEPS=6000 N=6)"
+        required: false
+        default: ""
+      gpu:
+        description: "GPU type (empty = 4090, then A6000/L40S/A40)"
+        required: false
+        default: ""
+
+concurrency:
+  group: gpu-job
+  cancel-in-progress: false
+
+jobs:
+  gpu:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    env:
+      RUNPOD_API_KEY: ${{ secrets.RUNPOD_API_KEY }}
+      RUNPOD_SSH_PUBKEY: ${{ secrets.RUNPOD_SSH_PUBKEY }}
+      TOOLS: platform/backend/tools/lineart_ai
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: SSH keys
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/vps_key
+          printf '%s\n' "${{ secrets.RUNPOD_SSH_KEY }}" > ~/.ssh/pod_key
+          chmod 600 ~/.ssh/vps_key ~/.ssh/pod_key
+          printf '%s\n' "${{ secrets.VPS_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+
+      # Big inputs live on the VPS (pages come from our own catalogue; the LoRA / a trained model
+      # sit in /opt/colorforge/models). They go to the pod through short-lived S3 URLs.
+      - name: Stage inputs from the VPS
+        id: stage
+        run: |
+          scp -i ~/.ssh/vps_key $TOOLS/prep_data.py root@${{ secrets.VPS_HOST }}:/root/prep_data.py
+          ssh -i ~/.ssh/vps_key root@${{ secrets.VPS_HOST }} "JOB='${{ inputs.job }}' bash -s" <<'EOF' > urls.txt
+          set -euo pipefail
+          cd /opt/colorforge && set -a && . ./storage.env && set +a
+          url() { .venv/bin/python - "$1" "$2" <<'PY'
+          import boto3, os, sys
+          s = boto3.client("s3"); b = os.environ["S3_BUCKET"]
+          s.upload_file(sys.argv[1], b, sys.argv[2])
+          print(s.generate_presigned_url("get_object", Params={"Bucket": b, "Key": sys.argv[2]}, ExpiresIn=14400))
+          PY
+          }
+          case "$JOB" in
+            train_c2l)
+              if [ ! -f /root/c2l_pages.tgz ]; then
+                rm -rf /root/c2l_pages && .venv/bin/python /root/prep_data.py /root/c2l_pages 60 >/dev/null
+                tar czf /root/c2l_pages.tgz -C /root/c2l_pages .
+              fi
+              echo "PAGES_URL=$(url /root/c2l_pages.tgz tmp/lineart/c2l_pages.tgz)" ;;
+            infer_c2l)
+              echo "MODEL_URL=$(url /opt/colorforge/models/c2l/c2l.pt tmp/lineart/c2l.pt)" ;;
+            gen_original)
+              echo "LORA_URL=$(url /opt/colorforge/models/lineart_lora/cmlineart_v1.safetensors tmp/lineart/cmlineart_v1.safetensors)" ;;
+          esac
+          EOF
+          echo "staged: $(cut -d= -f1 urls.txt | tr '\n' ' ')"
+
+      - name: Rent a pod
+        id: pod
+        run: |
+          ID=$(python3 $TOOLS/runpod.py create "${{ inputs.gpu }}")
+          echo "id=$ID" >> "$GITHUB_OUTPUT"
+          read IP PORT <<< "$(python3 $TOOLS/runpod.py wait $ID)"
+          echo "ip=$IP" >> "$GITHUB_OUTPUT"; echo "port=$PORT" >> "$GITHUB_OUTPUT"
+          echo "pod $ID at $IP:$PORT"
+
+      - name: Run the job
+        env:
+          IP: ${{ steps.pod.outputs.ip }}
+          PORT: ${{ steps.pod.outputs.port }}
+          ARGS: ${{ inputs.args }}
+        run: |
+          S="ssh -i ~/.ssh/pod_key -o StrictHostKeyChecking=no -o ConnectTimeout=30 -o ServerAliveInterval=30 -p $PORT root@$IP"
+          for i in 1 2 3 4 5 6; do $S true && break || sleep 20; done
+          $S 'mkdir -p /workspace/test'
+          scp -i ~/.ssh/pod_key -o StrictHostKeyChecking=no -P $PORT $TOOLS/*.py $TOOLS/jobs/${{ inputs.job }}.sh root@$IP:/workspace/
+          if ls $TOOLS/test/* >/dev/null 2>&1; then scp -i ~/.ssh/pod_key -o StrictHostKeyChecking=no -P $PORT $TOOLS/test/* root@$IP:/workspace/test/; fi
+          ENVS="$(tr '\n' ' ' < urls.txt) $ARGS"
+          # the log streams into the Actions page; a failing step still reaches the terminate step
+          $S "cd /workspace && env $ENVS bash ${{ inputs.job }}.sh 2>&1 | grep -v -E '^\s*[0-9]+%\|' "
+
+      - name: Fetch results
+        if: always() && steps.pod.outputs.ip != ''
+        run: |
+          mkdir -p out
+          scp -r -i ~/.ssh/pod_key -o StrictHostKeyChecking=no -P ${{ steps.pod.outputs.port }} \
+            root@${{ steps.pod.outputs.ip }}:/workspace/out/. out/ || true
+          du -sh out; ls out | head -40
+
+      - name: Terminate the pod
+        if: always()
+        run: |
+          if [ -n "${{ steps.pod.outputs.id }}" ]; then python3 $TOOLS/runpod.py stop ${{ steps.pod.outputs.id }}; fi
+          python3 $TOOLS/runpod.py status
+          ssh -i ~/.ssh/vps_key root@${{ secrets.VPS_HOST }} 'cd /opt/colorforge && set -a && . ./storage.env && set +a && .venv/bin/python -c "
+          import boto3,os; s=boto3.client(\"s3\"); b=os.environ[\"S3_BUCKET\"]
+          for k in (\"tmp/lineart/c2l_pages.tgz\",\"tmp/lineart/c2l.pt\",\"tmp/lineart/cmlineart_v1.safetensors\"): s.delete_object(Bucket=b, Key=k)
+          "' || true
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: gpu-${{ inputs.job }}-${{ github.run_number }}
+          path: out
+          retention-days: 30
+          if-no-files-found: warn
