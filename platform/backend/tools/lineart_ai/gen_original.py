@@ -20,12 +20,20 @@ W, H = 832, 1216
 SUBJECT = ("a cute fantasy girl with huge sparkling eyes and long eyelashes, fox ears, a crown of roses "
            "and daisies, an ornate golden filigree tiara with a blue gem, golden jewellery on her neck "
            "and shoulder, feathered shoulder, wild flowers around her, portrait")
-LINE_PROMPT = ("cmlineart, coloring book page, " + SUBJECT + ", clean bold black outlines on pure white, "
-               "closed shapes, smooth confident strokes, no shading, no colour")
-LINE_NEG = "color, grey shading, gradient, hatching, texture, photo, text, watermark, signature, logo, blurry, messy lines"
-COLOUR_PROMPT = (SUBJECT + ", soft aesthetic painting, sunset sky purple pink orange, warm glowing light, "
-                 "vibrant colours, detailed digital painting, high quality")
-COLOUR_NEG = "black outlines, line art, sketch, monochrome, text, watermark, signature, logo, blurry, deformed"
+LINE_PROMPT = ("cmlineart, coloring book page, " + SUBJECT + ", pure black and white line art, crisp black "
+               "outlines on a plain white background, every area left white, closed shapes, smooth confident "
+               "strokes, vector style")
+# v1 came out with grey shading in hair and flowers, which the cleanup turned into black blotches
+LINE_NEG = ("grey, gray, shading, shadows, gradient, tones, hatching, cross-hatching, stippling, filled black "
+            "areas, colour, texture, photo, text, watermark, signature, logo, blurry, sketchy, messy lines")
+COLOUR_PROMPT = (SUBJECT + ", vibrant saturated colours, crisp sharp details, glossy highlights, clean cel "
+                 "shading, sunset sky purple pink orange, warm glowing light, high quality digital illustration")
+COLOUR_NEG = ("washed out, faded, pastel haze, blurry, soft focus, muddy colours, monochrome, black outlines, "
+              "line art, sketch, text, watermark, signature, logo, deformed")
+# v1 used 1.0 for the whole run: colours followed the lines but came out washed. Following the lines
+# only for the first part of the steps leaves the rest free to make the paint crisp.
+CN_SCALE = 0.8
+CN_END = 0.7
 
 
 def main():
@@ -52,8 +60,8 @@ def main():
     for i, g in enumerate(lines):
         edge = np.where(g < 128, 255, 0).astype(np.uint8)          # white lines on black, like canny
         img = cpipe(COLOUR_PROMPT, negative_prompt=COLOUR_NEG, image=Image.fromarray(np.stack([edge] * 3, 2)),
-                    controlnet_conditioning_scale=1.0, width=W, height=H, num_inference_steps=35,
-                    guidance_scale=7.0, generator=torch.Generator("cuda").manual_seed(200 + i)).images[0]
+                    controlnet_conditioning_scale=CN_SCALE, control_guidance_end=CN_END, width=W, height=H,
+                    num_inference_steps=35, guidance_scale=7.5, generator=torch.Generator("cuda").manual_seed(200 + i)).images[0]
         img.save(f"{out}/{i:02d}_colour.png")
         col = cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR)
         both = (col * (g[..., None] / 255.0)).astype(np.uint8)

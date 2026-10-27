@@ -2885,6 +2885,26 @@ Owner wants his own model that turns any picture into a clean border (colouring-
   the ~58 GB model download and a hung ssh session kept the pod up longer. Download weights once to
   a RunPod network volume before the next GPU run.
 
+### 8.5cj 🎨 Original pictures from our own GPU — `gen_original.py` (2026-10-25/27)
+
+Owner asked to copy another app's picture ("Soft Aesthetic Color") and remove its logo — **refused**
+(their artwork, and removing their branding risks a Play copyright strike); offered and built
+original pictures on the same THEME instead. Pipeline: SDXL + `cmlineart` LoRA draws the line art
+from text → SDXL + canny ControlNet colours that line art → `line_cleanup` + `line_style` →
+`inject_local.py` publishes it on a local test backend (`ai_lineart.png` = our line, so the engine
+skips its own model; `COLOR_K` lowered for that picture only — the server default stays 100, §8.5v).
+- Run 1 (ControlNet 1.0 whole run): colour follows the lines but is washed/blurry; line art carries
+  grey shading → black blotches after a 128 cut. Run 2 (ControlNet 0.8, `control_guidance_end` 0.7,
+  "vibrant/crisp" prompt): vivid colour but it **drifts off the lines** (hair). Neither alone is right.
+- What works today: run-1 picture (aligned) + CLAHE/saturation/unsharp in post (vivid) + line cut at
+  **`INK_CUT=95`** (new env knob in `line_cleanup.py`; drops the grey shading, keeps strokes).
+  Published locally as `20261027_fox_fairy_bright`: 36 colours, 942 regions (416 under r 8 — the
+  line art has too many small cells; next lever).
+- `cells_to_curves` on a SHADED painting gives the contour-map look (lines across the face) — only
+  use it on flat art.
+- Cost: run 1 $0.22, run 2 $0.05 (LoRA staged in S3 via the VPS, presigned URL, deleted after).
+  Balance $9.03. Not yet played in the app: emulator crashes with <1 GB free RAM, phone was locked.
+
 ### 8.5ci 🎬 Finish replay time-lapse + MP4 share (2026-10-25, branch `2026-10-25-reveal-replay`)
 
 Owner sent a 9 s video of the reference game's finish (blank page → fills appear → outline fades →

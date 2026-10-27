@@ -30,11 +30,16 @@ def _smooth(ink):
     return g > 0.5
 
 
-def cleanup(gray):
+INK_CUT = int(__import__("os").environ.get("INK_CUT", "128"))
+# 128 for clean redraws. SDXL line art comes with grey shading (hair, petals) that a 128 cut turns
+# into black blotches; 95 keeps the drawn strokes and drops the shading (gen_original output).
+
+
+def cleanup(gray, ink_cut=None):
     h, w = gray.shape
     s = SIDE / max(h, w)
     g = cv2.resize(gray, (round(w * s), round(h * s)), interpolation=cv2.INTER_CUBIC)
-    ink = _smooth(g < 128)
+    ink = _smooth(g < (ink_cut or INK_CUT))
     area = ink.size
 
     # 1. big solid masses -> outline. Judged by the thick core alone: a pupil joined to the eye's
