@@ -43,6 +43,7 @@ import number_tab
 import referral
 import simplify as simplify_mod
 import storage
+from services import c2l_lineart
 from services import reveal_game_builder as R
 from services import svg_builder
 
@@ -395,6 +396,29 @@ def _process(iid: str, simplify_level: str | None = None) -> None:
         _fail(iid, e, "colour generation")
 
 
+def _process_c2l(iid: str) -> None:
+    """Background: coloured outline art (pencil / cartoon) -> our own colour->line model draws the
+    line (services/c2l_lineart), then the normal region engine runs on it. No simplify: the model
+    wants the picture as drawn, and the reveal stays the true picture."""
+    try:
+        folder = ITEMS / iid
+        img = cv2.imread(str(folder / "original.png"))
+        if img is None:
+            raise ValueError("not a readable image")
+        h, w = img.shape[:2]
+        if max(h, w) > MAX_SIDE:
+            sc = MAX_SIDE / max(h, w)
+            img = cv2.resize(img, (round(w * sc), round(h * sc)), interpolation=cv2.INTER_AREA)
+        cv2.imwrite(str(folder / "reveal_master.png"), img)
+        cv2.imwrite(str(folder / "original.png"), img)
+        c2l_lineart.generate(folder / "reveal_master.png", folder / "ai_lineart.png")
+        info = R.build_color(folder)                     # _load_lineart picks up ai_lineart.png
+        db.update_image(iid, status="review", error="", source_kind="c2l",
+                        regions=info.get("regions"), colours=info.get("palette_numbers"))
+    except Exception as e:  # noqa: BLE001
+        _fail(iid, e, "outline model")
+
+
 def _process_vectorize(iid: str) -> None:
     """Background: flat PNG/JPG -> source.svg (vtracer, no Figma) -> the normal SVG import."""
     try:
@@ -443,6 +467,8 @@ async def create_item(background: BackgroundTasks, request: Request, file: Uploa
     folder.mkdir(parents=True, exist_ok=True)
     # A flat PNG/JPG (ChatGPT art with black outlines) can be vectorised here instead of in Figma.
     vec = kind == "colour" and not is_svg and vectorize.strip() in ("1", "true", "yes")
+    # "c2l": coloured outline art -> our own colour->line model (CLAUDE.md §8.5ck)
+    c2l = kind == "colour" and not is_svg and vectorize.strip() == "c2l"
     name = "source.svg" if is_svg else ("source.png" if vec else "original.png")
     with open(folder / name, "wb") as out:
         shutil.copyfileobj(file.file, out)
@@ -454,6 +480,10 @@ async def create_item(background: BackgroundTasks, request: Request, file: Uploa
     _log(user, "Uploaded", f"{ttl} ({kind})", request)
     if vec:
         background.add_task(_enqueue, _process_vectorize, iid)
+    elif c2l:
+        if not c2l_lineart.available():
+            raise HTTPException(503, "the outline model is not installed on this server")
+        background.add_task(_enqueue, _process_c2l, iid)
     elif is_svg:
         background.add_task(_enqueue, _process_svg, iid)
     elif kind == "diamond":
