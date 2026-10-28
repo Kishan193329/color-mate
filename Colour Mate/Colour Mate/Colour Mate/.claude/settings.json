@@ -7,11 +7,33 @@
       "Bash(/c/Users/User/AppData/Local/Android/Sdk/platform-tools/adb.exe -s f1ee3f17 shell input tap 835 185)",
       "Bash(/c/Users/User/AppData/Local/Android/Sdk/platform-tools/adb.exe -s f1ee3f17 shell dumpsys activity activities)",
       "Read(//tmp/**)",
-      "Bash(awk -F/ '$1==\"platform\"{print $1\"/\"$2\"/\"$3} $1!=\"platform\"{print $1\"/.../\"$5\"/\"$6}')"
+      "Bash(awk -F/ '$1==\"platform\"{print $1\"/\"$2\"/\"$3} $1!=\"platform\"{print $1\"/.../\"$5\"/\"$6}')",
+      "Bash(grep -v \"^#\\\\|^$\" gradle.properties)",
+      "Read(//c/cmwt/platform/backend/**)",
+      "Read(//c/Users/User/.ssh/**)",
+      "Bash(ssh -i ~/.ssh/colorforge_vps -o BatchMode=yes -o ConnectTimeout=15 root@187.77.141.63 'cd /opt/colorforge && ls; systemctl is-active colorforge; grep -E \"ExecStart|EnvironmentFile|WorkingDirectory\" /etc/systemd/system/colorforge.service; df -h / | tail -1')",
+      "Bash(ssh -i ~/.ssh/colorforge_vps root@187.77.141.63 \"cd /opt/colorforge && .venv/bin/pip install -q vtracer 2>&1 | tail -3; .venv/bin/python -c 'import vtracer; print\\(\\\\\"vtracer ok\\\\\"\\)'\")",
+      "Bash(ssh -i ~/.ssh/colorforge_vps root@187.77.141.63 \"cd /opt/colorforge && .venv/bin/python -c \\\\\"import sqlite3;c=sqlite3.connect\\('data/content.db'\\);print\\(c.execute\\(\\\\\\\\\\\\\"select status,count\\(*\\) from images group by status\\\\\\\\\\\\\"\\).fetchall\\(\\)\\)\\\\\"\")",
+      "Bash(ssh -i *)",
+      "Bash(git branch *)",
+      "Bash(git fetch *)",
+      "Bash(C:/Users/User/AppData/Local/Android/Sdk/platform-tools/adb.exe -s f1ee3f17 install -r app/build/outputs/apk/debug/app-debug.apk)",
+      "Bash(MSYS_NO_PATHCONV=1 C:/Users/User/AppData/Local/Android/Sdk/platform-tools/adb.exe -s f1ee3f17 shell 'run-as com.pixel.art.coloring.color.number.paint ls shared_prefs')",
+      "Bash(ssh -i ~/.ssh/colorforge_vps root@187.77.141.63 'tail -n 400 /var/log/nginx/access.log | grep -E \"okhttp|Dalvik\" | tail -15 | cut -c1-200')",
+      "Read(//c/cmtest/platform/backend/**)",
+      "Bash(\"c:/Users/User/Downloads/colour mate/colour mate/colorforge-ai-20260720T075539Z-1-001/colorforge-ai/platform/backend/.venv/Scripts/python.exe\" -m uvicorn app:app --port 8011)",
+      "Bash(\"c:/Users/User/Downloads/colour mate/colour mate/colorforge-ai-20260720T075539Z-1-001/colorforge-ai/platform/backend/.venv/Scripts/python.exe\" -I C:/cmtest/seed.py)",
+      "Bash(curl -s http://127.0.0.1:8011/index.php/Number/reveal/animals/20261022_test_tiles_b/regions.json)",
+      "Bash(python -c ' *)",
+      "Bash(awk '{s+=$5} END {print \"pics bytes\",s}')",
+      "Bash(PYTHONIOENCODING=utf-8 python -I -c ' *)",
+      "Bash(ssh -i ~/.ssh/colorforge_vps root@187.77.141.63 \"grep -iE '^\\(url|email\\)' /root/colorforge-admin-password.txt\")"
     ],
     "additionalDirectories": [
       "C:\\Users\\User\\Downloads\\colour mate\\colour mate\\colorforge-ai-20260720T075539Z-1-001\\colorforge-ai",
-      "\\tmp"
+      "\\tmp",
+      "c:\\Users\\User\\Downloads\\colour mate\\colour mate\\colorforge-ai-20260720T075539Z-1-001\\colorforge-ai",
+      "C:\\cmtest"
     ]
   }
 }
