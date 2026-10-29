@@ -18,7 +18,7 @@ on:
         options: [train_c2l, infer_c2l, gen_original]
         default: train_c2l
       args:
-        description: "Env for the job, space separated (e.g. PAIRS=450 STEPS=6000 N=6)"
+        description: "Env for the job, space separated (e.g. PAIRS=900 STEPS=12000 N=6; NO_INIT=1 trains from scratch)"
         required: false
         default: ""
       gpu:
@@ -55,7 +55,7 @@ jobs:
         id: stage
         run: |
           scp -i ~/.ssh/vps_key $TOOLS/prep_data.py root@${{ secrets.VPS_HOST }}:/root/prep_data.py
-          ssh -i ~/.ssh/vps_key root@${{ secrets.VPS_HOST }} "JOB='${{ inputs.job }}' bash -s" <<'EOF' > urls.txt
+          ssh -i ~/.ssh/vps_key root@${{ secrets.VPS_HOST }} "JOB='${{ inputs.job }}' NO_INIT='${{ contains(inputs.args, 'NO_INIT=1') && 1 || 0 }}' bash -s" <<'EOF' > urls.txt
           set -euo pipefail
           cd /opt/colorforge && set -a && . ./storage.env && set +a
           url() { .venv/bin/python - "$1" "$2" <<'PY'
@@ -71,7 +71,11 @@ jobs:
                 rm -rf /root/c2l_pages && .venv/bin/python /root/prep_data.py /root/c2l_pages 60 >/dev/null
                 tar czf /root/c2l_pages.tgz -C /root/c2l_pages .
               fi
-              echo "PAGES_URL=$(url /root/c2l_pages.tgz tmp/lineart/c2l_pages.tgz)" ;;
+              echo "PAGES_URL=$(url /root/c2l_pages.tgz tmp/lineart/c2l_pages.tgz)"
+              # v2: the owner's real pairs and the previous model, when they are on the VPS
+              [ -f /opt/colorforge/models/c2l/real_pairs.tgz ] && echo "REAL_URL=$(url /opt/colorforge/models/c2l/real_pairs.tgz tmp/lineart/real_pairs.tgz)"
+              [ -f /opt/colorforge/models/c2l/c2l.pt ] && [ "${NO_INIT:-0}" != 1 ] && echo "INIT_URL=$(url /opt/colorforge/models/c2l/c2l.pt tmp/lineart/c2l.pt)"
+              true ;;
             infer_c2l)
               echo "MODEL_URL=$(url /opt/colorforge/models/c2l/c2l.pt tmp/lineart/c2l.pt)" ;;
             gen_original)
@@ -119,7 +123,7 @@ jobs:
           python3 $TOOLS/runpod.py status
           ssh -i ~/.ssh/vps_key root@${{ secrets.VPS_HOST }} 'cd /opt/colorforge && set -a && . ./storage.env && set +a && .venv/bin/python -c "
           import boto3,os; s=boto3.client(\"s3\"); b=os.environ[\"S3_BUCKET\"]
-          for k in (\"tmp/lineart/c2l_pages.tgz\",\"tmp/lineart/c2l.pt\",\"tmp/lineart/cmlineart_v1.safetensors\"): s.delete_object(Bucket=b, Key=k)
+          for k in (\"tmp/lineart/c2l_pages.tgz\",\"tmp/lineart/c2l.pt\",\"tmp/lineart/real_pairs.tgz\",\"tmp/lineart/cmlineart_v1.safetensors\"): s.delete_object(Bucket=b, Key=k)
           "' || true
 
       - uses: actions/upload-artifact@v4

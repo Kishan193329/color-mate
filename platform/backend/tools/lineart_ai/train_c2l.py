@@ -19,6 +19,8 @@ import torch.nn.functional as F
 
 CROP = 512
 BATCH = 6
+DISTRACT_P = float(os.environ.get("DISTRACT_P", "0.7"))   # share of crops that get texture distractors
+REAL_REPEAT = int(os.environ.get("REAL_REPEAT", "12"))   # the owner's real pairs count this many times
 
 
 def block(i, o):
@@ -66,6 +68,52 @@ def load_pairs(d):
     return pairs
 
 
+def _dark(rng):
+    """a pencil / ink tone: black, dark grey or dark brown (BGR)"""
+    return rng.choice([(0, 0, 0), (30, 30, 30), (40, 60, 90), (20, 40, 70), (60, 60, 60)])
+
+
+def distract(c, rng):
+    """Texture that must NOT become ink (v2, CLAUDE.md §8.5cm): wood grain, pencil hatching, specks
+    and paper grain drawn INTO the colour picture only. The line target is untouched, so the model
+    learns that thin repeated texture strokes are not drawing."""
+    h, w = c.shape[:2]
+    out = c.copy()
+    for _ in range(rng.randint(1, 3)):
+        kind = rng.choice(["grain", "grain", "hatch", "dots", "paper"])
+        x0, y0 = rng.randint(0, w // 2), rng.randint(0, h // 2)
+        x1, y1 = rng.randint(x0 + w // 4, w), rng.randint(y0 + h // 4, h)
+        layer = np.zeros((h, w), np.float32)
+        if kind in ("grain", "hatch"):
+            ang = rng.uniform(0, np.pi)
+            dx, dy = np.cos(ang), np.sin(ang)
+            step = rng.randint(5, 18) if kind == "grain" else rng.randint(4, 9)
+            length = rng.randint(80, 400) if kind == "grain" else rng.randint(8, 40)
+            n = max(2, ((y1 - y0) + (x1 - x0)) // step)
+            for i in range(n):
+                cx, cy = rng.uniform(x0, x1), rng.uniform(y0, y1)
+                pts = []
+                for t in np.linspace(-length / 2, length / 2, 12):
+                    wob = rng.uniform(-1.5, 1.5)
+                    pts.append((cx + dx * t - dy * wob, cy + dy * t + dx * wob))
+                pts = np.array(pts, np.int32).reshape(-1, 1, 2)
+                cv2.polylines(layer, [pts], False, rng.uniform(0.35, 1.0), rng.choice([1, 1, 2]), cv2.LINE_AA)
+        elif kind == "dots":
+            for _ in range(rng.randint(15, 80)):
+                cv2.circle(layer, (rng.randint(x0, x1), rng.randint(y0, y1)), rng.choice([1, 1, 2]), rng.uniform(0.4, 1.0), -1)
+        else:   # paper grain: directional noise, like a pencil over rough paper
+            noise = np.random.default_rng(rng.randint(0, 10 ** 9)).random((h, w)).astype(np.float32)
+            k = rng.choice([(1, 5), (5, 1), (3, 3)])
+            noise = cv2.blur(noise, k)
+            layer = np.clip((noise - 0.5) * rng.uniform(0.6, 1.4), 0, 1) * rng.uniform(0.15, 0.4)
+            m = np.zeros((h, w), np.float32); m[y0:y1, x0:x1] = 1
+            layer *= cv2.GaussianBlur(m, (0, 0), 15)
+        tone = np.array(_dark(rng), np.float32)
+        a = layer[..., None]
+        out = (out * (1 - a) + tone * a).astype(np.uint8)
+    return out
+
+
 def sample(pairs, rng):
     xs, ys = [], []
     for _ in range(BATCH):
@@ -84,6 +132,8 @@ def sample(pairs, rng):
         c2, l2 = c2[y0:y0 + CROP, x0:x0 + CROP], l2[y0:y0 + CROP, x0:x0 + CROP]
         if rng.random() < 0.5:
             c2, l2 = c2[:, ::-1], l2[:, ::-1]
+        if rng.random() < DISTRACT_P:
+            c2 = distract(np.ascontiguousarray(c2), rng)
         # colour jitter + mild blur/noise: real uploads are JPEGs of varied brightness
         c2 = cv2.convertScaleAbs(c2, alpha=rng.uniform(0.85, 1.15), beta=rng.uniform(-15, 15))
         if rng.random() < 0.3:
@@ -98,11 +148,19 @@ def main():
     steps = int(sys.argv[3]) if len(sys.argv) > 3 else 6000
     os.makedirs(out, exist_ok=True)
     pairs = load_pairs(src)
+    real = load_pairs(os.environ["REAL_DIR"]) if os.environ.get("REAL_DIR") and os.path.isdir(os.environ["REAL_DIR"]) else []
+    print(f"synthetic pairs {len(pairs)}, real pairs {len(real)} x{REAL_REPEAT}, distract_p {DISTRACT_P}", flush=True)
+    pairs = pairs + real * REAL_REPEAT
     print("pairs", len(pairs), flush=True)
     dev = "cuda"
     net = UNet().to(dev)
-    opt = torch.optim.AdamW(net.parameters(), lr=3e-4, weight_decay=1e-4)
-    sched = torch.optim.lr_scheduler.OneCycleLR(opt, max_lr=3e-4, total_steps=steps, pct_start=0.05)
+    lr = float(os.environ.get("LR", "3e-4"))
+    if os.environ.get("INIT") and os.path.isfile(os.environ["INIT"]):   # fine-tune from an earlier model
+        net.load_state_dict(torch.load(os.environ["INIT"], map_location=dev))
+        lr = float(os.environ.get("LR", "1.5e-4"))
+        print("init from", os.environ["INIT"], "lr", lr, flush=True)
+    opt = torch.optim.AdamW(net.parameters(), lr=lr, weight_decay=1e-4)
+    sched = torch.optim.lr_scheduler.OneCycleLR(opt, max_lr=lr, total_steps=steps, pct_start=0.05)
     rng = random.Random(7)
     scaler = torch.cuda.amp.GradScaler()
     pos_w = torch.tensor([3.0], device=dev)     # ink is ~15% of pixels; weight it up

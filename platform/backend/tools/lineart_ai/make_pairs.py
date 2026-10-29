@@ -24,6 +24,8 @@ STYLES = [
     "flat cartoon colouring, clean cel shading, bright colours, children's book illustration",
     "watercolour painting, gentle washes, pastel colours, soft light",
     "fantasy illustration, rich saturated colours, dramatic light, intricate detail",
+    # v2: a second pencil style — the owner's pictures are pencil, and grain is what v1 inked
+    "coloured pencil drawing, visible pencil strokes, hatching shading, paper grain, hand drawn",
 ]
 NEG = "black and white, line art, sketch, monochrome, grey, text, watermark, blurry, deformed"
 
@@ -59,7 +61,10 @@ def main():
         # in a dark brown/black at varying strength so the model sees both faint and bold outlines
         tone = random.Random(i).choice([(0, 0, 0), (20, 20, 40), (10, 30, 60), (30, 30, 30)])
         alpha = random.Random(i + 1).uniform(0.6, 1.0)
-        mask = (line < 128)[..., None].astype(np.float32) * alpha
+        drawn = (line < 128).astype(np.uint8)
+        if random.Random(i + 2).random() < 0.3:        # v2: some pictures carry a bolder outline
+            drawn = cv2.dilate(drawn, np.ones((2, 2), np.uint8))
+        mask = drawn[..., None].astype(np.float32) * alpha
         col = (col * (1 - mask) + np.array(tone, np.float32) * mask).astype(np.uint8)
         cv2.imwrite(f"{out}/{i:05d}_c.png", col)
         cv2.imwrite(f"{out}/{i:05d}_l.png", line)

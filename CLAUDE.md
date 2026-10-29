@@ -2973,10 +2973,33 @@ Result: 46 / 44 / 36 pieces kept, 2-4% of ink dropped, nothing visibly missing o
 red/green overlay check. Dials: `MIN_DIM`, `MIN_HOLE`, `STRONG` in `services/c2l_lineart.py`.
 **Deployed 2026-10-29** (`b70b150`, by hand mirroring the workflow: `git archive HEAD platform/backend`
 piped to `tar` in `/opt/colorforge-incoming/`, then `vps_deploy.sh` — ⚠️ `scp` of the script from a
-Windows checkout carries CRLF, `sed -i 's/$//'` first). First live c2l upload: cot1 → `review`,
+Windows checkout carries CRLF, `sed -i 's/
+$//'` first). First live c2l upload: cot1 → `review`,
 45 s, 758 regions / 97 colours, 44 ink pieces (was 2,417 raw). Left in the admin as "c2l dots test"
 (category other, unpublished) for the owner to look at. Also: there is no `GET /api/items/{iid}` —
 poll the list.
+
+### 8.5cm 🎓 c2l v2 — what a filter cannot do, and the training that can (2026-10-29)
+
+After §8.5cl the owner still saw dots. Looked at the live border 1:1: what remains is not loose
+dots but **thin texture strokes attached to the drawing** — wood grain on the cart boards, stone
+grain, hairs on the door edge. Two filters were tried and both rejected by rendering the removed
+ink in red: a 3 px opening takes the grain **and** the door's plank lines, pumpkin ridges and leaf
+veins (all 2 px — width cannot tell grain from vein), and a short-spur rule broke those same thin
+lines into dashes. **Grain vs. drawing is a meaning, not a measurement: the model has to learn it.**
+
+v2 training changes (code only; GPU run via the *GPU job* workflow when the owner says so):
+- `train_c2l.distract()` — with `DISTRACT_P` 0.7, crops get wood-grain line groups, pencil
+  hatching, specks or paper grain drawn **into the colour input only**; the line target is
+  untouched. Checked visually on cot1 crops.
+- Real pairs: `REAL_DIR` (the owner's colour picture + his hand-made border, `NNNNN_c.png` /
+  `NNNNN_l.png`) oversampled `REAL_REPEAT` 12×. The workflow stages
+  `/opt/colorforge/models/c2l/real_pairs.tgz` from the VPS when it exists — **the owner still has to
+  send those reference line arts as files**; three cottages exist as colour only.
+- Fine-tune: `INIT` = the previous `c2l.pt` (staged automatically; `NO_INIT=1` in args trains from
+  scratch), lr 1.5e-4. `LR` overrides.
+- `make_pairs`: a sixth, pencil-heavy style and a 30% bolder drawn-back outline.
+- Defaults `PAIRS 900 / STEPS 12000` ≈ 2.5 h on a 4090 ≈ $2.5. RunPod balance $11.53 (topped up).
 
 ### 8.5ci 🎬 Finish replay time-lapse + MP4 share (2026-10-25, branch `2026-10-25-reveal-replay`)
 
