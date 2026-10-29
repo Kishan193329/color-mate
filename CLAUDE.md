@@ -2971,6 +2971,12 @@ dash is never a closed ring. A hole's owner is the ink piece touching it along t
 gap wedged between a dash and a wall credits the wall, not the dash. Vectorised (60-80 ms).
 Result: 46 / 44 / 36 pieces kept, 2-4% of ink dropped, nothing visibly missing on the
 red/green overlay check. Dials: `MIN_DIM`, `MIN_HOLE`, `STRONG` in `services/c2l_lineart.py`.
+**Deployed 2026-10-29** (`b70b150`, by hand mirroring the workflow: `git archive HEAD platform/backend`
+piped to `tar` in `/opt/colorforge-incoming/`, then `vps_deploy.sh` — ⚠️ `scp` of the script from a
+Windows checkout carries CRLF, `sed -i 's/$//'` first). First live c2l upload: cot1 → `review`,
+45 s, 758 regions / 97 colours, 44 ink pieces (was 2,417 raw). Left in the admin as "c2l dots test"
+(category other, unpublished) for the owner to look at. Also: there is no `GET /api/items/{iid}` —
+poll the list.
 
 ### 8.5ci 🎬 Finish replay time-lapse + MP4 share (2026-10-25, branch `2026-10-25-reveal-replay`)
 
