@@ -2956,6 +2956,22 @@ pencil dashes). So: **train our own colour→line network**, with training pairs
   Deploy = Actions → Deploy backend on branch `2026-10-25-reveal-replay` (the auto-mode guard blocks
   a deploy from the PC session; from the phone it is one tap).
 
+### 8.5cl 🧹 c2l dirt filter — dots measured, then removed (2026-10-29)
+
+Owner: the model's border has many small extra dots. **Measured first** on the three pencil
+cottages (`c2l_lineart.predict` at 1254 px): 1,486 / 2,417 / 1,005 ink pieces, of which only
+**34 / 17 / 20 are 50 px or wider** and those hold 95-97% of the ink. The rest are pencil-grain
+dashes (door planks, pumpkin hatching) and sky dots — all under 35 px, peak confidence ~0.8 where
+real strokes peak at 1.00. The old `SPECK = 40` area floor kept almost all of them.
+
+`clean(prob)` keeps a piece only if it is **≥ `MIN_DIM` 35 px in some direction OR encloses a hole
+≥ `MIN_HOLE` 12 px**, AND contains a pixel ≥ `STRONG` 0.95. The hole rule exists because the first
+cut lost real shapes: the cart wheel's hub, the pumpkin stem, flower centres, cart bolts — a dot or
+dash is never a closed ring. A hole's owner is the ink piece touching it along the most pixels, so a
+gap wedged between a dash and a wall credits the wall, not the dash. Vectorised (60-80 ms).
+Result: 46 / 44 / 36 pieces kept, 2-4% of ink dropped, nothing visibly missing on the
+red/green overlay check. Dials: `MIN_DIM`, `MIN_HOLE`, `STRONG` in `services/c2l_lineart.py`.
+
 ### 8.5ci 🎬 Finish replay time-lapse + MP4 share (2026-10-25, branch `2026-10-25-reveal-replay`)
 
 Owner sent a 9 s video of the reference game's finish (blank page → fills appear → outline fades →

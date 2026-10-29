@@ -19,7 +19,12 @@ import numpy as np
 MODEL_PATH = Path(os.environ.get("C2L_MODEL") or Path(__file__).resolve().parent.parent / "models" / "c2l" / "c2l.pt")
 MAX_SIDE = 1254
 THRESHOLD = 0.5
-SPECK = 40            # ink pieces smaller than this (px) are dirt
+# Dirt filter (measured on the owner's three pencil cottages, CLAUDE.md §8.5cl): the model emits
+# 1,000-2,400 ink pieces per picture of which only 17-46 are drawing — the rest are pencil-grain
+# dashes and dots, every one under MIN_DIM px with a weak peak confidence (~0.8 vs 1.00).
+MIN_DIM = 35          # a piece narrower than this in both directions is a dot/dash ...
+MIN_HOLE = 12         # ... unless it encloses a hole this big: a wheel hub, a flower centre, a bolt
+STRONG = 0.95         # and every kept piece must contain at least one confident pixel
 
 _net = None
 
@@ -96,14 +101,54 @@ def predict(bgr: np.ndarray) -> np.ndarray:
     return p[:h, :w]
 
 
+def _hole_owner(ink: np.ndarray, lab: np.ndarray, n: int) -> np.ndarray:
+    """Per ink component, the area of the biggest hole it encloses (0 = none).
+
+    A hole is a background component that does not touch the image border; its owner is the ink
+    component touching it along the most pixels (a hole wedged between a dash and a wall belongs to
+    the wall, not the dash)."""
+    bg = (ink == 0).astype(np.uint8)
+    nb, bl, bst, _ = cv2.connectedComponentsWithStats(bg, 4)
+    big = bst[:, cv2.CC_STAT_AREA] >= MIN_HOLE
+    big[np.unique(np.concatenate([bl[0], bl[-1], bl[:, 0], bl[:, -1]]))] = False   # touches the border
+    big[0] = False
+    hole = np.zeros(n, np.int64)
+    if not big.any():
+        return hole
+    pairs = []
+    for dy, dx in ((1, 0), (-1, 0), (0, 1), (0, -1)):   # ink pixel next to a hole pixel -> (hole, owner)
+        a = lab[max(dy, 0):lab.shape[0] + min(dy, 0), max(dx, 0):lab.shape[1] + min(dx, 0)]
+        b = bl[max(-dy, 0):bl.shape[0] + min(-dy, 0), max(-dx, 0):bl.shape[1] + min(-dx, 0)]
+        m = (a > 0) & big[b]
+        pairs.append(b[m].astype(np.int64) * n + a[m])
+    pairs = np.concatenate(pairs)
+    if pairs.size == 0:
+        return hole
+    key, cnt = np.unique(pairs, return_counts=True)
+    order = np.lexsort((-cnt, key // n))               # per hole, most-touching owner first
+    key, hb = key[order], (key[order] // n)
+    first = np.r_[True, hb[1:] != hb[:-1]]
+    owner = key[first] % n
+    np.maximum.at(hole, owner, bst[hb[first], cv2.CC_STAT_AREA])
+    return hole
+
+
+def clean(prob: np.ndarray) -> np.ndarray:
+    """Ink mask from the model's probabilities with pencil dirt removed (see the constants)."""
+    ink = (prob > THRESHOLD).astype(np.uint8)
+    n, lab, st, _ = cv2.connectedComponentsWithStats(ink, 8)
+    dim = np.maximum(st[:, cv2.CC_STAT_WIDTH], st[:, cv2.CC_STAT_HEIGHT])
+    peak = np.zeros(n, np.float32)
+    np.maximum.at(peak, lab.ravel(), prob.ravel().astype(np.float32))
+    keep = ((dim >= MIN_DIM) | (_hole_owner(ink, lab, n) > 0)) & (peak >= STRONG)
+    keep[0] = False
+    return keep[lab]
+
+
 def generate(image_path: Path, out_path: Path) -> Path:
     bgr = cv2.imread(str(image_path))
     if bgr is None:
         raise ValueError(f"unreadable {image_path}")
-    ink = (predict(bgr) > THRESHOLD).astype(np.uint8)
-    n, lab, st, _ = cv2.connectedComponentsWithStats(ink, 8)
-    keep = np.zeros(n, bool)
-    keep[1:] = st[1:, cv2.CC_STAT_AREA] >= SPECK
-    ink = keep[lab]
+    ink = clean(predict(bgr))
     cv2.imwrite(str(out_path), np.where(ink, 0, 255).astype(np.uint8))
     return out_path
