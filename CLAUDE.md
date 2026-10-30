@@ -3020,6 +3020,15 @@ map had to change. `photo.png` keeps the upload so **regenerate reruns the model
 `source_kind == "c2l"`; older items have the photo as `original.png`). Deployed `a1c0661`; the live
 "c2l dots test" regenerated to 1,637 regions / 82 colours, `vector.json.gz` 168 KB + `start.jpg` served.
 ⚠️ Phones trust a cached reveal copy for 24 h — clear `cache/reveal` (or wait) to see a republish.
+**Second pass the same night — the first vector version was still angular at deep zoom.** Rendered
+at 6x beside a Figma SVG: ours were polygons with 1-2 px facets, the Figma one curves. vtracer traces
+whatever steps it is given, and the 1254 px source had them (the model's ragged ink edge, the 1 px
+staircase of the region map). Fix in `c2l_vector.write_source`: render the source at **2x** (`UP`),
+`medianBlur` 11 on the flat fills, the ink mask upscaled + Gaussian σ3 + re-threshold, then
+`vectorize(smooth=True, max_side=2*MAX_SIDE)` (spline, corner 60 / length 8 / splice 45, speckle 8);
+`prepare()` scales the SVG back to 1254. Measured: regions 1,962 → 1,390, colours 101 → 65, the door
+hinges readable where they had been a black blob, curves at 6x. ~66 s on the VPS. Live item now
+1,285 regions / 63 colours, `vector.json.gz` 244 KB. `svg_builder.vectorize` gained `max_side`.
 
 **c2l v2 training ran (run 41078631055, $1.15): synthetic 539 + distractors + fine-tune from v1 —
 but `real pairs 0`.** The real-pairs tgz was made on Windows; root's `tar` on the pod failed on
