@@ -3001,6 +3001,35 @@ v2 training changes (code only; GPU run via the *GPU job* workflow when the owne
 - `make_pairs`: a sixth, pencil-heavy style and a 30% bolder drawn-back outline.
 - Defaults `PAIRS 900 / STEPS 12000` ≈ 2.5 h on a 4090 ≈ $2.5. RunPod balance $11.53 (topped up).
 
+### 8.5cn ✒️ c2l pictures moved to the VECTOR engine — smooth at any zoom (2026-10-30/31)
+
+Owner, zoomed into the live c2l cottage on his phone: *"smooth banay shape vali"* — both the ink
+and the fill edges were a pixel staircase. Cause: a c2l item went through the July RASTER engine
+(1254 px `border.png`, id-map from a 720 px k-means grid upscaled NEAREST, §8.5bj), while his own
+SVG pictures play on the app's vector engine (§8.5bz) and look smooth. So c2l now becomes an SVG
+item: `services/c2l_vector.write_source()` paints a flat picture — July's k-means CENTRES but every
+full-res pixel classified against them on a σ=3 blurred copy (boundaries follow the picture, not the
+grid; pencil grain must not split a fill), line-art cells split by colour exactly like
+`_game_data_color`, each its dominant centre colour, the c2l ink in black on top — then
+`svg_builder.vectorize(smooth=True)` (vtracer **spline**, corner 90 / length 8 / splice 60; the
+flat-art route keeps polygon mode) and the normal `_process_svg(iid, source_kind="c2l")`.
+Measured on cot1: July map → 758 regions but blocky edges at 3x; full-res map σ2/3/4.5 → 1416/1096/793
+regions before tracing, ~1,700-2,000 after (each ink-separated piece is its own cell, as in the
+owner's SVGs — Majestic Lion is 2,092). vtracer params alone did NOT remove the blocks; the source
+map had to change. `photo.png` keeps the upload so **regenerate reruns the model** (route branch on
+`source_kind == "c2l"`; older items have the photo as `original.png`). Deployed `a1c0661`; the live
+"c2l dots test" regenerated to 1,637 regions / 82 colours, `vector.json.gz` 168 KB + `start.jpg` served.
+⚠️ Phones trust a cached reveal copy for 24 h — clear `cache/reveal` (or wait) to see a republish.
+
+**c2l v2 training ran (run 41078631055, $1.15): synthetic 539 + distractors + fine-tune from v1 —
+but `real pairs 0`.** The real-pairs tgz was made on Windows; root's `tar` on the pod failed on
+"cannot change ownership to uid 197609", so the `&&` chain skipped `export REAL_DIR` (pipefail could
+not see it: the chain is inside an `if`). Fixed with `--no-same-owner`. v2 vs v1 on cot1 (raw, before
+the dirt filter): fewer grain dashes on the cart planks and stones, still some — a modest gain. v2
+weights in the run artifact `gpu-train_c2l-3` (not installed). Next: v3 with the 147 SVG pairs.
+Two earlier dispatches died in 2 min: presigned S3 URLs carry `&` and were passed unquoted through
+`env` / `source` — now a single-quoted `job.env` + `pipefail` + `::add-mask::`.
+
 ### 8.5ci 🎬 Finish replay time-lapse + MP4 share (2026-10-25, branch `2026-10-25-reveal-replay`)
 
 Owner sent a 9 s video of the reference game's finish (blank page → fills appear → outline fades →
