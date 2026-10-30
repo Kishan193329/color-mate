@@ -82,6 +82,8 @@ jobs:
               echo "LORA_URL=$(url /opt/colorforge/models/lineart_lora/cmlineart_v1.safetensors tmp/lineart/cmlineart_v1.safetensors)" ;;
           esac
           EOF
+          # presigned URLs carry an access-key id + signature: keep them out of the public log
+          while IFS='=' read -r k v; do [ -n "$v" ] && echo "::add-mask::$v"; done < urls.txt
           echo "staged: $(cut -d= -f1 urls.txt | tr '\n' ' ')"
 
       - name: Rent a pod
@@ -104,9 +106,11 @@ jobs:
           $S 'mkdir -p /workspace/test'
           scp -i ~/.ssh/pod_key -o StrictHostKeyChecking=no -P $PORT $TOOLS/*.py $TOOLS/jobs/${{ inputs.job }}.sh root@$IP:/workspace/
           if ls $TOOLS/test/* >/dev/null 2>&1; then scp -i ~/.ssh/pod_key -o StrictHostKeyChecking=no -P $PORT $TOOLS/test/* root@$IP:/workspace/test/; fi
-          ENVS="$(tr '\n' ' ' < urls.txt) $ARGS"
-          # the log streams into the Actions page; a failing step still reaches the terminate step
-          $S "cd /workspace && env $ENVS bash ${{ inputs.job }}.sh 2>&1 | grep -v -E '^\s*[0-9]+%\|' "
+          # the URLs go over as a FILE: they contain '&', which an unquoted "env A=..&B=.." splits
+          scp -i ~/.ssh/pod_key -o StrictHostKeyChecking=no -P $PORT urls.txt root@$IP:/workspace/job.env
+          # the log streams into the Actions page; a failing step still reaches the terminate step.
+          # pipefail: without it the grep's exit code hid a failed job as "success"
+          $S "set -o pipefail; cd /workspace && set -a && . ./job.env && set +a && env $ARGS bash ${{ inputs.job }}.sh 2>&1 | grep -v -E '^\s*[0-9]+%\|' "
 
       - name: Fetch results
         if: always() && steps.pod.outputs.ip != ''
