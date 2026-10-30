@@ -538,8 +538,8 @@ def regenerate(iid: str, background: BackgroundTasks, payload: dict = Body(defau
         cols = max(20, min(220, int(payload.get("cols") or 78)))
         k = max(4, min(80, int(payload.get("colours") or 32)))
         background.add_task(_enqueue, _process_diamond, iid, mode, cols, k)
-    elif it.get("source_kind") == "c2l" and (ITEMS / iid / "photo.png").is_file():
-        background.add_task(_enqueue, _process_c2l, iid)      # line model + vector again
+    elif it.get("source_kind") == "c2l":
+        background.add_task(_enqueue, _process_c2l, iid)      # line model + vector again (photo.png, else original.png)
     elif (ITEMS / iid / "source.svg").is_file():
         background.add_task(_enqueue, _process_svg, iid)
     else:
