@@ -494,7 +494,7 @@ def write_previews(folder: Path) -> None:
         cv2.imwrite(str(folder / f"preview_{name}.jpg"), img, [cv2.IMWRITE_JPEG_QUALITY, 85])
 
 
-def vectorize(src_png: Path, out_svg: Path) -> None:
+def vectorize(src_png: Path, out_svg: Path, smooth: bool = False) -> None:
     """Flat artwork (PNG/JPG with black outlines) -> SVG, the free way, so no Figma credits are
     needed. vtracer in 'cutout' mode gives non-overlapping shapes like Figma's Vectorize; it puts
     translate() on each <path>, which parse() reads. Big inputs are brought to MAX_SIDE first."""
@@ -508,9 +508,13 @@ def vectorize(src_png: Path, out_svg: Path) -> None:
                          interpolation=cv2.INTER_AREA)
     tmp = Path(out_svg).with_suffix(".in.png")
     cv2.imwrite(str(tmp), img)
+    # smooth: spline curves + longer segments, for pictures whose shapes come from a photo's colour
+    # map (c2l) rather than drawn flat art - the straight-segment default keeps every tiny step.
+    extra = (dict(mode="spline", corner_threshold=90, length_threshold=8.0, splice_threshold=60)
+             if smooth else dict(mode="polygon"))
     vtracer.convert_image_to_svg_py(str(tmp), str(out_svg), colormode="color",
-                                    hierarchical="cutout", mode="polygon", filter_speckle=4,
-                                    color_precision=6, layer_difference=16)
+                                    hierarchical="cutout", filter_speckle=4,
+                                    color_precision=6, layer_difference=16, **extra)
     tmp.unlink(missing_ok=True)
 
 

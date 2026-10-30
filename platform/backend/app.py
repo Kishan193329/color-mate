@@ -43,7 +43,7 @@ import number_tab
 import referral
 import simplify as simplify_mod
 import storage
-from services import c2l_lineart
+from services import c2l_lineart, c2l_vector
 from services import reveal_game_builder as R
 from services import svg_builder
 
@@ -398,25 +398,29 @@ def _process(iid: str, simplify_level: str | None = None) -> None:
 
 def _process_c2l(iid: str) -> None:
     """Background: coloured outline art (pencil / cartoon) -> our own colour->line model draws the
-    line (services/c2l_lineart), then the normal region engine runs on it. No simplify: the model
-    wants the picture as drawn, and the reveal stays the true picture."""
+    line (services/c2l_lineart) -> flat colour shapes + that ink (services/c2l_vector) -> vtracer
+    -> the SVG import, so the picture plays on the app's VECTOR engine, smooth at any zoom
+    (CLAUDE.md §8.5cn). The uploaded photo is kept as photo.png so a regenerate can start over."""
     try:
         folder = ITEMS / iid
-        img = cv2.imread(str(folder / "original.png"))
+        photo = folder / "photo.png"
+        img = cv2.imread(str(photo if photo.is_file() else folder / "original.png"))
         if img is None:
             raise ValueError("not a readable image")
         h, w = img.shape[:2]
         if max(h, w) > MAX_SIDE:
             sc = MAX_SIDE / max(h, w)
             img = cv2.resize(img, (round(w * sc), round(h * sc)), interpolation=cv2.INTER_AREA)
+        cv2.imwrite(str(photo), img)
         cv2.imwrite(str(folder / "reveal_master.png"), img)
         cv2.imwrite(str(folder / "original.png"), img)
         c2l_lineart.generate(folder / "reveal_master.png", folder / "ai_lineart.png")
-        info = R.build_color(folder)                     # _load_lineart picks up ai_lineart.png
-        db.update_image(iid, status="review", error="", source_kind="c2l",
-                        regions=info.get("regions"), colours=info.get("palette_numbers"))
+        c2l_vector.write_source(folder)
+        svg_builder.vectorize(folder / "source.png", folder / "source.svg", smooth=True)
     except Exception as e:  # noqa: BLE001
         _fail(iid, e, "outline model")
+        return
+    _process_svg(iid, source_kind="c2l")
 
 
 def _process_vectorize(iid: str) -> None:
@@ -430,7 +434,7 @@ def _process_vectorize(iid: str) -> None:
     _process_svg(iid)
 
 
-def _process_svg(iid: str) -> None:
+def _process_svg(iid: str, source_kind: str = "svg") -> None:
     """Background: a Figma-vectorised SVG -> regions + ink straight from its shapes (no AI pass),
     then the same play page / review flow as a photo. See services/svg_builder.py."""
     try:
@@ -442,7 +446,7 @@ def _process_svg(iid: str) -> None:
             warn = (f"Only {info.get('ink_pct', 0)}% of the picture is outline — it will play with "
                     "almost no line art. Regenerate the image with bold pure-black outlines, then "
                     "vectorize again (or publish anyway if you like it).")
-        db.update_image(iid, status="review", error=warn, source_kind="svg",
+        db.update_image(iid, status="review", error=warn, source_kind=source_kind,
                         outline=svg_builder.outline_of(folder),
                         regions=info["regions"], colours=info["palette_numbers"])
     except Exception as e:  # noqa: BLE001
@@ -534,6 +538,8 @@ def regenerate(iid: str, background: BackgroundTasks, payload: dict = Body(defau
         cols = max(20, min(220, int(payload.get("cols") or 78)))
         k = max(4, min(80, int(payload.get("colours") or 32)))
         background.add_task(_enqueue, _process_diamond, iid, mode, cols, k)
+    elif it.get("source_kind") == "c2l" and (ITEMS / iid / "photo.png").is_file():
+        background.add_task(_enqueue, _process_c2l, iid)      # line model + vector again
     elif (ITEMS / iid / "source.svg").is_file():
         background.add_task(_enqueue, _process_svg, iid)
     else:
