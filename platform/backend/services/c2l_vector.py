@@ -1,17 +1,20 @@
 """c2l pictures as VECTOR art (CLAUDE.md §8.5cn).
 
 The c2l line (services/c2l_lineart) used to go through the raster engine: a 1254 px border.png and
-an id-map whose colour boundaries came from a 720 px k-means grid — blocky at any zoom. The app's
+an id-map whose colour boundaries came from a 720 px k-means grid - blocky at any zoom. The app's
 vector engine (svg_builder -> vector.json.gz) draws smooth shapes, so a c2l picture is now turned
 into the same thing the owner's SVG pictures are: flat colour shapes + the ink, traced by vtracer.
 
-write_source(folder) renders that flat picture:
+write_source(folder) renders that flat picture at 2x (UP), smoothed, because vtracer traces whatever
+pixel steps it is given (measured: the un-smoothed 1254 px source came back as angular polygons at
+zoom, the Figma SVGs as curves):
   - colours: the July quantiser's centres (R._fine_color), but every FULL-RES pixel classified
     against them on a blurred copy, so boundaries follow the picture, not the 720 px grid;
   - regions: the line-art cells split by colour exactly as _game_data_color does, each painted its
-    dominant centre colour;
-  - ink: ai_lineart.png in pure black on top.
-Then svg_builder.vectorize(..., smooth=True) + svg_builder.prepare() do the rest.
+    dominant centre colour, upscaled 2x and median-filtered (MEDIAN) so 1 px steps become curves;
+  - ink: ai_lineart.png upscaled, blurred (INK_SIGMA) and re-thresholded - a smooth edge - in black.
+Then svg_builder.vectorize(..., smooth=True, max_side=2*MAX_SIDE) + svg_builder.prepare() (which
+scales the SVG back to the 1254 canvas) do the rest.
 """
 from __future__ import annotations
 
@@ -24,6 +27,9 @@ from services import lineart_region_builder as L
 from services import reveal_game_builder as R
 
 BLUR = 3.0          # sigma of the blur the full-res classification looks at (pencil grain must not split a fill)
+UP = 2              # the source is rendered at this multiple of the canvas
+MEDIAN = 11         # median kernel on the 2x flat fills: rounds the 1 px staircase of the region map
+INK_SIGMA = 3.0     # blur on the 2x ink mask before re-thresholding: smooth stroke edges
 _CHUNK = 200_000    # pixels per distance block (the whole matrix would be ~600 MB)
 
 
@@ -58,11 +64,15 @@ def write_source(folder: Path, blur: float = BLUR) -> Path:
     lut = np.zeros((rmax, 3), np.uint8)
     for rid in (int(u) for u in np.unique(fl) if u > 0):
         lut[rid] = centers[int(dom[rid])]
-    flat = lut[fl]
+    lut[0] = lut[1:].mean(0).astype(np.uint8) if rmax > 1 else 255   # label 0 (under the ink) takes a neutral fill
+    fills = cv2.resize(lut[fl], (w * UP, h * UP), interpolation=cv2.INTER_NEAREST)
+    fills = cv2.medianBlur(fills, MEDIAN)
     ink = cv2.imread(str(folder / "ai_lineart.png"), 0)
     if ink.shape != (h, w):
         ink = cv2.resize(ink, (w, h), interpolation=cv2.INTER_NEAREST)
-    flat[ink < 128] = 0
+    m = cv2.resize((ink < 128).astype(np.float32), (w * UP, h * UP), interpolation=cv2.INTER_LINEAR)
+    m = cv2.GaussianBlur(m, (0, 0), INK_SIGMA) > 0.5
+    fills[m] = 0
     out = folder / "source.png"
-    cv2.imwrite(str(out), flat)
+    cv2.imwrite(str(out), fills)
     return out

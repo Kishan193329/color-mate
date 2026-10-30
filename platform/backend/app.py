@@ -416,7 +416,7 @@ def _process_c2l(iid: str) -> None:
         cv2.imwrite(str(folder / "original.png"), img)
         c2l_lineart.generate(folder / "reveal_master.png", folder / "ai_lineart.png")
         c2l_vector.write_source(folder)
-        svg_builder.vectorize(folder / "source.png", folder / "source.svg", smooth=True)
+        svg_builder.vectorize(folder / "source.png", folder / "source.svg", smooth=True, max_side=2 * MAX_SIDE)
     except Exception as e:  # noqa: BLE001
         _fail(iid, e, "outline model")
         return

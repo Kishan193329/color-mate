@@ -494,7 +494,7 @@ def write_previews(folder: Path) -> None:
         cv2.imwrite(str(folder / f"preview_{name}.jpg"), img, [cv2.IMWRITE_JPEG_QUALITY, 85])
 
 
-def vectorize(src_png: Path, out_svg: Path, smooth: bool = False) -> None:
+def vectorize(src_png: Path, out_svg: Path, smooth: bool = False, max_side: int = MAX_SIDE) -> None:
     """Flat artwork (PNG/JPG with black outlines) -> SVG, the free way, so no Figma credits are
     needed. vtracer in 'cutout' mode gives non-overlapping shapes like Figma's Vectorize; it puts
     translate() on each <path>, which parse() reads. Big inputs are brought to MAX_SIDE first."""
@@ -502,7 +502,7 @@ def vectorize(src_png: Path, out_svg: Path, smooth: bool = False) -> None:
     img = cv2.imread(str(src_png), cv2.IMREAD_COLOR)
     if img is None:
         raise ValueError("could not read the uploaded image")
-    sc = MAX_SIDE / max(img.shape[:2])
+    sc = max_side / max(img.shape[:2])          # c2l passes 2*MAX_SIDE: its source is pre-smoothed at 2x
     if sc < 1:
         img = cv2.resize(img, (round(img.shape[1] * sc), round(img.shape[0] * sc)),
                          interpolation=cv2.INTER_AREA)
@@ -510,10 +510,10 @@ def vectorize(src_png: Path, out_svg: Path, smooth: bool = False) -> None:
     cv2.imwrite(str(tmp), img)
     # smooth: spline curves + longer segments, for pictures whose shapes come from a photo's colour
     # map (c2l) rather than drawn flat art - the straight-segment default keeps every tiny step.
-    extra = (dict(mode="spline", corner_threshold=90, length_threshold=8.0, splice_threshold=60)
-             if smooth else dict(mode="polygon"))
+    extra = (dict(mode="spline", corner_threshold=60, length_threshold=8.0, splice_threshold=45, filter_speckle=8)
+             if smooth else dict(mode="polygon", filter_speckle=4))
     vtracer.convert_image_to_svg_py(str(tmp), str(out_svg), colormode="color",
-                                    hierarchical="cutout", filter_speckle=4,
+                                    hierarchical="cutout",
                                     color_precision=6, layer_difference=16, **extra)
     tmp.unlink(missing_ok=True)
 
