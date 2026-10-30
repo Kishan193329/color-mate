@@ -14,7 +14,7 @@ pip install -q "diffusers==0.31.0" "transformers==4.46.3" "accelerate==1.1.1" sa
 mkdir -p data out
 curl -sL -o pages.tgz "$PAGES_URL" && tar xzf pages.tgz -C data
 echo "pages: $(ls data/*.png | wc -l)"
-if [ -n "${REAL_URL:-}" ]; then mkdir -p real && curl -sL -o real.tgz "$REAL_URL" && tar xzf real.tgz -C real && export REAL_DIR=/workspace/real; echo "real pairs: $(ls real/*_l.png 2>/dev/null | wc -l)"; fi
+if [ -n "${REAL_URL:-}" ]; then mkdir -p real && curl -sL -o real.tgz "$REAL_URL" && tar xzf real.tgz -C real --no-same-owner && export REAL_DIR=/workspace/real; echo "real pairs: $(ls real/*_l.png 2>/dev/null | wc -l)"; fi
 if [ -n "${INIT_URL:-}" ]; then curl -sL -o init.pt "$INIT_URL" && export INIT=/workspace/init.pt; fi
 python make_pairs.py data pairs "${PAIRS:-900}"
 python train_c2l.py pairs out "${STEPS:-12000}"
