@@ -107,7 +107,9 @@ jobs:
           scp -i ~/.ssh/pod_key -o StrictHostKeyChecking=no -P $PORT $TOOLS/*.py $TOOLS/jobs/${{ inputs.job }}.sh root@$IP:/workspace/
           if ls $TOOLS/test/* >/dev/null 2>&1; then scp -i ~/.ssh/pod_key -o StrictHostKeyChecking=no -P $PORT $TOOLS/test/* root@$IP:/workspace/test/; fi
           # the URLs go over as a FILE: they contain '&', which an unquoted "env A=..&B=.." splits
-          scp -i ~/.ssh/pod_key -o StrictHostKeyChecking=no -P $PORT urls.txt root@$IP:/workspace/job.env
+          # values single-quoted, or sourcing the file splits on the '&' too (presigned URLs have no quotes)
+          sed -E "s/^([A-Z_]+)=(.*)$/\1='\2'/" urls.txt > job.env
+          scp -i ~/.ssh/pod_key -o StrictHostKeyChecking=no -P $PORT job.env root@$IP:/workspace/job.env
           # the log streams into the Actions page; a failing step still reaches the terminate step.
           # pipefail: without it the grep's exit code hid a failed job as "success"
           $S "set -o pipefail; cd /workspace && set -a && . ./job.env && set +a && env $ARGS bash ${{ inputs.job }}.sh 2>&1 | grep -v -E '^\s*[0-9]+%\|' "
