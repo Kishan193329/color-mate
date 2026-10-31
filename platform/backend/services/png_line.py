@@ -1,0 +1,86 @@
+"""The border IS the picture's own drawn line (CLAUDE.md §8.5cp).
+
+Owner, on the c2l cottage: the border must have exactly the shape of the line drawn in the PNG,
+smooth and rounded like his reference apps - not a line the model re-draws at one width
+(services/c2l_lineart) and not restyled widths (services/ink_style). So the ink is taken from the
+picture itself:
+
+  dark      pixels that are dark (DARK_L) or clearly darker than their surroundings (REL_DARK) -
+            a brown outline on an orange roof is not black, but it is the darkest thing nearby
+  line-like dark structures no wider than MAX_W: a morphological opening with a MAX_W disc keeps
+            only the wide dark FILLS (a shadowed wheel hub, dark hair), which are subtracted
+  gated     kept only near the line model's strokes (GATE px): the model decides what is a drawn
+            line and what is pencil grain / wood texture; its own stroke is added back where it
+            runs over a dark pixel, so a line the gate thinned is never cut
+then specks dropped, pinholes filled, and the mask rendered at 2x with a Gaussian edge so the
+traced curves are rounded (SMOOTH). Output exactly like ink_style.apply: the styled ai_lineart.png
+at canvas size (regions follow it), ink2x.png (what c2l_vector traces), the model's line kept as
+ai_lineart_raw.png.
+"""
+from __future__ import annotations
+
+from pathlib import Path
+
+import cv2
+import numpy as np
+
+DARK_L = 100      # Lab L below this is ink outright
+REL_DARK = 40     # ... or at least this much darker than the local (median) surroundings ...
+REL_MAX_L = 150   # ... as long as it is not a light colour itself
+BG_WIN = 21       # median window that stands for "the surroundings"
+MAX_W = 16        # px: dark things wider than this are fills, not lines
+GATE = 8          # px from a model stroke within which a dark line pixel counts
+SPECK = 80        # px: smaller ink pieces are dirt
+HOLE = 30         # px: smaller paper holes inside the ink are pinholes
+UP = 2
+SMOOTH = 3.0      # Gaussian sigma on the 2x mask: rounds the posterised staircase into curves
+
+
+def _disc(r: float):
+    k = max(1, int(r))
+    return cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2 * k + 1, 2 * k + 1))
+
+
+def extract(bgr: np.ndarray, model_ink: np.ndarray | None):
+    """bgr picture + boolean model-ink mask (same size, or None) -> (1x bool ink, 2x grey)."""
+    h, w = bgr.shape[:2]
+    L = cv2.cvtColor(bgr, cv2.COLOR_BGR2LAB)[:, :, 0]
+    bg = cv2.medianBlur(L, BG_WIN)
+    dark = (L < DARK_L) | (((bg.astype(np.int16) - L.astype(np.int16)) > REL_DARK) & (L < REL_MAX_L))
+    dark8 = dark.astype(np.uint8)
+    fills = cv2.morphologyEx(dark8, cv2.MORPH_OPEN, _disc(MAX_W // 2)) > 0
+    lines = dark & ~fills
+    if model_ink is not None:
+        near = cv2.dilate(model_ink.astype(np.uint8), _disc(GATE)) > 0
+        lines = (lines & near) | (model_ink & dark)
+    n, lab, st, _ = cv2.connectedComponentsWithStats(lines.astype(np.uint8), 8)
+    keep = st[:, cv2.CC_STAT_AREA] >= SPECK
+    keep[0] = False
+    lines = keep[lab]
+    n, lab, st, _ = cv2.connectedComponentsWithStats((~lines).astype(np.uint8), 4)
+    tiny = st[:, cv2.CC_STAT_AREA] < HOLE
+    tiny[0] = False
+    lines |= tiny[lab]
+    m = cv2.resize(lines.astype(np.float32), (w * UP, h * UP), interpolation=cv2.INTER_LINEAR)
+    m = cv2.GaussianBlur(m, (0, 0), SMOOTH)
+    g2 = np.clip((1 - m) * 255, 0, 255).astype(np.uint8)      # grey: anti-aliased, 128 = the edge
+    return lines, g2
+
+
+def apply(folder: Path) -> dict:
+    folder = Path(folder)
+    bgr = cv2.imread(str(folder / "reveal_master.png"))
+    if bgr is None:
+        raise FileNotFoundError("reveal_master.png missing")
+    src = folder / "ai_lineart.png"
+    raw = folder / "ai_lineart_raw.png"
+    model = cv2.imread(str(raw if raw.is_file() else src), cv2.IMREAD_GRAYSCALE)
+    if model is not None and not raw.is_file():
+        cv2.imwrite(str(raw), model)
+    if model is not None and model.shape != bgr.shape[:2]:
+        model = cv2.resize(model, (bgr.shape[1], bgr.shape[0]), interpolation=cv2.INTER_NEAREST)
+    lines, g2 = extract(bgr, None if model is None else model < 128)
+    g1 = cv2.resize(g2, (bgr.shape[1], bgr.shape[0]), interpolation=cv2.INTER_AREA)
+    cv2.imwrite(str(src), g1)
+    cv2.imwrite(str(folder / "ink2x.png"), g2)
+    return dict(ink=float(lines.mean()), ink_model=float((model < 128).mean()) if model is not None else None)
