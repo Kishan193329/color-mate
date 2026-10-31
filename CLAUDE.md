@@ -3180,6 +3180,34 @@ passes `c2l_vector.UP * MAX_SIDE` to vtracer) — ink 23.8% → 22.0% locally, v
 the WEIGHT. Every pass that tried to get the drawing from the painting's pixels failed, and every
 pass that restyled the model's widths by rule looked invented.
 
+### 8.5cs 🖼️ OWNER'S CALL: c2l pictures are PNG only — no SVG/vector (2026-10-31)
+
+Owner, after seeing the 13 test pictures in the app: *"svg reva dee, khali png j rakh."* Asked which
+he meant (the c2l route, or the admin's SVG upload) — **the c2l route**: upload PNG → model →
+pen-stroke line → **the ordinary PNG game**, no vtracer, no `vector.json.gz`. The admin's own SVG
+upload (Figma / "vectorize here", §8.5by) is untouched and still plays on the vector engine.
+
+`_process_c2l` now: cap → `c2l_lineart.generate` → `png_line.apply` (ai_lineart.png = the round
+pen strokes, anti-aliased, §8.5cr) → **delete any vector leftovers** (`svg_game.npz/json`,
+`source.svg/png`, `vector.json.gz`, `start.jpg`, `ink2x.png` — a stale `svg_game.npz` would make
+`_game_data_color` return the OLD SVG data) → `R.build_color(folder)` (July raster engine: regions =
+that line's cells split by colour, `border.png` alpha = the line) → `review`, `source_kind="c2l"`.
+`services/c2l_vector.py` deleted; `svg_builder`'s strict-ink mode (§8.5cq) reverted; `png_line`
+no longer writes `ink2x.png`. The app plays these as photo items (raster border, white canvas, no
+`vec`/`look` in regions.json); the vector engine stays for the owner's SVGs.
+Measured on the cottage: 545 regions / **91 colours** (the July quantiser's `COLOR_K 100` — the
+SVG route's shade-merging gave ~60; the owner wants the admin's output as is, §8.5v) — border.png
+anti-aliased, clean at fit; at deep zoom it is a 1254 px bitmap again (the §8.5cn complaint —
+his choice now). If that comes back, the cheap lever is a true-ink `border.svg` from the pen
+strokes (the app's `BorderVector` reads M/L/Q/Z, §8.5bf/bg) without any vector engine.
+All 14 live c2l items (cottage + the 13 "b13 …" tests in *other*) regenerated + republished
+through the queue (`/root/regen_c2l_all.py` on the VPS).
+⚠️ **Seen in the app, not fixed:** on a zoomed vector picture the selected number's violet
+highlight was drawn ABOVE the board (over the tool rail) — the activity root has
+`clipChildren=false` for the shadows (§8.5x), so `RevealView` may paint outside its bounds. A
+`canvas.clipRect` in `RevealView.onDraw` fixes it. Moot for PNG items unless the raster path has
+the same leak — check once on a phone.
+
 ### 8.5ci 🎬 Finish replay time-lapse + MP4 share (2026-10-25, branch `2026-10-25-reveal-replay`)
 
 Owner sent a 9 s video of the reference game's finish (blank page → fills appear → outline fades →
