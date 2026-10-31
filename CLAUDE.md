@@ -3039,6 +3039,20 @@ weights in the run artifact `gpu-train_c2l-3` (not installed). Next: v3 with the
 Two earlier dispatches died in 2 min: presigned S3 URLs carry `&` and were passed unquoted through
 `env` / `source` — now a single-quoted `job.env` + `pipefail` + `::add-mask::`.
 
+**✅ c2l v3 IS LIVE (2026-10-31, run 41152507958, ~$2.3, 1 h 15 m on a 4090).** 539 synthetic +
+147 real SVG pairs ×3 = 980 pairs, distractors, fine-tune from v1, 12,000 steps. Measured on the
+three pencil cottages (raw pieces before the dirt filter / kept / clean ink): v1 1486-2417 / 36-46 /
+17-18% · v2 590-761 / 23-39 / 16-17% · v3 **552-632 / 34-41 / 18-19%**. v3 emits the fewest grain
+pieces straight out of the model, keeps the wheel hub / hinges / lantern, and is a touch bolder
+(ink 18-19% = the owner's reference pages); v2 was lighter and lost some detail. Installed as
+`/opt/colorforge/models/c2l/c2l.pt` (`c2l_v1.pt` + `c2l_v3.pt` kept beside it — rollback = `cp
+c2l_v1.pt c2l.pt && systemctl restart colorforge`; the service caches the net in memory, so a swap
+needs the restart). PC copies: `C:/Users/User/colourmate_models/c2l_v{1,2,3}.pt`. Live cottage
+regenerated + republished: 1,154 regions / 61 colours, `vector.json.gz` 237 KB; before/after crops
+in the session scratchpad (`live_v1_v3_zoom.jpg`). Compare harness: scratchpad `compare_v123.py`.
+The workflow's pod-ssh wait is now 16×20 s with a clear failure (the first v3 dispatch hung on a
+pod whose sshd never answered). RunPod balance $9.20, 0 pods.
+
 ### 8.5ci 🎬 Finish replay time-lapse + MP4 share (2026-10-25, branch `2026-10-25-reveal-replay`)
 
 Owner sent a 9 s video of the reference game's finish (blank page → fills appear → outline fades →
