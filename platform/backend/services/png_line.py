@@ -79,9 +79,13 @@ def apply(folder: Path) -> dict:
         cv2.imwrite(str(raw), model)
     if model is not None and model.shape != bgr.shape[:2]:
         model = cv2.resize(model, (bgr.shape[1], bgr.shape[0]), interpolation=cv2.INTER_NEAREST)
-    lines, _ = extract(bgr, None if model is None else model < 128)
+    if model is None:
+        raise FileNotFoundError("ai_lineart.png missing - run c2l_lineart.generate first")
+    lines, _ = extract(bgr, model < 128)
     from services import round_line
-    g2, st = round_line.strokes(lines)             # the mask redrawn as clean round pen strokes (§8.5cq)
+    # the MODEL's drawing is the stroke structure; the painting's own line gives each stroke its
+    # width (§8.5cr) - clean round pen strokes, bold outer contours, thin details
+    g2, st = round_line.strokes(model < 128, width_src=lines)
     g1 = cv2.resize(g2, (bgr.shape[1], bgr.shape[0]), interpolation=cv2.INTER_AREA)
     cv2.imwrite(str(src), g1)
     cv2.imwrite(str(folder / "ink2x.png"), g2)

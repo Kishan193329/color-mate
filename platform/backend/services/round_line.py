@@ -1,19 +1,19 @@
-"""Clean round pen strokes from a line mask (CLAUDE.md §8.5cq).
+"""Clean round pen strokes (CLAUDE.md §8.5cq / §8.5cr).
 
 The owner's references (his Majestic Lion SVG, the reference app's rose / eye / fox girl) are pen
-drawings: every stroke a smooth curve with rounded edges and ends, nothing lumpy. A mask cut out of
-a painted picture (services/png_line) has the right SHAPE - where the line runs, how wide it is -
-but a ragged, lumpy edge. So each stroke is redrawn:
+drawings: every stroke one smooth curve of one confident width, rounded edges and ends, nothing
+lumpy. Two inputs give that:
+  topology  the LINE MODEL's drawing (services/c2l_lineart) - it draws lines, never fills, so a
+            lantern is a lantern and a hinge a scroll; a mask cut from the painting (png_line) is a
+            tangle of thousands of crumbs wherever the picture has dark metal or shadow
+  width     the painting's own dark line (png_line.extract) - where the model's stroke runs inside
+            it, the stroke takes that line's width, so outer contours come out bold and details thin
+Each stroke: skeleton (numpy Zhang-Suen, spurs pruned) -> split at junctions into polylines ->
+one width per stroke (PEN_PCT percentile of the painting's width along it, snapped to a NIB) ->
+free ends tapered -> centre line Gaussian-smoothed with its ends pinned -> drawn at UP x with
+cv2.line (round caps/joins) + a disc per junction -> small close -> anti-aliased edge.
 
-  skeleton   Zhang-Suen thinning of the mask, spurs < SPUR px pruned
-  strokes    the skeleton split at junctions into polylines, each traced in order
-  smooth     x/y of each polyline Gaussian-smoothed along its length (SMOOTH_XY), ends pinned
-  width      2 x the mask's distance transform along the polyline, smoothed (SMOOTH_W), lumps
-             capped at LUMP x the stroke's median, clamped to [W_MIN, W_MAX]
-  render     every segment drawn at UP x with cv2.line (round caps/joins), a disc at each junction,
-             anti-aliased edge
-
-    strokes(mask) -> (2x grey, stats)        mask: bool, canvas size
+    strokes(topology, width_src=None) -> (2x grey, stats)     both bool masks at canvas size
 """
 from __future__ import annotations
 
@@ -22,13 +22,14 @@ import numpy as np
 
 SPUR = 6          # px: skeleton branches shorter than this are edge bumps, not strokes
 SMOOTH_XY = 3.0   # sigma (px along the stroke) for the centre line
-SMOOTH_W = 8.0    # sigma for the width along the stroke
-LUMP = 1.6        # a width over LUMP x the stroke's median is a lump, capped
-W_MIN = 2.0       # px at canvas size
+PEN_PCT = 60      # the stroke's width = this percentile of the painting's line width along it
+NIBS = (2.5, 4.0, 6.0, 9.0)   # the pen set (px at canvas size) a stroke width snaps to
+MIN_PIECE = 14    # px: an isolated stroke shorter than this is a crumb
+TAPER = 2.5       # free ends thin over this many widths ...
+TAPER_TIP = 0.35  # ... down to this share of the width
 W_MAX = 18.0
 UP = 2
-CORE_ERODE = 2    # px at canvas size: the mask minus its ragged edge, unioned so wide bands stay solid
-CLOSE = 3         # px at UP x: closes the sliver left between two parallel strokes of one band
+CLOSE = 3         # px at UP x: closes the sliver left between two strokes of one band
 EDGE = 0.9        # sigma of the final anti-alias blur at UP x
 _N8 = ((-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1))
 
@@ -93,7 +94,6 @@ def _polylines(sk: np.ndarray):
     for pts in by_lab.values():
         remaining = set(pts)
         while remaining:
-            # start at a free end if the piece has one, else anywhere (a closed loop)
             start = None
             for p in remaining:
                 deg = sum((p[0] + dy, p[1] + dx) in remaining for dy, dx in _N8)
@@ -101,7 +101,7 @@ def _polylines(sk: np.ndarray):
                     start = p
                     break
             if start is None:
-                start = next(iter(remaining))
+                start = next(iter(remaining))        # a closed loop
             line = [start]
             remaining.discard(start)
             cur = start
@@ -117,7 +117,6 @@ def _polylines(sk: np.ndarray):
                 line.append(nxt)
                 remaining.discard(nxt)
                 cur = nxt
-            # pin each end to the junction it touched
             for end, insert_front in ((line[0], True), (line[-1], False)):
                 for dy, dx in _N8:
                     j = (end[0] + dy, end[1] + dx)
@@ -131,6 +130,11 @@ def _polylines(sk: np.ndarray):
     return out, junction
 
 
+def _on_junction(line, junction: np.ndarray, end: int) -> bool:
+    y, x = line[0] if end == 0 else line[-1]
+    return bool(junction[y, x])
+
+
 def _smooth1d(v: np.ndarray, sigma: float) -> np.ndarray:
     if len(v) < 4 or sigma <= 0:
         return v
@@ -138,40 +142,45 @@ def _smooth1d(v: np.ndarray, sigma: float) -> np.ndarray:
                             borderType=cv2.BORDER_REPLICATE).ravel()
 
 
-def strokes(mask: np.ndarray):
-    h, w = mask.shape
-    sk = _prune(_thin(mask), SPUR)
-    d = cv2.distanceTransform(mask.astype(np.uint8), cv2.DIST_L2, 5)
+def strokes(topology: np.ndarray, width_src: np.ndarray | None = None):
+    h, w = topology.shape
+    sk = _prune(_thin(topology), SPUR)
+    d = cv2.distanceTransform((width_src if width_src is not None else topology).astype(np.uint8), cv2.DIST_L2, 5)
     lines, junction = _polylines(sk)
     canvas = np.zeros((h * UP, w * UP), np.uint8)
-    n_seg = 0
+    kept = 0
     for line in lines:
         p = np.array(line, np.float32)
         if len(p) < 2:
             continue
+        free = [not _on_junction(line, junction, e) for e in (0, 1)]
+        if len(p) < MIN_PIECE and all(free):
+            continue                                            # an isolated crumb
         wv = 2.0 * d[p[:, 0].astype(int), p[:, 1].astype(int)]
-        wv = np.minimum(wv, LUMP * max(float(np.median(wv)), W_MIN))
-        wv = np.clip(_smooth1d(wv, SMOOTH_W), W_MIN, W_MAX)
+        inside = wv > 0
+        wc = float(np.percentile(wv[inside], PEN_PCT)) if inside.mean() > 0.5 else NIBS[0]
+        wc = min(W_MAX, float(NIBS[int(np.argmin([abs(wc - n) for n in NIBS]))]))
+        wv = np.full(len(p), wc, np.float32)
+        for end in (0, 1):
+            if free[end]:
+                span = max(4, int(round(TAPER * wc)))
+                idx = np.arange(len(wv)) if end == 0 else np.arange(len(wv))[::-1]
+                wv = wv * (TAPER_TIP + (1 - TAPER_TIP) * np.minimum(idx, span) / span)
         y0, x0, y1, x1 = p[0, 0], p[0, 1], p[-1, 0], p[-1, 1]
         p[:, 0] = _smooth1d(p[:, 0], SMOOTH_XY)
         p[:, 1] = _smooth1d(p[:, 1], SMOOTH_XY)
         p[0] = (y0, x0)
-        p[-1] = (y1, x1)                               # ends stay where the pieces meet
-        pts = np.round(p[:, ::-1] * UP).astype(np.int32)   # (x, y) at UP x
+        p[-1] = (y1, x1)                                        # ends stay where the pieces meet
+        pts = np.round(p[:, ::-1] * UP).astype(np.int32)        # (x, y) at UP x
         for i in range(len(pts) - 1):
             t = max(1, int(round(float(wv[i] + wv[i + 1]) * 0.5 * UP)))
             cv2.line(canvas, tuple(pts[i]), tuple(pts[i + 1]), 255, t, lineType=cv2.LINE_8)
-            n_seg += 1
+        kept += 1
     for y, x in zip(*np.nonzero(junction)):
-        r = max(1, int(round(float(d[y, x]) * UP)))
+        r = max(1, int(round(min(W_MAX, max(NIBS[0], 2.0 * d[y, x])) * 0.5 * UP)))
         cv2.circle(canvas, (int(x * UP), int(y * UP)), r, 255, -1)
-    # a wide lumpy band thins into two parallel skeleton branches with a sliver of paper between
-    # them: the mask's core (its ragged edge eroded away) fills the band, the strokes keep the edge
-    core = cv2.erode(mask.astype(np.uint8), cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2 * CORE_ERODE + 1,) * 2))
-    core = cv2.resize(core.astype(np.float32), (w * UP, h * UP), interpolation=cv2.INTER_LINEAR)
-    ink = (canvas > 127) | (cv2.GaussianBlur(core, (0, 0), 1.5) > 0.5)
     k = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2 * CLOSE + 1,) * 2)
-    ink = cv2.morphologyEx(ink.astype(np.uint8), cv2.MORPH_CLOSE, k) > 0
+    ink = cv2.morphologyEx((canvas > 127).astype(np.uint8), cv2.MORPH_CLOSE, k) > 0
     g = cv2.GaussianBlur(ink.astype(np.float32), (0, 0), EDGE)
     g2 = np.clip((1 - g) * 255, 0, 255).astype(np.uint8)
-    return g2, dict(strokes=len(lines), segments=n_seg, ink_in=float(mask.mean()), ink_out=float((g2 < 128).mean()))
+    return g2, dict(strokes=kept, ink_in=float(topology.mean()), ink_out=float((g2 < 128).mean()))
