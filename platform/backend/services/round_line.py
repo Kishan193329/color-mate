@@ -20,12 +20,16 @@ from __future__ import annotations
 import cv2
 import numpy as np
 
-SPUR = 10         # px: skeleton branches shorter than this are bumps and grain ticks, not strokes
+SPUR = 14         # px: skeleton branches shorter than this are bumps and grain ticks, not strokes
 SMOOTH_XY = 3.0   # sigma (px along the stroke) for the centre line, at least; wide nibs get more
 SMOOTH_PER_W = 0.6 # ... sigma = max(SMOOTH_XY, SMOOTH_PER_W * width): a bold stroke must not wobble
 PEN_PCT = 60      # the stroke's width = this percentile of the painting's line width along it
 NIBS = (2.5, 4.0, 6.0, 9.0)   # the pen set (px at canvas size) a stroke width snaps to
 MIN_PIECE = 20    # px: an isolated stroke shorter than this is a crumb
+SILHOUETTE_BOOST = True   # strokes along the background (sky / page) go one nib bolder - the
+SILHOUETTE_REACH = 7.0    #   reference apps' bold outer contour. "Along" = this many px from it ...
+SILHOUETTE_FRAC = 0.6     #   ... for at least this share of the stroke ...
+SILHOUETTE_MIN_LEN = 12   #   ... and the stroke is at least this long (a tick is not a contour)
 TAPER = 2.5       # free ends thin over this many widths ...
 TAPER_TIP = 0.35  # ... down to this share of the width
 W_MAX = 18.0
@@ -143,13 +147,30 @@ def _smooth1d(v: np.ndarray, sigma: float) -> np.ndarray:
                             borderType=cv2.BORDER_REPLICATE).ravel()
 
 
+def _background_band(topology: np.ndarray, reach: float) -> np.ndarray:
+    """Pixels within `reach` of the BACKGROUND: the biggest paper region touching the picture's
+    edge (sky / white page). A stroke running along it is a silhouette - the outline that a
+    printed colouring page draws boldest."""
+    paper = (~topology).astype(np.uint8)
+    n, lab, st, _ = cv2.connectedComponentsWithStats(paper, connectivity=4)
+    edge = np.unique(np.concatenate([lab[0], lab[-1], lab[:, 0], lab[:, -1]]))
+    edge = edge[edge > 0]
+    if len(edge) == 0:
+        return np.zeros(topology.shape, bool)
+    bg = edge[np.argmax(st[edge, cv2.CC_STAT_AREA])]
+    k = max(1, int(np.ceil(reach)))
+    return cv2.dilate((lab == bg).astype(np.uint8), cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2 * k + 1,) * 2)) > 0
+
+
 def strokes(topology: np.ndarray, width_src: np.ndarray | None = None):
     h, w = topology.shape
     sk = _prune(_thin(topology), SPUR)
     d = cv2.distanceTransform((width_src if width_src is not None else topology).astype(np.uint8), cv2.DIST_L2, 5)
     lines, junction = _polylines(sk)
+    bgband = _background_band(topology, SILHOUETTE_REACH) if SILHOUETTE_BOOST else None
     canvas = np.zeros((h * UP, w * UP), np.uint8)
     kept = 0
+    jwidth = {}                     # junction pixel -> thinnest stroke width meeting there
     for line in lines:
         p = np.array(line, np.float32)
         if len(p) < 2:
@@ -160,9 +181,17 @@ def strokes(topology: np.ndarray, width_src: np.ndarray | None = None):
         wv = 2.0 * d[p[:, 0].astype(int), p[:, 1].astype(int)]
         inside = wv > 0
         wc = float(np.percentile(wv[inside], PEN_PCT)) if inside.mean() > 0.5 else NIBS[0]
-        wc = min(W_MAX, float(NIBS[int(np.argmin([abs(wc - n) for n in NIBS]))]))
+        nib = int(np.argmin([abs(wc - n) for n in NIBS]))
+        if bgband is not None and len(p) >= SILHOUETTE_MIN_LEN:
+            onbg = bgband[p[:, 0].astype(int), p[:, 1].astype(int)].mean()
+            if onbg >= SILHOUETTE_FRAC:
+                nib = min(len(NIBS) - 1, nib + 1)       # silhouette: one nib bolder
+        wc = min(W_MAX, float(NIBS[nib]))
         wv = np.full(len(p), wc, np.float32)
         for end in (0, 1):
+            if not free[end]:
+                j = line[0] if end == 0 else line[-1]
+                jwidth[j] = min(jwidth.get(j, wc), wc)
             if free[end]:
                 span = max(4, int(round(TAPER * wc)))
                 idx = np.arange(len(wv)) if end == 0 else np.arange(len(wv))[::-1]
@@ -179,7 +208,10 @@ def strokes(topology: np.ndarray, width_src: np.ndarray | None = None):
             cv2.line(canvas, tuple(pts[i]), tuple(pts[i + 1]), 255, t, lineType=cv2.LINE_8)
         kept += 1
     for y, x in zip(*np.nonzero(junction)):
-        r = max(1, int(round(min(W_MAX, max(NIBS[0], 2.0 * d[y, x])) * 0.5 * UP)))
+        # a disc the size of the THINNEST stroke meeting here: sized from the painting's width it
+        # bulged wherever a thin line met a thick one (a knot at every fence post)
+        wj = jwidth.get((int(y), int(x)), NIBS[0])
+        r = max(1, int(round(min(W_MAX, wj) * 0.5 * UP)))
         cv2.circle(canvas, (int(x * UP), int(y * UP)), r, 255, -1)
     k = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2 * CLOSE + 1,) * 2)
     ink = cv2.morphologyEx((canvas > 127).astype(np.uint8), cv2.MORPH_CLOSE, k) > 0
