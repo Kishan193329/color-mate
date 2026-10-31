@@ -3208,6 +3208,22 @@ highlight was drawn ABOVE the board (over the tool rail) — the activity root h
 `canvas.clipRect` in `RevealView.onDraw` fixes it. Moot for PNG items unless the raster path has
 the same leak — check once on a phone.
 
+### 8.5ct 📅 Home daily banner shows OUR pictures of the day (2026-10-31)
+
+Owner: *"Home screen ma daily ma upper data ma kem a m ave che"* — the "31 October / Start" banner
+showed a random mermaid / pizza. Cause: `NumberViewModel.loadDailyImages()` reads the PAID
+catalogue's `DAILY` category (1,810 pictures, newest dated 2024-03), shuffles it with the day as
+seed and keeps 2 — our uploads never reached it. Now it asks our `Number/daily/` feed first
+(`ColorForgeApi.restRoot` + `"daily/"`, guarded by `hasExplicitServer`): **pictures whose
+`timeStamp` is today**, else the newest live ones (future-dated = scheduled are skipped), flagged
+`setColorForge(true)`; the paid DAILY (then Popular) stays the fallback when ours is empty or the
+server is down. The per-day cache (`daily_banner` prefs) gained `cf1/cf2` so a cached pick keeps
+its flag. `NumberFragment`: previews of ours load `borderThumbUrl` on a white plate; Start /
+preview taps open `RevealActivity` (the interstitial break stays) instead of the flat
+`GameActivity`, which would 404 on the paid host. Verified on the phone AND the emulator: banner
+= witch-hat cottage + pumpkin house (today's uploads), Start → interstitial → RevealActivity.
+Not shipped to Play — needs the next release (APK built, installed on both test devices).
+
 ### 8.5ci 🎬 Finish replay time-lapse + MP4 share (2026-10-25, branch `2026-10-25-reveal-replay`)
 
 Owner sent a 9 s video of the reference game's finish (blank page → fills appear → outline fades →
