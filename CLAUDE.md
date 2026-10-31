@@ -3087,6 +3087,35 @@ edges (the model's ragged ink feeds the skeleton); theirs are hand-drawn vectors
 ⚠️ **This PC's Python 3.14 vtracer (0.6.11) segfaults on ANY image** — even a 200 px circle. Use
 `py -3.12` (vtracer works there) for local vector runs; the VPS (0.6.15) is fine, 3 s per picture.
 
+### 8.5cp 🖋️ The border IS the picture's own line — `png_line` replaces the model's redraw (2026-10-31)
+
+Owner, on §8.5co's result: *"hju bov bekar lage che … mare avi clear round vali border joye … jevi
+border hoy PNG ma avi j shape vali"* — with his Majestic Lion SVG and the reference app's fox-girl /
+rose / eye. The point I had missed: **in every reference the border is the artwork's own drawn
+line** (the AI image's black outline, vectorised), at its own varying width, just smooth. The c2l
+model *re-draws* that line at one thin width (median 3 px) with a ragged edge, and §8.5co then
+invented widths by class — neither is the PNG's shape. Looked at the cottage 1:1: the PNG has a
+thick brown door frame and wheel rim and thin planks; the model's line is thin everywhere.
+
+**`services/png_line.py`** (`apply(folder)`, now the step after the model in `_process_c2l`;
+`ink_style.py` deleted — it lives at `4f602d2`): ink = pixels that are **dark** (`L < 100`, or
+`> 40` darker than the 21 px median around them while `L < 150` — a brown outline on an orange
+roof) **and line-shaped** (a `MAX_W 16` disc opening keeps only the wide dark FILLS — wheel hub,
+shadows — which are subtracted) **and near a model stroke** (`GATE 8` px: the model only decides
+line vs pencil grain now; its own stroke is added back where it runs over dark pixels). Specks < 80
+px dropped, pinholes < 30 px filled, 2x mask with a σ3 Gaussian edge → `ink2x.png` for
+`c2l_vector`, 1x grey → `ai_lineart.png`. 0.5 s. A plain `L < 90` threshold alone was measured
+and rejected: it also blackens every dark fill (the whole wheel interior).
+**Result on the cottage** (rendered at 3x beside the PNG): door frame, hinges, ring, wheel rim and
+planks at the PNG's own widths, rounded curves, the page reads like a bold hand-inked colouring
+page. Live: deployed `75084c8`, cottage regenerated + republished, **1,151 regions / 62 colours**,
+ink 27%. Left over: a few lumps where a dark shadow strip is thinner than `MAX_W` (the cart's top
+board) and comes in as "line" — the dial is `MAX_W`/`DARK_L`; lower `DARK_L` loses the roof's brown
+outline.
+⚠️ Lesson, bluntly: two passes (§8.5cn smoothing, §8.5co styling) tuned the *model's* line when the
+owner's references never used a model at all. When the source already carries a drawn outline, use
+the outline. The model earns its place only as the grain/line judge.
+
 ### 8.5ci 🎬 Finish replay time-lapse + MP4 share (2026-10-25, branch `2026-10-25-reveal-replay`)
 
 Owner sent a 9 s video of the reference game's finish (blank page → fills appear → outline fades →
