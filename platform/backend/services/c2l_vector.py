@@ -67,11 +67,15 @@ def write_source(folder: Path, blur: float = BLUR) -> Path:
     lut[0] = lut[1:].mean(0).astype(np.uint8) if rmax > 1 else 255   # label 0 (under the ink) takes a neutral fill
     fills = cv2.resize(lut[fl], (w * UP, h * UP), interpolation=cv2.INTER_NEAREST)
     fills = cv2.medianBlur(fills, MEDIAN)
-    ink = cv2.imread(str(folder / "ai_lineart.png"), 0)
-    if ink.shape != (h, w):
-        ink = cv2.resize(ink, (w, h), interpolation=cv2.INTER_NEAREST)
-    m = cv2.resize((ink < 128).astype(np.float32), (w * UP, h * UP), interpolation=cv2.INTER_LINEAR)
-    m = cv2.GaussianBlur(m, (0, 0), INK_SIGMA) > 0.5
+    ink2 = cv2.imread(str(folder / "ink2x.png"), 0)            # ink_style's 2x render, already smooth
+    if ink2 is not None and ink2.shape == (h * UP, w * UP):
+        m = ink2 < 128
+    else:
+        ink = cv2.imread(str(folder / "ai_lineart.png"), 0)
+        if ink.shape != (h, w):
+            ink = cv2.resize(ink, (w, h), interpolation=cv2.INTER_NEAREST)
+        m = cv2.resize((ink < 128).astype(np.float32), (w * UP, h * UP), interpolation=cv2.INTER_LINEAR)
+        m = cv2.GaussianBlur(m, (0, 0), INK_SIGMA) > 0.5
     fills[m] = 0
     out = folder / "source.png"
     cv2.imwrite(str(out), fills)

@@ -43,7 +43,7 @@ import number_tab
 import referral
 import simplify as simplify_mod
 import storage
-from services import c2l_lineart, c2l_vector
+from services import c2l_lineart, c2l_vector, ink_style
 from services import reveal_game_builder as R
 from services import svg_builder
 
@@ -415,6 +415,7 @@ def _process_c2l(iid: str) -> None:
         cv2.imwrite(str(folder / "reveal_master.png"), img)
         cv2.imwrite(str(folder / "original.png"), img)
         c2l_lineart.generate(folder / "reveal_master.png", folder / "ai_lineart.png")
+        ink_style.apply(folder)                  # reference-app stroke weights + tapered ends (§8.5co)
         c2l_vector.write_source(folder)
         svg_builder.vectorize(folder / "source.png", folder / "source.svg", smooth=True, max_side=2 * MAX_SIDE)
     except Exception as e:  # noqa: BLE001
