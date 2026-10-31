@@ -3170,6 +3170,12 @@ Local: ink 23.8%, 976 regions / 41 colours, 24 ink shapes, 208 KB; the lantern i
 **Deployed `fc5b83a`; live cottage regenerated + republished: 1,155 regions / 60 colours.** Dials:
 `round_line.NIBS` (bolder/finer set), `PEN_PCT`, `TAPER`; `png_line.MAX_W/DARK_L` (which painting
 lines count as wide).
+**Refinement the same day ("hju improve kar"):** the three things still visible at 3x were short
+grain ticks on the cart boards (model detail), a slight wobble on bold strokes, and tracing a 2x
+raster. Now `SPUR 10` / `MIN_PIECE 20` (hairs and crumbs gone), centre-line σ = max(3, 0.6 × width)
+(a 9 px stroke is smoothed σ5.4), and **`UP = 3` in both `round_line` and `c2l_vector`** (app.py
+passes `c2l_vector.UP * MAX_SIDE` to vtracer) — ink 23.8% → 22.0% locally, vtracer ~2× slower
+(still seconds on the VPS). Deployed; live cottage regenerated again.
 ⚠️ Lesson for the whole c2l border thread (§8.5cn → cr): the model is the DRAWING, the painting is
 the WEIGHT. Every pass that tried to get the drawing from the painting's pixels failed, and every
 pass that restyled the model's widths by rule looked invented.
