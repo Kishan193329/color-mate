@@ -79,8 +79,10 @@ def apply(folder: Path) -> dict:
         cv2.imwrite(str(raw), model)
     if model is not None and model.shape != bgr.shape[:2]:
         model = cv2.resize(model, (bgr.shape[1], bgr.shape[0]), interpolation=cv2.INTER_NEAREST)
-    lines, g2 = extract(bgr, None if model is None else model < 128)
+    lines, _ = extract(bgr, None if model is None else model < 128)
+    from services import round_line
+    g2, st = round_line.strokes(lines)             # the mask redrawn as clean round pen strokes (§8.5cq)
     g1 = cv2.resize(g2, (bgr.shape[1], bgr.shape[0]), interpolation=cv2.INTER_AREA)
     cv2.imwrite(str(src), g1)
     cv2.imwrite(str(folder / "ink2x.png"), g2)
-    return dict(ink=float(lines.mean()), ink_model=float((model < 128).mean()) if model is not None else None)
+    return dict(ink=float(lines.mean()), ink_model=float((model < 128).mean()) if model is not None else None, **st)

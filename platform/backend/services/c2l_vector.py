@@ -31,6 +31,8 @@ UP = 2              # the source is rendered at this multiple of the canvas
 MEDIAN = 11         # median kernel on the 2x flat fills: rounds the 1 px staircase of the region map
 INK_SIGMA = 3.0     # blur on the 2x ink mask before re-thresholding: smooth stroke edges
 _CHUNK = 200_000    # pixels per distance block (the whole matrix would be ~600 MB)
+MIN_FILL_LUM = 0.12 # no fill colour darker than this: the ink is pure black and svg_builder (strict for
+                    # c2l items) separates the two by colour alone
 
 
 def _fullres_idx(master: np.ndarray, k: int, blur: float):
@@ -54,7 +56,17 @@ def write_source(folder: Path, blur: float = BLUR) -> Path:
     line = R._load_lineart(folder, h, w)
     if line is None:
         raise FileNotFoundError("ai_lineart.png missing - run c2l_lineart.generate first")
+    cv2.setRNGSeed(1234)                          # the July quantiser is otherwise random run to run
     color_idx, centers = _fullres_idx(master, R.COLOR_K, blur)
+    # svg_builder tells ink from fills by colour; the ink is painted pure black below, so no fill
+    # may come anywhere near black (a dark-brown k-means centre once came out at luminance 0.08
+    # and the whole wheel hub traced as ink) - lift such fills just above black
+    lum = centers[:, 2] * 0.299 + centers[:, 1] * 0.587 + centers[:, 0] * 0.114     # BGR
+    low = lum < MIN_FILL_LUM * 255
+    if low.any():
+        centers = centers.astype(np.float32)
+        centers[low] = np.maximum(centers[low], MIN_FILL_LUM * 255)
+        centers = centers.astype(np.uint8)
     fl = L.build_regions(line, r_min=R.COLOR_LINE_RMIN)
     fl = L.intersect_color(fl, color_idx, r_min=R.COLOR_LINE_RMIN, centres=centers,
                            merge_de=R.COLOR_MERGE_DE, target=R.COLOR_TARGET)
