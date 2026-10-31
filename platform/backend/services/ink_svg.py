@@ -9,10 +9,10 @@ were a 1254 px bitmap at every zoom and went soft at 3x.
 
     write(mask, out_path, up) -> bytes written     mask: bool ink at `up` x the canvas size
 
-Contours of the ink (outer + holes; evenodd keeps the holes open), simplified, smoothed by a
-3-tap average capped at SMOOTH_MAX_PX so sharp junctions stay sharp (§8.5bp), and emitted as a
-quadratic through each edge's midpoint with the vertex as control point - a traced circle is a
-circle again. Coordinates are integers on the `up` grid (the viewBox is up x the picture), relative
+Dense contours of the ink (outer + holes; evenodd keeps the holes open), Gaussian-smoothed along
+their length (SIGMA - the raster's staircase and corner nicks go, everything turns round), then
+simplified and emitted as a quadratic through each edge's midpoint with the vertex as control
+point - a traced circle is a circle again. Coordinates are integers on the `up` grid (the viewBox is up x the picture), relative
 commands, so the file stays small.
 """
 from __future__ import annotations
@@ -22,19 +22,23 @@ from pathlib import Path
 import cv2
 import numpy as np
 
-EPS = 0.75            # approxPolyDP epsilon, px on the `up` grid
-SMOOTH_MAX_PX = 0.5   # the 3-tap average may move a vertex at most this far (canvas px)
+EPS = 1.2             # approxPolyDP epsilon, px on the `up` grid (after smoothing)
+SIGMA = 4.0           # Gaussian along the DENSE contour, px on the `up` grid (~1.3 canvas px):
+                      # takes the raster staircase and the stroke edges' pixel bumps out, rounds
+                      # corners - the owner wants round (§8.5cv); 2.5 still showed steps at 6x,
+                      # 4 is smooth and a 7 px (2.5 nib x3) stroke keeps its shape
 MIN_AREA = 12.0       # contours smaller than this (px² on the `up` grid) are dust
 
 
-def _smooth(pts: np.ndarray, max_move: float) -> np.ndarray:
-    if len(pts) < 4:
+def _smooth(pts: np.ndarray, sigma: float) -> np.ndarray:
+    """Circular Gaussian smoothing of a closed dense contour."""
+    if len(pts) < 8 or sigma <= 0:
         return pts
-    avg = (np.roll(pts, 1, 0) + pts + np.roll(pts, -1, 0)) / 3.0
-    d = avg - pts
-    n = np.linalg.norm(d, axis=1)
-    k = np.minimum(1.0, max_move / np.maximum(n, 1e-6))[:, None]
-    return pts + d * k
+    k = int(3 * sigma) * 2 + 1
+    wgt = cv2.getGaussianKernel(k, sigma).ravel()
+    r = k // 2
+    ext = np.concatenate([pts[-r:], pts, pts[:r]])
+    return np.stack([np.convolve(ext[:, i], wgt, mode="valid") for i in range(2)], 1)
 
 
 def _path(pts: np.ndarray) -> str:
@@ -63,10 +67,10 @@ def write(mask: np.ndarray, out_path: Path, up: int) -> int:
     for c in contours:
         if abs(cv2.contourArea(c)) < MIN_AREA:
             continue
-        c = cv2.approxPolyDP(c, EPS, True).reshape(-1, 2).astype(np.float64)
+        c = _smooth(c.reshape(-1, 2).astype(np.float64), SIGMA)
+        c = cv2.approxPolyDP(c.astype(np.float32).reshape(-1, 1, 2), EPS, True).reshape(-1, 2).astype(np.float64)
         if len(c) < 3:
             continue
-        c = _smooth(c, SMOOTH_MAX_PX * up)
         d = _path(c)
         if d:
             parts.append(d)
