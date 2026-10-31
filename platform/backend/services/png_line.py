@@ -12,10 +12,10 @@ picture itself:
   gated     kept only near the line model's strokes (GATE px): the model decides what is a drawn
             line and what is pencil grain / wood texture; its own stroke is added back where it
             runs over a dark pixel, so a line the gate thinned is never cut
-then specks dropped, pinholes filled, and the mask rendered at 2x with a Gaussian edge so the
-traced curves are rounded (SMOOTH). Output exactly like ink_style.apply: the styled ai_lineart.png
-at canvas size (regions follow it), ink2x.png (what c2l_vector traces), the model's line kept as
-ai_lineart_raw.png.
+then specks dropped and pinholes filled. apply() hands that mask to round_line as the WIDTH source
+and the model's own line as the stroke structure (§8.5cr), and writes the result as ai_lineart.png
+(anti-aliased, canvas size — the July engine builds the regions and border.png from it); the
+model's raw line is kept as ai_lineart_raw.png.
 """
 from __future__ import annotations
 
@@ -32,8 +32,6 @@ MAX_W = 16        # px: dark things wider than this are fills, not lines
 GATE = 8          # px from a model stroke within which a dark line pixel counts
 SPECK = 80        # px: smaller ink pieces are dirt
 HOLE = 30         # px: smaller paper holes inside the ink are pinholes
-UP = 2
-SMOOTH = 3.0      # Gaussian sigma on the 2x mask: rounds the posterised staircase into curves
 
 
 def _disc(r: float):
@@ -42,7 +40,7 @@ def _disc(r: float):
 
 
 def extract(bgr: np.ndarray, model_ink: np.ndarray | None):
-    """bgr picture + boolean model-ink mask (same size, or None) -> (1x bool ink, 2x grey)."""
+    """bgr picture + boolean model-ink mask (same size, or None) -> bool mask of the painting's line."""
     h, w = bgr.shape[:2]
     L = cv2.cvtColor(bgr, cv2.COLOR_BGR2LAB)[:, :, 0]
     bg = cv2.medianBlur(L, BG_WIN)
@@ -61,10 +59,7 @@ def extract(bgr: np.ndarray, model_ink: np.ndarray | None):
     tiny = st[:, cv2.CC_STAT_AREA] < HOLE
     tiny[0] = False
     lines |= tiny[lab]
-    m = cv2.resize(lines.astype(np.float32), (w * UP, h * UP), interpolation=cv2.INTER_LINEAR)
-    m = cv2.GaussianBlur(m, (0, 0), SMOOTH)
-    g2 = np.clip((1 - m) * 255, 0, 255).astype(np.uint8)      # grey: anti-aliased, 128 = the edge
-    return lines, g2
+    return lines
 
 
 def apply(folder: Path) -> dict:
@@ -81,12 +76,11 @@ def apply(folder: Path) -> dict:
         model = cv2.resize(model, (bgr.shape[1], bgr.shape[0]), interpolation=cv2.INTER_NEAREST)
     if model is None:
         raise FileNotFoundError("ai_lineart.png missing - run c2l_lineart.generate first")
-    lines, _ = extract(bgr, model < 128)
+    lines = extract(bgr, model < 128)
     from services import round_line
     # the MODEL's drawing is the stroke structure; the painting's own line gives each stroke its
     # width (§8.5cr) - clean round pen strokes, bold outer contours, thin details
     g2, st = round_line.strokes(model < 128, width_src=lines)
-    g1 = cv2.resize(g2, (bgr.shape[1], bgr.shape[0]), interpolation=cv2.INTER_AREA)
+    g1 = cv2.resize(g2, (bgr.shape[1], bgr.shape[0]), interpolation=cv2.INTER_AREA)   # anti-aliased 1x
     cv2.imwrite(str(src), g1)
-    cv2.imwrite(str(folder / "ink2x.png"), g2)
-    return dict(ink=float(lines.mean()), ink_model=float((model < 128).mean()) if model is not None else None, **st)
+    return dict(ink=float(lines.mean()), ink_model=float((model < 128).mean()), **st)

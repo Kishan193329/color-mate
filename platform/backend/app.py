@@ -43,7 +43,7 @@ import number_tab
 import referral
 import simplify as simplify_mod
 import storage
-from services import c2l_lineart, c2l_vector, png_line
+from services import c2l_lineart, png_line
 from services import reveal_game_builder as R
 from services import svg_builder
 
@@ -396,11 +396,16 @@ def _process(iid: str, simplify_level: str | None = None) -> None:
         _fail(iid, e, "colour generation")
 
 
+_C2L_VECTOR_LEFTOVERS = ("svg_game.npz", "svg_game.json", "source.svg", "source.png",
+                         "vector.json.gz", "start.jpg", "ink2x.png")
+
+
 def _process_c2l(iid: str) -> None:
     """Background: coloured outline art (pencil / cartoon) -> our own colour->line model draws the
-    line (services/c2l_lineart) -> flat colour shapes + that ink (services/c2l_vector) -> vtracer
-    -> the SVG import, so the picture plays on the app's VECTOR engine, smooth at any zoom
-    (CLAUDE.md §8.5cn). The uploaded photo is kept as photo.png so a regenerate can start over."""
+    line (services/c2l_lineart) -> redrawn as clean round pen strokes with the painting's own
+    widths (services/png_line + round_line) -> the ordinary PNG game (July raster engine: regions
+    from that line, border.png = that line). Owner's call 2026-10-31: no SVG/vector for c2l
+    (CLAUDE.md §8.5cs). The uploaded photo is kept as photo.png so a regenerate can start over."""
     try:
         folder = ITEMS / iid
         photo = folder / "photo.png"
@@ -415,13 +420,14 @@ def _process_c2l(iid: str) -> None:
         cv2.imwrite(str(folder / "reveal_master.png"), img)
         cv2.imwrite(str(folder / "original.png"), img)
         c2l_lineart.generate(folder / "reveal_master.png", folder / "ai_lineart.png")
-        png_line.apply(folder)                   # the border = the picture's own drawn line, rounded (§8.5cp)
-        c2l_vector.write_source(folder)
-        svg_builder.vectorize(folder / "source.png", folder / "source.svg", smooth=True, max_side=c2l_vector.UP * MAX_SIDE)
+        png_line.apply(folder)                   # ai_lineart.png = the pen-stroke line (§8.5cr)
+        for name in _C2L_VECTOR_LEFTOVERS:       # an item made by the old vector route must not
+            (folder / name).unlink(missing_ok=True)   # keep svg_game.npz: that would hijack build_color
+        info = R.build_color(folder)
+        db.update_image(iid, status="review", error="", source_kind="c2l",
+                        regions=info.get("regions"), colours=info.get("palette_numbers"))
     except Exception as e:  # noqa: BLE001
         _fail(iid, e, "outline model")
-        return
-    _process_svg(iid, source_kind="c2l")
 
 
 def _process_vectorize(iid: str) -> None:
@@ -540,7 +546,7 @@ def regenerate(iid: str, background: BackgroundTasks, payload: dict = Body(defau
         k = max(4, min(80, int(payload.get("colours") or 32)))
         background.add_task(_enqueue, _process_diamond, iid, mode, cols, k)
     elif it.get("source_kind") == "c2l":
-        background.add_task(_enqueue, _process_c2l, iid)      # line model + vector again (photo.png, else original.png)
+        background.add_task(_enqueue, _process_c2l, iid)      # line model again (photo.png, else original.png)
     elif (ITEMS / iid / "source.svg").is_file():
         background.add_task(_enqueue, _process_svg, iid)
     else:

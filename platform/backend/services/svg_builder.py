@@ -28,7 +28,6 @@ import numpy as np
 
 INK_LUM = 0.10          # Rec.601 luminance below which a path is ALWAYS outline ink
 INK_LUM_THIN = 0.42     # darker than this AND thin (stroke-like) -> also outline ink
-INK_LUM_STRICT = 0.05   # c2l items (strict): ink is the pure black c2l_vector painted, nothing else
 INK_THICK = 3.2         # mean stroke width (px, 2*area/perimeter on the raster) counted as "thin"
 
 MIN_REGION_PX = 80      # visible area (px) under which a region is merged into its neighbour (~9x9 px)
@@ -213,12 +212,8 @@ def _fill(canvas, polys, value, scale):
     cv2.fillPoly(canvas, pts, value, lineType=cv2.LINE_8, shift=4)
 
 
-def _ink_flags(shapes, s: float, W: int, H: int, strict: bool = False):
+def _ink_flags(shapes, s: float, W: int, H: int):
     """-> (allid, ink_flags). allid = the topmost shape (1-based) per pixel, painter's order.
-
-    strict: the source was painted by c2l_vector (ink pure black, every fill lifted well above it),
-    so ink is black and nothing else - the thin-and-darkish rule would turn dark shadow strips and
-    hinge shadows into ink blobs.
 
     Outline detection. Many vectorised pictures draw their outlines in very dark brown or navy
     rather than pure black, so luminance alone misses them. A path is ink when it is near-black,
@@ -240,15 +235,8 @@ def _ink_flags(shapes, s: float, W: int, H: int, strict: bool = False):
     for k, (rgb, _, _) in enumerate(shapes, start=1):
         L = _lum(rgb)
         thick = 2.0 * area[k] / max(1, perim[k])
-        if strict:
-            ink_flags.append(L < INK_LUM_STRICT)
-        else:
-            ink_flags.append(L < INK_LUM or (L < INK_LUM_THIN and area[k] >= 12 and thick < INK_THICK))
+        ink_flags.append(L < INK_LUM or (L < INK_LUM_THIN and area[k] >= 12 and thick < INK_THICK))
     return allid, ink_flags
-
-
-def _strict(folder: Path) -> bool:
-    return (Path(folder) / "ink2x.png").is_file()          # written only by the c2l route
 
 
 # ── vector.json.gz: the picture as shapes, for the app's vector engine ──────────────────────
@@ -268,7 +256,7 @@ def write_vector(folder: Path, src_svg: Path | None = None) -> dict:
     s = min(1.0, MAX_SIDE / max(w0, h0))
     fl = np.load(folder / "svg_game.npz")["fl"].astype(np.int64)
     H, W = fl.shape
-    allid, ink_flags = _ink_flags(shapes, s, W, H, strict=_strict(folder))
+    allid, ink_flags = _ink_flags(shapes, s, W, H)
 
     # each shape belongs to the region that holds most of its VISIBLE pixels; slivers that were
     # absorbed into a neighbour follow it, shapes hidden under others are not sent at all
@@ -313,7 +301,7 @@ def prepare(folder: Path, src_svg: Path) -> dict:
     if not shapes:
         raise ValueError("no filled shapes found in the SVG")
 
-    allid, ink_flags = _ink_flags(shapes, s, W, H, strict=_strict(folder))
+    allid, ink_flags = _ink_flags(shapes, s, W, H)
     del allid
 
     # 1. anti-aliased colour render (supersampled, painter's order, opacity over what is below)
