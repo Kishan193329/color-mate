@@ -9,6 +9,7 @@ import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
+import com.colourmate.paintbynumber.Utils.ColorForgeApi;
 import com.colourmate.paintbynumber.Utils.Manager;
 import com.colourmate.paintbynumber.model.model.Level;
 import com.colourmate.paintbynumber.util.LogUtils;
@@ -285,15 +286,50 @@ public class NumberViewModel extends AndroidViewModel {
         // Use cached data if available for today
         if (today.equals(cachedDate) && !cachedFn1.isEmpty()) {
             dailyLevelsList.clear();
-            dailyLevelsList.add(new Level(null, cachedFn1, null, cachedCat1));
+            Level l1 = new Level(null, cachedFn1, null, cachedCat1);
+            l1.setColorForge(prefs.getBoolean("cf1", false));
+            dailyLevelsList.add(l1);
             if (!cachedFn2.isEmpty()) {
-                dailyLevelsList.add(new Level(null, cachedFn2, null, cachedCat2));
+                Level l2 = new Level(null, cachedFn2, null, cachedCat2);
+                l2.setColorForge(prefs.getBoolean("cf2", false));
+                dailyLevelsList.add(l2);
             }
             dailyLevels.postValue(new ArrayList<>(dailyLevelsList));
             return;
         }
 
-        // Fetch from API
+        // Our own pictures first (CLAUDE.md §8.5by: Daily = our uploads, date-wise): today's
+        // pictures from the ColorForge daily feed; if none were published today, the newest ones.
+        // Only when our server has nothing (or is down) does the banner fall back to the paid
+        // catalogue's DAILY category below.
+        if (ColorForgeApi.hasExplicitServer(getApplication())) {
+            Manager.getInstance().executeApiRequestWithCall(
+                    ColorForgeApi.restRoot(getApplication()), "daily/", jsonObject -> {
+                        List<Level> ours = parseLevelsFromJson(jsonObject, "other");
+                        List<Level> todays = new ArrayList<>();
+                        List<Level> live = new ArrayList<>();
+                        for (Level l : ours) {
+                            String ts = l.getTimeStamp() == null ? "" : l.getTimeStamp().trim();
+                            if (ts.length() >= 10) ts = ts.substring(0, 10);
+                            if (ts.compareTo(today) > 0) continue;      // scheduled, not yet live
+                            l.setColorForge(true);
+                            live.add(l);
+                            if (ts.equals(today)) todays.add(l);
+                        }
+                        List<Level> pick = !todays.isEmpty() ? todays : live;   // feed is newest first
+                        if (!pick.isEmpty()) {
+                            cacheDailyLevels(pick, today, prefs);
+                            dailyLevels.postValue(new ArrayList<>(dailyLevelsList));
+                        } else {
+                            loadDailyFromPaid(today, prefs);
+                        }
+                    }, null);
+            return;
+        }
+        loadDailyFromPaid(today, prefs);
+    }
+
+    private void loadDailyFromPaid(String today, SharedPreferences prefs) {
         Manager.getInstance().executeApiRequest("gimg/c/" + DAILY_CAT, jsonObject -> {
             List<Level> levels = parseLevelsFromJson(jsonObject, DAILY_CAT);
 
@@ -344,7 +380,11 @@ public class NumberViewModel extends AndroidViewModel {
                                          SharedPreferences prefs) {
         long seed = today.hashCode();
         Collections.shuffle(levels, new Random(seed));
+        cacheDailyLevels(levels, today, prefs);
+    }
 
+    /** The first two of `levels` become today's banner and are remembered for the day. */
+    private void cacheDailyLevels(List<Level> levels, String today, SharedPreferences prefs) {
         dailyLevelsList.clear();
         dailyLevelsList.addAll(levels.subList(0, Math.min(2, levels.size())));
 
@@ -352,12 +392,15 @@ public class NumberViewModel extends AndroidViewModel {
         editor.putString("date", today);
         editor.putString("fn1", dailyLevelsList.get(0).getFileName());
         editor.putString("cat1", dailyLevelsList.get(0).getCategory());
+        editor.putBoolean("cf1", dailyLevelsList.get(0).isColorForge());
         if (dailyLevelsList.size() > 1) {
             editor.putString("fn2", dailyLevelsList.get(1).getFileName());
             editor.putString("cat2", dailyLevelsList.get(1).getCategory());
+            editor.putBoolean("cf2", dailyLevelsList.get(1).isColorForge());
         } else {
             editor.putString("fn2", "");
             editor.putString("cat2", "");
+            editor.putBoolean("cf2", false);
         }
         editor.apply();
     }

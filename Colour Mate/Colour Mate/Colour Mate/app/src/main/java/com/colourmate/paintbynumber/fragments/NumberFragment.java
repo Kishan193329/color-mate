@@ -27,7 +27,9 @@ import androidx.viewpager2.widget.ViewPager2;
 
 import com.colourmate.paintbynumber.R;
 import com.colourmate.paintbynumber.Utils.Manager;
+import com.colourmate.paintbynumber.Utils.ColorForgeApi;
 import com.colourmate.paintbynumber.activity.GameActivity;
+import com.colourmate.paintbynumber.activity.RevealActivity;
 import com.colourmate.paintbynumber.ads.MediationManager;
 import com.colourmate.paintbynumber.model.model.Level;
 import com.colourmate.paintbynumber.adapter.BannerSlideAdapter;
@@ -342,8 +344,15 @@ public class NumberFragment extends Fragment {
     private void loadPreview(Level level, ImageView iv, ProgressBar pb) {
         if (level == null || iv == null)
             return;
-        String url = Manager.BASE_URL + "thumb/" + level.getCategory()
-                + "/t/" + level.getFileName() + ".png";
+        String url;
+        if (level.isColorForge()) {
+            // our picture: the line-art thumbnail, on white (border_thumb has a clear background)
+            url = ColorForgeApi.borderThumbUrl(requireContext(), level.getCategory(), level.getFileName());
+            iv.setBackgroundColor(android.graphics.Color.WHITE);
+        } else {
+            url = Manager.BASE_URL + "thumb/" + level.getCategory()
+                    + "/t/" + level.getFileName() + ".png";
+        }
         // fit()+centerCrop = decode to the preview size, matching the layout's scaleType
         Picasso.get().load(url).fit().centerCrop().into(iv, new Callback() {
             @Override
@@ -417,8 +426,19 @@ public class NumberFragment extends Fragment {
 
         viewModel.getNavigateToGame().observe(getViewLifecycleOwner(), level -> {
             if (level != null && isAdded()) {
-                MediationManager.showInterstitial((AppCompatActivity) requireActivity(),
-                        () -> startActivity(GameActivity.newIntent(requireContext(), level)));
+                MediationManager.showInterstitial((AppCompatActivity) requireActivity(), () -> {
+                    if (!isAdded()) return;
+                    if (level.isColorForge()) {
+                        // our picture plays the reveal game, like the Daily tab and the mixed grid
+                        String base = ColorForgeApi.revealBaseUrl(requireContext(),
+                                level.getCategory(), level.getFileName());
+                        if (base.isEmpty()) return;
+                        startActivity(RevealActivity.fromUrl(requireContext(), base,
+                                level.getFileName(), new String[0], new String[0]));
+                    } else {
+                        startActivity(GameActivity.newIntent(requireContext(), level));
+                    }
+                });
             }
         });
 
