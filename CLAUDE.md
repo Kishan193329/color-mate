@@ -3053,6 +3053,40 @@ in the session scratchpad (`live_v1_v3_zoom.jpg`). Compare harness: scratchpad `
 The workflow's pod-ssh wait is now 16×20 s with a clear failure (the first v3 dispatch hung on a
 pod whose sshd never answered). RunPod balance $9.20, 0 pods.
 
+### 8.5co ✒️ c2l ink styled like the reference apps — weight by role + tapered ends (2026-10-31)
+
+Owner, with two reference screenshots (a rose, an eye from a reference app): *"create the same type of
+border in SVG, exactly matching the border style."* **Measured on them first** (distance transform on
+the skeleton): stroke widths run continuously over a ~7:1 range (p10 4 px, p50 18, p90 34 at that
+zoom), widest where the drawing meets the background, thinnest on open detail strokes; **every free
+end thins to ~1/4 of its width over its last ~3 widths** (4 px at the tip → 20 px mid-stroke);
+pupils/lashes solid; edges anti-aliased. Ours was the model's one-weight line (median 3 px), no taper.
+
+**`services/ink_style.py`** (new; `apply(folder)` runs in `_process_c2l` right after the model) —
+`tools/lineart_ai/line_style.py`'s method ported into the backend with **no scikit-image** (the VPS
+has none): a numpy Zhang-Suen thinning gives the skeleton; each stroke is classed by what it
+separates (silhouette = touches the background region / major = two regions > 0.4% of the canvas /
+minor / detail = separates nothing), half-widths `R_DETAIL 1.2 · R_MINOR 2.6 · R_MAJOR 6.0 ·
+R_SILHOUETTE 9.6` at a 2048 reference side (→ 1.5 / 3.2 / 7.3 / 11.7 px full width at 1254),
+eased along the stroke (`EASE 4`), then **tapered towards free ends** (`TAPER 3` widths, min 10 px,
+tip 25%; ends on the picture border do not taper). Rendered at 2x → `ink2x.png`, which
+`c2l_vector.write_source` now traces directly (falls back to the old upsample+blur when absent);
+the styled 1x grey replaces `ai_lineart.png` (regions follow it), the model's own line is kept as
+`ai_lineart_raw.png`. ~2 s.
+⚠️ **Two things that were wrong on the first try, both caught by measuring:** (1) the renderer added
+~1 px to every stroke — the 2x skeleton block is 2 px thick and `dist` is measured from its edge, and
+`<=` rounded outward — so even the "minor" class fattened lines (ink 18% → 26-33%); fixed with
+`dist < r*S - (S-1)/2`. (2) `EASE` is a 2-D blur over the skeleton, so a thin stroke beside a thick
+one is pulled up with it — 6 → 4. Result on the live cottage: ink 17.8% → 21.0%, widths p10/50/90
+3 / 4.6 / 9.8 px (spread 3.3:1; the reference's 7:1 needs a thinner detail class, which the model's
+own 3 px line caps via `drawn`). Vector: 1,074 regions / 51 colours / 222 KB (was 1,154 / 61 / 244).
+Rendered at 3x the page reads like a printed colouring page — bold house/tree/cart outline, thin
+planks and spokes, pointed grass. **Deployed `4f602d2` and the live cottage regenerated +
+republished: 1,198 regions / 63 colours** (the VPS quantiser lands differently from the PC run). Remaining gap to the reference: ours still has slightly bumpy thick
+edges (the model's ragged ink feeds the skeleton); theirs are hand-drawn vectors.
+⚠️ **This PC's Python 3.14 vtracer (0.6.11) segfaults on ANY image** — even a 200 px circle. Use
+`py -3.12` (vtracer works there) for local vector runs; the VPS (0.6.15) is fine, 3 s per picture.
+
 ### 8.5ci 🎬 Finish replay time-lapse + MP4 share (2026-10-25, branch `2026-10-25-reveal-replay`)
 
 Owner sent a 9 s video of the reference game's finish (blank page → fills appear → outline fades →
