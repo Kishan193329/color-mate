@@ -3145,6 +3145,35 @@ republished: 1,089 regions / 63 colours** (the VPS's vtracer 0.6.15 splits shape
 the PC's 0.6.11, so counts differ from the local run). Dials if the owner wants it bolder/finer:
 `round_line.W_MIN/W_MAX/LUMP`, `png_line.MAX_W/DARK_L`.
 
+### 8.5cr ✒️ FINAL SHAPE: model line = structure, painting line = width (2026-10-31)
+
+Owner on §8.5cq: *"hju proper nathi."* Put the rose reference, his lion and our live line **on one
+sheet at the same zoom** and the difference was obvious: the references are long confident strokes;
+ours had a lantern and hinges as **black blobs** and wobbling thick lines. Pen mode on the png_line
+mask (one nib per stroke) changed nothing — measured: four variants within 1% ink, all blobby —
+because the blobs are not a width problem: **where the painting has dark metal or shadow, the mask
+is a tangle of ~6,400 crumbs** and every crumb drawn with a nib rebuilds the blob. No extraction of
+dark pixels gives a line drawing from a painting.
+
+**The model (c2l v3) already IS a line drawing** — fox-girl-like: 3 px median, 18% ink, lines and
+never fills — and it had been treated as the problem all day. So `round_line.strokes(topology,
+width_src)` now takes **the model's line as the stroke structure** and **the painting's dark line
+(`png_line.extract`) only for the width**: a stroke running inside the painting's line takes that
+line's width (PEN_PCT 60th percentile, snapped to the nib set 2.5 / 4 / 6 / 9 px), one that runs
+where the painting drew nothing gets the thinnest nib; free ends taper (2.5 widths → 35%), isolated
+pieces < 14 px dropped, centre lines smoothed σ3 with ends pinned, drawn with cv2.line round caps at
+2x, junction discs, 3 px close, σ0.9 edge. The eroded-mask union of §8.5cq is gone (it brought the
+lumps back). `png_line.apply` wires it: `strokes(model < 128, width_src=lines)`.
+Three variants rendered against the rose (`scratchpad/pen_model_sheet.jpg`): PNG widths (chosen —
+bold outer contours, thin inner), nibs ≤ 6 (flatter), one 3.5 nib (fox-girl uniform, loses weight).
+Local: ink 23.8%, 976 regions / 41 colours, 24 ink shapes, 208 KB; the lantern is a lantern.
+**Deployed `fc5b83a`; live cottage regenerated + republished: 1,155 regions / 60 colours.** Dials:
+`round_line.NIBS` (bolder/finer set), `PEN_PCT`, `TAPER`; `png_line.MAX_W/DARK_L` (which painting
+lines count as wide).
+⚠️ Lesson for the whole c2l border thread (§8.5cn → cr): the model is the DRAWING, the painting is
+the WEIGHT. Every pass that tried to get the drawing from the painting's pixels failed, and every
+pass that restyled the model's widths by rule looked invented.
+
 ### 8.5ci 🎬 Finish replay time-lapse + MP4 share (2026-10-25, branch `2026-10-25-reveal-replay`)
 
 Owner sent a 9 s video of the reference game's finish (blank page → fills appear → outline fades →
