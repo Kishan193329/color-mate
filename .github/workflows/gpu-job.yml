@@ -102,7 +102,8 @@ jobs:
           ARGS: ${{ inputs.args }}
         run: |
           S="ssh -i ~/.ssh/pod_key -o StrictHostKeyChecking=no -o ConnectTimeout=30 -o ServerAliveInterval=30 -p $PORT root@$IP"
-          for i in 1 2 3 4 5 6; do $S true && break || sleep 20; done
+          # some hosts take minutes before sshd answers; give up (and terminate) after ~10 min
+          ok=0; for i in $(seq 1 16); do $S true && ok=1 && break || sleep 20; done; [ $ok = 1 ] || { echo "pod ssh never came up"; exit 1; }
           $S 'mkdir -p /workspace/test'
           scp -i ~/.ssh/pod_key -o StrictHostKeyChecking=no -P $PORT $TOOLS/*.py $TOOLS/jobs/${{ inputs.job }}.sh root@$IP:/workspace/
           if ls $TOOLS/test/* >/dev/null 2>&1; then scp -i ~/.ssh/pod_key -o StrictHostKeyChecking=no -P $PORT $TOOLS/test/* root@$IP:/workspace/test/; fi
