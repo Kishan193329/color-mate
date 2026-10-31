@@ -83,4 +83,8 @@ def apply(folder: Path) -> dict:
     g2, st = round_line.strokes(model < 128, width_src=lines)
     g1 = cv2.resize(g2, (bgr.shape[1], bgr.shape[0]), interpolation=cv2.INTER_AREA)   # anti-aliased 1x
     cv2.imwrite(str(src), g1)
+    # the same ink as filled vector shapes: _publish ships it as border.svg so the app draws
+    # crisp curves once the player zooms in (§8.5cu); border.png stays the fit-view raster
+    from services import ink_svg
+    st["svg_bytes"] = ink_svg.write(g2 < 128, folder / "border_ink.svg", round_line.UP)
     return dict(ink=float(lines.mean()), ink_model=float((model < 128).mean()), **st)

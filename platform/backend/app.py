@@ -742,10 +742,19 @@ def _publish(iid: str) -> None:
                 if not (folder / "vector.json.gz").is_file() and (folder / "source.svg").is_file():
                     svg_builder.write_vector(folder)       # imported before the vector engine
             has_vector = svg_item and (folder / "vector.json.gz").is_file()
+            ink_svg = folder / "border_ink.svg"            # c2l: the pen strokes as vector (§8.5cu)
             info = R.export_color_bundle(folder)
             with zipfile.ZipFile(info["zip"]) as z:
                 for name in z.namelist():
                     data = z.read(name)
+                    if data and name == "border.svg" and not svg_item and ink_svg.is_file():
+                        # the July engine's border.svg is the old per-region outline file, which
+                        # the app rejects; ship the filled-ink export it can draw at zoom instead
+                        data = ink_svg.read_bytes()
+                    if data and name == "regions.json" and not svg_item and ink_svg.is_file():
+                        js = json.loads(data)
+                        js["ink"] = 1                    # cache stamp: phones refetch the new svg
+                        data = json.dumps(js, separators=(",", ":")).encode()
                     if data and svg_item and name == "regions.json":
                         # Stamp the outline look: the app's cache revalidates a picture by
                         # comparing regions.json, so a changed look must change this file or
