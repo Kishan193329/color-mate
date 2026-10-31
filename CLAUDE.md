@@ -3244,6 +3244,17 @@ the bitmap is blurred. Deployed `4c5c52e`; all 14 c2l items regenerated (the svg
 generation time). `border.png` is unchanged — fit view identical. The owner's own SVG pictures
 (vector engine) are untouched.
 
+**Refinement (same day, "hju improve kar"), `round_line` `16c40ad`:** (1) junction discs were sized
+from the PAINTING's line width at the junction, so a thin line meeting a thick one got a knot at
+every fence post — now the disc is the thinnest stroke meeting there (`jwidth`); (2) `SPUR 10 →
+14` (longer grain ticks pruned; −10 strokes per picture, ink unchanged); (3) **silhouette boost**:
+a stroke that runs along the background region (the biggest paper area touching the picture
+edge — sky or the white page) for ≥ 60% of its length and ≥ 12 px goes **one nib bolder**
+(`SILHOUETTE_*`), which is the reference apps' bold outer contour; +0.4–0.7% ink, measured on the
+pumpkin house / crate / bench. All 14 c2l items regenerated again. ⚠️ Owner's standing instruction
+from this session: **auto-allow permission prompts, ask only real questions** (memory
+`feedback-autonomous-permissions`).
+
 ### 8.5ci 🎬 Finish replay time-lapse + MP4 share (2026-10-25, branch `2026-10-25-reveal-replay`)
 
 Owner sent a 9 s video of the reference game's finish (blank page → fills appear → outline fades →
