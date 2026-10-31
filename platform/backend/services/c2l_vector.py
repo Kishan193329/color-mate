@@ -27,7 +27,7 @@ from services import lineart_region_builder as L
 from services import reveal_game_builder as R
 
 BLUR = 3.0          # sigma of the blur the full-res classification looks at (pencil grain must not split a fill)
-UP = 2              # the source is rendered at this multiple of the canvas
+UP = 3              # the source is rendered at this multiple of the canvas (= round_line.UP)
 MEDIAN = 11         # median kernel on the 2x flat fills: rounds the 1 px staircase of the region map
 INK_SIGMA = 3.0     # blur on the 2x ink mask before re-thresholding: smooth stroke edges
 _CHUNK = 200_000    # pixels per distance block (the whole matrix would be ~600 MB)

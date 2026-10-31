@@ -20,15 +20,16 @@ from __future__ import annotations
 import cv2
 import numpy as np
 
-SPUR = 6          # px: skeleton branches shorter than this are edge bumps, not strokes
-SMOOTH_XY = 3.0   # sigma (px along the stroke) for the centre line
+SPUR = 10         # px: skeleton branches shorter than this are bumps and grain ticks, not strokes
+SMOOTH_XY = 3.0   # sigma (px along the stroke) for the centre line, at least; wide nibs get more
+SMOOTH_PER_W = 0.6 # ... sigma = max(SMOOTH_XY, SMOOTH_PER_W * width): a bold stroke must not wobble
 PEN_PCT = 60      # the stroke's width = this percentile of the painting's line width along it
 NIBS = (2.5, 4.0, 6.0, 9.0)   # the pen set (px at canvas size) a stroke width snaps to
-MIN_PIECE = 14    # px: an isolated stroke shorter than this is a crumb
+MIN_PIECE = 20    # px: an isolated stroke shorter than this is a crumb
 TAPER = 2.5       # free ends thin over this many widths ...
 TAPER_TIP = 0.35  # ... down to this share of the width
 W_MAX = 18.0
-UP = 2
+UP = 3            # render scale; c2l_vector reads ink at its own UP (must match)
 CLOSE = 3         # px at UP x: closes the sliver left between two strokes of one band
 EDGE = 0.9        # sigma of the final anti-alias blur at UP x
 _N8 = ((-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1))
@@ -167,8 +168,9 @@ def strokes(topology: np.ndarray, width_src: np.ndarray | None = None):
                 idx = np.arange(len(wv)) if end == 0 else np.arange(len(wv))[::-1]
                 wv = wv * (TAPER_TIP + (1 - TAPER_TIP) * np.minimum(idx, span) / span)
         y0, x0, y1, x1 = p[0, 0], p[0, 1], p[-1, 0], p[-1, 1]
-        p[:, 0] = _smooth1d(p[:, 0], SMOOTH_XY)
-        p[:, 1] = _smooth1d(p[:, 1], SMOOTH_XY)
+        sig = max(SMOOTH_XY, SMOOTH_PER_W * wc)
+        p[:, 0] = _smooth1d(p[:, 0], sig)
+        p[:, 1] = _smooth1d(p[:, 1], sig)
         p[0] = (y0, x0)
         p[-1] = (y1, x1)                                        # ends stay where the pieces meet
         pts = np.round(p[:, ::-1] * UP).astype(np.int32)        # (x, y) at UP x
