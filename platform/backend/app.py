@@ -786,6 +786,12 @@ def _publish(iid: str) -> None:
                 # the picture as shapes — the app's vector engine draws these instead of rasters
                 store.put_bytes(f"images/{iid}/vector.json.gz",
                                 (folder / "vector.json.gz").read_bytes())
+            if not svg_item:
+                # an item that USED to be a vector picture (c2l before §8.5cs) must not keep serving
+                # its old shapes/sketch beside the new raster assets - the app would open on the
+                # stale grey start.jpg and the reveal route would still answer vector.json.gz
+                for stale in ("vector.json.gz", "start.jpg"):
+                    store.delete_prefix(f"images/{iid}/{stale}")
         else:
             # Diamond: the playable payload is grid.json, plus the renders for the admin preview.
             # Running export_color_bundle() here would spend the whole line-art + region pass
