@@ -3224,6 +3224,26 @@ preview taps open `RevealActivity` (the interstitial break stays) instead of the
 = witch-hat cottage + pumpkin house (today's uploads), Start → interstitial → RevealActivity.
 Not shipped to Play — needs the next release (APK built, installed on both test devices).
 
+### 8.5cu ✒️ c2l PNG pictures get a true border.svg — crisp at zoom, no vector engine (2026-10-31)
+
+Owner: *"hju png ma improve kar border line art ma."* Measured the live PNG border at the app's
+3x zoom: the lines themselves are fine, the EDGES are soft — a 1254 px bitmap bilinear-scaled,
+plus 25% of its alpha is partial. The app already solves this for Aug-engine items: past 1.3x fit
+`RevealView` draws `border.svg` when it is the filled-ink export (`fill-rule="evenodd"` +
+`fill="#000"`, M/L/Q/Z, §8.5bf/bg) — but the July engine's `border.svg` is the old per-region
+outline file, which `BorderVector` rejects, so c2l pictures were raster at every zoom.
+**`services/ink_svg.py`** writes that export from the pen-stroke mask at 3x (`round_line.UP`):
+`findContours` RETR_CCOMP (holes stay holes under evenodd), `approxPolyDP` 0.75, 3-tap smoothing
+capped at 0.5 px, quadratic through midpoints with vertices as controls, relative `q`, integer
+coords on the 3x grid (viewBox = 3x the picture; the app scales by viewBox). `png_line.apply`
+writes it as `border_ink.svg`; `_publish` ships it under `border.svg` for non-SVG items that have
+it and stamps `"ink":1` into regions.json so phones refetch. Verified with a port of the app's
+parser: 834 subpaths, IoU 0.94 vs the raster at 1x (the quadratics round the staircase — the
+difference IS the smoothing), 393 KB; rendered at 3x beside the bitmap the vector is crisp where
+the bitmap is blurred. Deployed `4c5c52e`; all 14 c2l items regenerated (the svg is made at
+generation time). `border.png` is unchanged — fit view identical. The owner's own SVG pictures
+(vector engine) are untouched.
+
 ### 8.5ci 🎬 Finish replay time-lapse + MP4 share (2026-10-25, branch `2026-10-25-reveal-replay`)
 
 Owner sent a 9 s video of the reference game's finish (blank page → fills appear → outline fades →
