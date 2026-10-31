@@ -3116,6 +3116,35 @@ outline.
 owner's references never used a model at all. When the source already carries a drawn outline, use
 the outline. The model earns its place only as the grain/line judge.
 
+### 8.5cq 🖊️ Round pen strokes — the PNG line redrawn clean (2026-10-31)
+
+Owner, on §8.5cp: *"alu tu su game avu banay cho … mare avi border joyi chi **round vali** … pela tu
+image joo."* Looked again at all six references: **every stroke is one clean pen line** — smooth
+curve, rounded edge, round or pointed end, no lumps. §8.5cp had the PNG's shape but its lumpy
+painted edge (hinges as blobs, ragged frames). So the mask is kept for WHERE and HOW WIDE, and every
+stroke is **redrawn** — **`services/round_line.py`** (`strokes(mask)`, called from `png_line.apply`):
+numpy Zhang-Suen skeleton, spurs < 6 px pruned, split at junctions into polylines (each traced in
+order, ends pinned to the junction pixel they touched so the pieces still meet), centre line
+Gaussian-smoothed along its length (σ 3, ends fixed), width = 2× the mask's distance transform
+along the line, smoothed (σ 8), lumps capped at 1.6× the stroke's median, clamped 2–18 px; drawn at
+2x with `cv2.line` (round caps/joins) + a disc per junction; **unioned with the mask eroded 2 px**
+(a wide lumpy band thins into two parallel branches with a paper sliver between — the eroded core
+fills it, the strokes own the edge) + a 3 px close; σ0.9 anti-alias. ~3 s. ⚠️ The door frame's
+"inner gap" is real: the PNG draws the frame as two dark lines with tan wood between.
+
+**🐞 Found on the way, pre-existing and random: dark fills traced as INK.** `svg_builder._ink_flags`
+calls a shape ink when luminance < 0.10, or < 0.42 and thin. The July k-means is unseeded, and one
+run gave the dark-brown centres luminance ~0.08 — the whole wheel hub, every hinge shadow and the
+cart's shadow strips became black blobs (ink 34%, 1,115 ink shapes vs 27). Fixes: `c2l_vector`
+seeds the quantiser (`setRNGSeed`) and lifts any fill below luminance 0.12 (`MIN_FILL_LUM`);
+`svg_builder` is **strict** for c2l items (`_strict()` = `ink2x.png` exists → ink iff luminance
+< 0.05, the pure black c2l_vector paints). The owner's own SVG uploads keep the old rule.
+Local: 933 regions / 41 colours, ink 26.7%, 27 ink shapes, vector 202 KB — the full page reads as
+a hand-inked colouring page, rounded everywhere. **Deployed `cbe8adb`; live cottage regenerated +
+republished: 1,089 regions / 63 colours** (the VPS's vtracer 0.6.15 splits shapes differently from
+the PC's 0.6.11, so counts differ from the local run). Dials if the owner wants it bolder/finer:
+`round_line.W_MIN/W_MAX/LUMP`, `png_line.MAX_W/DARK_L`.
+
 ### 8.5ci 🎬 Finish replay time-lapse + MP4 share (2026-10-25, branch `2026-10-25-reveal-replay`)
 
 Owner sent a 9 s video of the reference game's finish (blank page → fills appear → outline fades →
